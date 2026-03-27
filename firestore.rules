@@ -1,0 +1,166 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: id, name, email, role, status, referralCode, walletBalance, pixKey, pixKeyType, referredBy, createdAt
+    //
+    // Collection: products
+    // Fields: id, name, slug, description, price, coverImage, active, modules, createdAt
+    //
+    // Collection: orders
+    // Fields: id, userId, productId, affiliateId, totalAmount, status, proofUrl, createdAt
+    //
+    // Collection: commissions
+    // Fields: id, affiliateId, orderId, amount, status, releaseDate, createdAt
+    //
+    // Collection: notifications
+    // Fields: id, userId, message, read, date, type
+    //
+    // Collection: withdrawals
+    // Fields: id, userId, amount, status, date, pixKey
+    //
+    // Collection: categories
+    // Fields: id, name, description, order, isMandatory, dripDays, active
+    //
+    // Collection: subcategories
+    // Fields: id, categoryId, name, description, order, active
+    //
+    // Collection: ebooks
+    // Fields: id, categoryId, subcategoryId, title, description, coverImage, content, downloadUrl, order, dripDays, active
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN' ||
+          (request.auth.token.email == "painelweb.a.i@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'email', 'role']) &&
+             data.email is string &&
+             data.role in ['ADMIN', 'REVENDA', 'MEMBRO', 'VISITANTE', 'VIP'];
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['id', 'name', 'price']) &&
+             data.name is string && data.name.size() < 200 &&
+             data.price is number && data.price >= 0;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['id', 'userId', 'productId', 'totalAmount', 'status']) &&
+             data.totalAmount is number && data.totalAmount >= 0;
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['id', 'name']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    function isValidSubcategory(data) {
+      return data.keys().hasAll(['id', 'categoryId', 'name']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    function isValidEbook(data) {
+      return data.keys().hasAll(['id', 'categoryId', 'title']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && (isOwner(userId) || isAdmin());
+    }
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /bonuses/{bonusId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /bots/{botId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /timelines/{timelineId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || request.auth.uid == resource.data.affiliateId || isAdmin());
+      allow create: if isAuthenticated() && isValidOrder(request.resource.data);
+      allow update: if isAdmin();
+    }
+
+    match /commissions/{commissionId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.affiliateId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow write: if isAdmin();
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAdmin();
+    }
+
+    match /settings/global {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /subcategories/{subcategoryId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidSubcategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /ebooks/{ebookId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidEbook(request.resource.data);
+      allow delete: if isAdmin();
+    }
+  }
+}

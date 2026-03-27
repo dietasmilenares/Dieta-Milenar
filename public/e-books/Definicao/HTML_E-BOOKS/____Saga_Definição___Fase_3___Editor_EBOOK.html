@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta charset="UTF-8">
+
+<title>🏛️ Saga Definição — Fase 3 — Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+/* ══════════════════════════════════════════════
+   VARIÁVEIS DE MARCA — DIETA MILENAR
+══════════════════════════════════════════════ */
+:root {
+  --dm-gold:       #B8861A;
+  --dm-gold-light: #D4A82A;
+  --dm-navy:       #0D2B5E;
+  --dm-charcoal:   #2A2A2A;
+  --dm-gray:       #4A4A4A;
+  --dm-sep:        #8B6914;
+  --f-display:     'Rajdhani', sans-serif;
+  --f-body:        'Lora', Georgia, serif;
+}
+
+/* ══ CAPA ══════════════════════════════════════ */
+.cover-saga {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.0;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.cover-fase {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.cover-fase-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.cover-tagline {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.65;
+}
+
+/* ══ ÍNDICE ═════════════════════════════════════ */
+.index-header {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.index-item {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+/* ══ SEPARADOR ══════════════════════════════════ */
+.separator {
+  font-family: var(--f-display);
+  color: var(--dm-sep);
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+/* ══ TÍTULOS DE PÁGINA ══════════════════════════ */
+.page-title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid var(--dm-gold);
+}
+.page-subtitle {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-gold);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.page-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ══ SEÇÕES / SUBSEÇÕES ═════════════════════════ */
+.section-label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: left;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  border-left: 3px solid var(--dm-gold-light, #D4A82A);
+  padding-left: 9px;
+}
+
+/* ══ CORPO DO TEXTO ══════════════════════════════ */
+.body-text {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: justify;
+  line-height: 1.68;
+  margin-bottom: 8px;
+  letter-spacing: 0.15px;
+}
+.body-text strong {
+  font-family: var(--f-body);
+  font-weight: 700;
+  color: var(--dm-navy);
+}
+
+/* ══ ASSINATURA ═════════════════════════════════ */
+.closing-name {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.closing-role {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+/* ══════════════════════════════════════════════ */
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;overflow-x:hidden;background:#111;font-family:Georgia,serif;touch-action:pan-x pan-y}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  background:linear-gradient(135deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:6px 8px;
+  display:flex;align-items:center;gap:5px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#topbar::-webkit-scrollbar{display:none}
+.logo{
+  color:#f0c040;font-weight:bold;font-size:12px;
+  white-space:nowrap;margin-right:4px;flex-shrink:0;
+}
+.tbtn{
+  background:#8B6914;color:#fff;border:none;
+  padding:6px 9px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:background .15s;
+  min-height:32px;
+}
+.tbtn:active{background:#a07820}
+
+/* zoom controls */
+.zoom-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+#zoom-val{color:#f0c040;font-size:11px;font-weight:bold;min-width:36px;text-align:center}
+
+/* ══ FMTBAR ══ */
+#fmt-bar{
+  position:fixed;top:46px;left:0;right:0;z-index:899;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+  border-bottom:1px solid #ccc;box-shadow:0 2px 8px rgba(0,0,0,.18);
+  padding:4px 6px;
+  display:flex;align-items:center;gap:3px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#fmt-bar::-webkit-scrollbar{display:none}
+.fb{
+  background:transparent;border:1px solid transparent;
+  min-width:30px;height:30px;padding:0 5px;border-radius:4px;cursor:pointer;
+  font-size:13px;font-weight:bold;color:#222;
+  display:flex;align-items:center;justify-content:center;
+  white-space:nowrap;flex-shrink:0;transition:background .1s;
+  touch-action:manipulation;
+}
+.fb:hover{background:#e0e0e0;border-color:#ccc}
+.fb:active,.fb.on{background:#0D2B5E;color:#fff;border-color:#0D2B5E}
+.fb-sep{width:1px;height:22px;background:#ddd;margin:0 2px;flex-shrink:0}
+#sel-font{
+  height:28px;border:1px solid #ccc;border-radius:4px;
+  font-size:11px;padding:0 4px;cursor:pointer;
+  background:#fff;color:#222;flex-shrink:0;max-width:100px;
+}
+#fs-wrap{display:flex;align-items:center;gap:1px;flex-shrink:0}
+#fs-wrap button{
+  background:#f0f0f0;border:1px solid #ccc;color:#333;
+  width:22px;height:28px;cursor:pointer;font-size:14px;font-weight:bold;
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+#fs-wrap button:active{background:#ddd}
+#fs-val{
+  width:38px;height:28px;border:1px solid #ccc;border-radius:3px;
+  font-size:12px;text-align:center;background:#fff;color:#222;
+}
+#fc-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.fc-dot{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+}
+.fc-dot:hover,.fc-dot:active{border-color:#333;transform:scale(1.15)}
+#if-color{
+  width:22px;height:22px;border:1px solid #ccc;border-radius:3px;
+  cursor:pointer;padding:1px;background:#fff;flex-shrink:0;
+}
+
+
+/* ══ BARRA DE CORES ══ */
+#color-bar{
+  position:fixed;top:88px;left:0;right:0;z-index:898;
+  background:linear-gradient(180deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:5px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#color-bar::-webkit-scrollbar{display:none}
+#color-bar label{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#color-bar .fc-dot{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+}
+#color-bar .fc-dot:hover,
+#color-bar .fc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+
+
+
+/* ══ BARRA DE SOMBRA ══ */
+#shadow-bar{
+  position:fixed;top:124px;left:0;right:0;z-index:897;
+  background:linear-gradient(180deg,#111,#1a1a1a);
+  border-bottom:2px solid #555;
+  padding:4px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#shadow-bar::-webkit-scrollbar{display:none}
+#shadow-bar label{
+  color:#aaa;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-shadow-toggle{
+  background:#333;color:#fff;border:2px solid #555;
+  padding:3px 8px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:all .15s;min-height:26px;
+  text-shadow:1px 1px 3px rgba(0,0,0,.8);
+}
+#btn-shadow-toggle.active{
+  background:#8B6914;border-color:#f0c040;color:#fff;
+}
+#shadow-bar .sc-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+  opacity:.5;
+}
+#shadow-bar .sc-dot.enabled{opacity:1}
+#shadow-bar .sc-dot:hover,
+#shadow-bar .sc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+.sc-sep{width:1px;height:18px;background:#444;flex-shrink:0}
+/* sliders de sombra */
+.sh-slider-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;opacity:.5}
+.sh-slider-wrap.enabled{opacity:1}
+.sh-slider-wrap label{color:#aaa;font-size:9px;white-space:nowrap}
+.sh-slider{
+  width:52px;height:4px;cursor:pointer;flex-shrink:0;
+  accent-color:#8B6914;
+}
+
+/* ══ SCROLL AREA ══ */
+#scroll-area{
+  margin-top:162px;
+  padding:16px 0 80px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.pw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.plbl{color:#8B6914;font-size:10px;font-weight:bold;letter-spacing:2px;text-transform:uppercase}
+
+/* ══ PAGE-SIZER — container que cresce com o zoom, centraliza a página ══ */
+.page-sizer{
+  position:relative;
+  flex-shrink:0;
+  overflow:visible;
+  /* width e height definidos via JS em applyZoom() */
+}
+
+/* ══ PAGE — tamanho fixo A4-like, zoom via transform ══ */
+.page{
+  position:relative;
+  width:896px;height:1344px;
+  background-size:100% 100%;background-repeat:no-repeat;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);
+  flex-shrink:0;
+}
+
+/* ══ TEXT BLOCKS ══ */
+.tb{
+  position:absolute;border:1.5px dashed transparent;
+  border-radius:2px;transition:border-color .1s;
+}
+.tb:hover{border-color:rgba(139,105,20,.3)}
+
+/* selecionado — borda pontilhada dourada */
+.tb.sel{
+  border:2px dashed #f0c040 !important;
+  box-shadow:0 0 0 1px rgba(240,192,64,.15);
+}
+
+/* conteúdo — NÃO editável por padrão */
+.bc{
+  width:100%;min-height:10px;
+  outline:none;
+  cursor:default;        /* cursor normal enquanto não editando */
+  user-select:none;      /* impede seleção acidental ao clicar */
+  pointer-events:none;   /* clique atravessa para o .tb */
+}
+
+/* quando em modo edição */
+.tb.editing .bc{
+  cursor:text;
+  user-select:text;
+  pointer-events:auto;
+}
+
+/* ── botão ARRASTAR — centro inferior da borda ── */
+.drag-handle{
+  position:absolute;
+  bottom:-18px;          /* fica colado abaixo da borda inferior */
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;height:22px;
+  display:none;
+  align-items:center;justify-content:center;gap:3px;
+  background:#8B6914;
+  border-radius:11px;
+  color:#fff;font-size:11px;
+  cursor:move;z-index:10;
+  touch-action:none;user-select:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  white-space:nowrap;
+}
+.drag-handle::before{content:'⠿'; font-size:13px; letter-spacing:0}
+.tb.sel .drag-handle{display:flex}
+
+/* ── botão LÁPIS — canto superior direito ── */
+.edit-btn{
+  position:absolute;
+  top:-14px;right:-14px;
+  width:28px;height:28px;
+  display:none;
+  align-items:center;justify-content:center;
+  background:#0D2B5E;
+  border-radius:50%;
+  color:#fff;font-size:13px;
+  cursor:pointer;z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  touch-action:manipulation;
+  border:2px solid #fff;
+  transition:background .15s, transform .1s;
+}
+.edit-btn:active{background:#1a4a9e;transform:scale(.92)}
+.tb.sel .edit-btn{display:flex}
+
+/* lápis ativo = modo edição */
+.tb.editing .edit-btn{background:#c0392b;}
+
+/* ── resize handle — canto inferior direito ── */
+.rh{
+  position:absolute;bottom:-3px;right:-3px;
+  width:20px;height:20px;
+  cursor:se-resize;touch-action:none;display:none;
+  z-index:10;
+}
+.rh::after{
+  content:'';position:absolute;bottom:3px;right:3px;
+  width:10px;height:10px;
+  border-right:2.5px solid #f0c040;border-bottom:2.5px solid #f0c040;
+}
+.tb.sel .rh{display:block}
+
+/* ══ COORDS BAR ══ */
+#coords{
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:rgba(20,14,0,.92);color:#f0c040;
+  font-family:monospace;font-size:11px;padding:4px 12px;
+  border-top:1px solid #8B6914;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  pointer-events:none;
+}
+
+/* ══ TEXT CLASSES ══ */
+.cover-saga{font-size:28px;font-weight:bold;color:#1A1A1A;text-align:center;line-height:1.2}
+.cover-fase{font-size:18px;font-weight:bold;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-fase-italic{font-size:14px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-tagline{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.5}
+.separator{color:#8B6914;font-size:8px;text-align:center;letter-spacing:1px;margin:4px 0;line-height:1}
+.index-header{font-size:13px;font-weight:bold;color:#1A1A1A;text-align:center;margin-bottom:8px}
+.index-item{font-size:12px;color:#3D3D3D;text-align:center;line-height:1.8}
+.page-title{font-size:18px;font-weight:bold;color:#1A1A1A;text-align:center;letter-spacing:.5px}
+.page-subtitle{font-size:14px;font-weight:bold;color:#0D2B5E;text-align:center}
+.page-italic{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center}
+.section-label{font-size:12px;font-weight:bold;color:#7A5C10;text-align:left;margin-top:10px;margin-bottom:3px;line-height:1.4}
+.body-text{font-size:11.5px;color:#3D3D3D;text-align:justify;line-height:1.55;margin-bottom:7px}
+.closing-name{font-size:13px;font-weight:bold;font-style:italic;color:#1A1A1A;text-align:center;margin-top:8px;margin-bottom:3px}
+.closing-role{font-size:11px;font-style:italic;color:#7A5C10;text-align:center}
+
+/* ══ PDF OVERLAY ══ */
+#pdf-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#pdf-overlay.show{display:flex}
+#pdf-overlay .msg{color:#f0c040;font-size:16px;font-weight:bold;font-family:Georgia,serif}
+#pdf-overlay .sub{color:#aaa;font-size:12px;font-family:monospace}
+#pdf-progress-bar{width:280px;height:8px;background:#333;border-radius:4px;overflow:hidden}
+#pdf-progress-fill{height:100%;width:0%;background:#8B6914;border-radius:4px;transition:width .3s}
+
+
+/* ══ RÉGUA ══ */
+.ruler-h{
+  position:absolute;top:0;left:0;height:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+.ruler-v{
+  position:absolute;top:0;left:0;width:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+canvas.ruler-canvas{display:block}
+
+/* ══ GUIAS MAGNÉTICAS ══ */
+.guide-line{
+  position:absolute;pointer-events:none;z-index:60;
+  background:rgba(0,180,255,.7);
+}
+.guide-line.h{left:0;right:0;height:1px}
+.guide-line.v{top:0;bottom:0;width:1px}
+
+/* ══ SELEÇÃO MÚLTIPLA ══ */
+.tb.sel-multi{
+  border:2px dashed #00cfff !important;
+  box-shadow:0 0 0 1px rgba(0,207,255,.2);
+}
+
+
+/* ══ GRUPO ══ */
+.tb.grouped{
+  outline:2px solid rgba(240,192,64,.25);
+  outline-offset:2px;
+}
+/* Indicador de grupo no canto superior esquerdo */
+.tb.grouped::before{
+  content:'⛓';
+  position:absolute;top:-16px;left:2px;
+  font-size:11px;opacity:.5;pointer-events:none;
+  z-index:5;
+}
+/* Botões agrupar/desagrupar na topbar — contextuais */
+#btn-group,#btn-ungroup,#btn-cut-ungroup,#btn-cut{display:none}
+#btn-group.visible,#btn-ungroup.visible,#btn-cut-ungroup.visible,#btn-cut.visible{display:inline-flex}
+#btn-cut-ungroup,#btn-cut{background:#c0392b}
+
+.tb.sel .ungroup-btn{display:flex}
+
+
+/* ══ PAINEL DE SETAS (posicionamento fino) ══ */
+#arrow-pad{
+  position:fixed;
+  bottom:36px;          /* acima da coords bar */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:850;
+  display:none;         /* só aparece com bloco selecionado */
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  pointer-events:auto;
+}
+#arrow-pad.show{display:flex}
+.arrow-row{display:flex;gap:2px}
+.arrow-btn{
+  width:44px;height:44px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:10px;
+  color:#f0c040;
+  font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  touch-action:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.6);
+  transition:background .1s, transform .08s;
+  -webkit-tap-highlight-color:transparent;
+}
+.arrow-btn:active{background:rgba(139,105,20,.9);transform:scale(.92)}
+.arrow-center{
+  width:44px;height:44px;
+  background:#000;
+  border:1px solid #8B6914;
+  border-radius:10px;
+  color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;letter-spacing:.5px;
+}
+/* step display */
+#arrow-step{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  text-align:center;
+  background:rgba(26,18,0,.7);
+  padding:2px 8px;border-radius:8px;
+  border:1px solid #8B6914;
+  margin-top:2px;
+  white-space:nowrap;
+}
+
+/* ══ LOCK ZOOM BUTTON ══ */
+#btn-lock-zoom{
+  position:fixed;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:960;
+  width:36px;height:36px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:50%;
+  color:#f0c040;
+  font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  transition:background .15s, border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+#btn-lock-zoom.locked{
+  background:#8B6914;
+  border-color:#f0c040;
+}
+
+/* ══ PRINT ══ */
+@media print{
+  #topbar,#fmt-bar,#coords,.ruler-h,.ruler-v,.guide-line,.edit-btn,.ungroup-btn,.drag-handle,.rh{display:none!important}
+  #scroll-area{margin-top:0;padding:0;gap:0;display:block}
+  body{background:#fff}
+  .pw{page-break-after:always;margin:0;padding:0}
+  .plbl{display:none}
+  .page{transform:none!important;box-shadow:none;margin:0!important}
+  .tb{border:none!important;box-shadow:none!important}
+  .drag-handle,.rh{display:none!important}
+}
+
+/* ══ TABLET responsive ══ */
+@media (max-width:960px){
+  .logo{font-size:11px}
+  .tbtn{font-size:10px;padding:5px 7px}
+}
+</style>
+
+<!-- SCRIPTS — carregados uma única vez -->
+
+
+<style id="ebook-clean-style">
+    #topbar,#fmt-bar,#coords,#pdf-overlay,
+    #color-bar,#shadow-bar,#arrow-pad,#btn-lock-zoom,
+    .ruler-h,.ruler-v,.guide-line,.plbl,
+    .drag-handle,.edit-btn,.rh,.ungroup-btn,.arrow-btn,
+    #btn-shadow-toggle { display:none !important; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #111;
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+    #scroll-area {
+      margin-top: 0 !important;
+      padding: 20px 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      overflow-x: auto;
+    }
+    .pw {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-sizer {
+      display: block;
+      overflow: visible;
+    }
+    .page {
+      position: relative;
+      width: 896px;
+      height: 1344px;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      box-shadow: 0 8px 40px rgba(0,0,0,.8);
+    }
+    .tb {
+      position: absolute;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .bc {
+      width: 100%;
+      min-height: 10px;
+      outline: none;
+      cursor: default;
+    }
+  </style></head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     FORMAT BAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE CORES
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE SOMBRA
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     PÁGINAS
+══════════════════════════════════════════════ -->
+<div id="scroll-area" style="margin-top: 0px;">
+
+<!-- P1 CAPA -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page1" style="background-image: url(&quot;https://i.ibb.co/JRDWLVqK/file-00000000ff7471f5ba693312bf1124ad.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="capa_saga" style="left: 112px; top: 385.317px; width: 672px; min-height: 36px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 2px 8px rgba(0,0,0,0.45);"><div class="cover-saga"><span style="font-size: 48px;">SAGA DEFINIÇÃO</span></div></div></div>
+  <div class="tb in-pg" id="capa_fase" style="left: 112px; top: 477.659px; width: 672px; min-height: 30px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-fase"><span style="font-size: 35px;">FASE 3</span></div></div></div>
+  <div class="tb in-pg" id="capa_subtitulo" style="left: 122px; top: 526.878px; width: 672px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 0px 1px 6px rgba(255,255,255,0.6);"><div class="cover-fase-italic"><span style="font-size: 28px;">Definição Esculpida</span></div></div></div>
+  <div class="tb in-pg" id="capa_tagline" style="left: 160px; top: 592.363px; width: 576px; min-height: 40px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-tagline"><span style="font-size: 15px;">Esculpa o Abdômen Faraônico e Consolide sua Definição para Sempre</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_header" style="left: 160px; top: 633.878px; width: 576px; min-height: 46px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="separator"><span style="font-size: 40px; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 8px; color: #B8861A;">— ÍNDICE —</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_itens" style="left: 160px; top: 705.604px; width: 576px; min-height: 220px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.75);"><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Introdução — O Momento da Escultura Final</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Que é a Definição Esculpida</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Os Três Pilares da Definição Final</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Plano Alimentar Completo — 7 Dias</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Receitas Fitoterápicas Sagradas</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Poder dos Ingredientes Naturais</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Onde Encontrar os Ingredientes</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Dicas Extras de Definição Final</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Você Completou a Saga Definição</span></div></div></div>
+</div></div></div>
+
+<!-- P2 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page2" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p2_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-title"><span style="font-size: 28px;">INTRODUÇÃO</span></div></div></div>
+  <div class="tb in-pg" id="p2_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 24px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-subtitle">O Momento da Escultura Final</div></div></div>
+  <div class="tb in-pg" id="p2_sep" style="left: 88px; top: 157px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p2_corpo" style="left: 88px; top: 160px; width: 720px; min-height: 500px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="body-text">Os escultores do Antigo Egito não começavam pelo detalhe — começavam retirando o excesso. Bloco por bloco, camada por camada, a forma surgia do interior para o exterior. Os últimos golpes eram os mais precisos: aqueles que revelavam os sulcos, os contornos, a expressão final da obra.</div><div class="body-text">Você está nesses últimos golpes. A Fase 1 desinflou. A Fase 2 queimou. A <strong>Fase 3 revela.</strong> Estes 7 dias são dedicados a fazer exatamente o que os escultores faziam nos acabamentos de Karnak: eliminar os últimos excessos, tonificar o que ficou e selar a transformação de forma duradoura.</div><div class="body-text">A definição abdominal final depende de dois fatores simultâneos: a gordura subcutânea restante precisa ser eliminada, e a musculatura abdominal precisa ser nutrida para aparecer com firmeza e forma. Os alimentos da Fase 3 fazem as duas coisas — cortando o que resta e construindo o que fica.</div><div class="body-text">A <strong>Fase 3 — Definição Esculpida</strong> usa alimentos com propriedades únicas: lipolíticos que agem sobre a camada mais fina e teimosa de gordura, proteínas que definem e tonificam sem inflamar, e fitoterápicos que consolidam o metabolismo em modo de queima permanente.</div><div class="body-text">O abdômen faraônico que os escultores imortalizaram em granito está a 7 dias de ser revelado no seu corpo. Cada refeição desta fase é um golpe de cinzel. Comece agora.</div></div></div>
+</div></div></div>
+
+<!-- P3 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page3" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p3_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O QUE É A DEFINIÇÃO ESCULPIDA</span></div></div></div>
+  <div class="tb in-pg" id="p3_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p3_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="section-label">• O Que Diferencia Definição de Emagrecimento Comum?</div><div class="body-text">Emagrecer é perder peso — às vezes massa muscular junto com gordura, resultando num corpo menor mas sem forma. Definição é outra coisa: é a revelação da musculatura que já existe, com redução da camada adiposa que a cobre. O corpo definido tem contornos, tem forma, tem firmeza — qualidades que dependem de alimentar os músculos enquanto se elimina a gordura. Exatamente o que a Fase 3 faz.</div><div class="section-label">• Por Que a Gordura Subcutânea Fina é Tão Difícil de Eliminar?</div><div class="body-text">A última camada de gordura que cobre os músculos abdominais — aquela milimétrica que esconde os contornos — é metabolicamente inerte. Ela não responde ao déficit calórico simples. Responde a estímulos hormonais específicos: crescimento dos níveis de glucagon e GH, redução extrema da insulina e aumento da noradrenalina. Os alimentos da Fase 3 orquestram exatamente esses sinais hormonais.</div><div class="section-label">• O Papel da Proteína na Definição Final</div><div class="body-text">Cada grama de músculo abdominal visível foi construído por aminoácidos. Na Fase 3, a proteína não é apenas nutrição — é a ferramenta de escultura. Ovos, peixe, frango, leguminosas e sementes fornecem os aminoácidos que mantêm e revelam a musculatura enquanto os lipolíticos eliminam a cobertura que a esconde. Corte e construção simultâneos.</div><div class="section-label">• O Que Esperar dos 7 Dias da Fase 3?</div><div class="body-text">Abdômen significativamente mais firme e definido. Musculatura começando a aparecer na região central. Cintura medindo 2 a 4 cm a menos que no início da Fase 3. Pele mais firme e tonificada — sinal da renovação do colágeno promovida pelos ingredientes fitoterápicos desta fase.</div></div></div>
+</div></div></div>
+
+<!-- P4 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page4" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p4_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="page-title"><span style="font-size: 28px;">OS TRÊS PILARES DA DEFINIÇÃO FINAL</span></div></div></div>
+  <div class="tb in-pg" id="p4_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p4_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="body-text">Os escultores-médicos dos templos de Luxor que mantinham os corpos dos guardas reais em estado de definição permanente trabalhavam com três princípios que a Fase 3 reproduz com precisão. Cada pilar atua sobre uma camada diferente do processo de definição final.</div><div class="section-label">PILAR 1 — Cortar a Camada Final com Glucagon</div><div class="body-text">O glucagon é o hormônio antagonista da insulina: quando a insulina está alta, armazena gordura; quando o glucagon está alto, queima. A Fase 3 minimiza ao máximo os picos de insulina — substituindo carboidratos simples por proteínas e gorduras boas — mantendo o glucagon elevado e a lipólise da camada subcutânea ativa 24 horas por dia. Sem essa estratégia, a última camada não cede.</div><div class="section-label">PILAR 2 — Revelar com Proteína e Colágeno</div><div class="body-text">Músculo só aparece quando está presente e a gordura acima dele é eliminada. Na Fase 3, cada refeição contém proteína completa para manter e revelar a musculatura — e alimentos ricos em colágeno natural (gelatina, caldo de ossos vegetal, frutas cítricas) para firmar a pele que vai se adaptar ao novo contorno. Definição sem flacidez.</div><div class="section-label">PILAR 3 — Selar com Adaptógenos e Antiinflamatórios</div><div class="body-text">O cortisol destrói os resultados finais: ele mobiliza músculo como combustível e armazena gordura abdominal. Os adaptógenos da Fase 3 — ashwagandha (disponível em lojas naturais), cúrcuma, canela e gengibre — mantêm o cortisol suprimido durante os últimos 7 dias, consolidando definitivamente o estado metabólico conquistado ao longo das três fases.</div></div></div>
+</div></div></div>
+
+<!-- P5 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page5" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p5_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PLANO ALIMENTAR — 7 DIAS</span></div></div></div>
+  <div class="tb in-pg" id="p5_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 22px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-italic">Protocolo de Escultura Final — Dias 15 a 21</div></div></div>
+  <div class="tb in-pg" id="p5_sep" style="left: 88px; top: 155px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p5_corpo" style="left: 88px; top: 159px; width: 720px; min-height: 580px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="section-label">■ AO ACORDAR</div><div class="body-text">Escultura matinal: 1 copo de água morna + 1 col. sopa de vinagre de maçã + suco de 1 limão + 1 pitada de cúrcuma. Aguarde 25 minutos antes do café. Ativa glucagon e suprime insulina basal.</div><div class="section-label">■ CAFÉ DA MANHÃ</div><div class="body-text">3 ovos mexidos com espinafre, cúrcuma e azeite. Ou: omelete de 2 ovos com ervas frescas. Sem pão, sem frutas neste horário — mínimo de carboidrato para manter glucagon elevado pela manhã.</div><div class="section-label">■ MEIO DA MANHÃ</div><div class="body-text">Chá verde gelado sem açúcar + 1 punhado de amêndoas ou castanhas. A combinação EGCG + gordura boa mantém a lipólise subcutânea ativa sem disparar insulina.</div><div class="section-label">■ ALMOÇO</div><div class="body-text">Proteína magra (peixe grelhado, frango ou sardinha) + salada verde ampla com rúcula, tomate, pepino e cebola roxa — temperada com azeite, limão, cúrcuma e pimenta. Porção mínima de arroz integral ou batata-doce (3 col. sopa).</div><div class="section-label">■ LANCHE DA TARDE</div><div class="body-text">1 iogurte natural integral sem açúcar + 1 col. sopa de linhaça dourada. O iogurte natural fornece probióticos que melhoram a absorção de nutrientes e o ácido linoleico conjugado da linhaça ataca a gordura subcutânea restante.</div><div class="section-label">■ JANTAR</div><div class="body-text">Caldo de legumes quente com gengibre, alho e açafrão + proteína leve (atum, frango desfiado ou ovo). Levíssimo em carboidratos — máxima ativação do GH durante a noite.</div><div class="section-label">■ ANTES DE DORMIR</div><div class="body-text">Chá de camomila com 1 pitada de ashwagandha em pó (encontrada em lojas naturais). Reduz cortisol noturno ao mínimo e maximiza a liberação de GH durante as primeiras horas de sono — o período mais anabólico e lipolítico do dia.</div></div></div>
+</div></div></div>
+
+<!-- P6 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page6" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p6_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="page-title"><span style="font-size: 28px;">RECEITAS FITOTERÁPICAS SAGRADAS</span></div></div></div>
+  <div class="tb in-pg" id="p6_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p6_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="section-label">✦ ESCULTURA MATINAL DO FARAÓ</div><div class="body-text"><strong>Ingredientes:</strong> 250ml de água morna, 1 col. sopa de vinagre de maçã, suco de 1 limão, 1 pitada de cúrcuma, 1 pitada de pimenta cayena, 1 col. chá de mel puro.</div><div class="body-text"><strong>Preparo:</strong> Misture tudo e beba em jejum, 25 minutos antes do café. Versão mais concentrada do protocolo matinal — combustão máxima.</div><div class="body-text"><strong>Benefício:</strong> Ativa glucagon, inibe insulina basal e dispara a lipólise subcutânea na camada mais fina de gordura que cobre o abdômen.</div><div class="section-label">✦ CHÁ DA DEFINIÇÃO FINAL</div><div class="body-text"><strong>Ingredientes:</strong> 1 col. chá de chá verde a granel ou 2 sachês, 1 col. chá de gengibre ralado, 1 col. chá de canela em pó, 1 rodela de limão, 300ml de água quente.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água (não fervente — 80°C), adicione o chá verde, gengibre e canela. Tampe por 5 min. Coe, adicione o limão. Sem açúcar. Tome 3 xícaras ao dia.</div><div class="body-text"><strong>Benefício:</strong> EGCG + gingerol + cinamaldeído — tripla ativação dos receptores beta-adrenérgicos da gordura subcutânea. A combinação mais poderosa de lipolíticos naturais.</div><div class="section-label">✦ PROTEÍNA DE ESCULTURA — OMELETE DO GUERREIRO</div><div class="body-text"><strong>Ingredientes:</strong> 3 ovos, 1 punhado de espinafre, 2 col. sopa de azeite, 1 pitada de cúrcuma, 1 pitada de pimenta-do-reino, sal rosa, ervas frescas a gosto.</div><div class="body-text"><strong>Preparo:</strong> Bata os ovos, tempere e cozinhe com o espinafre no azeite em fogo médio-baixo. Não deixe ressecar — mantenha suculento.</div><div class="body-text"><strong>Benefício:</strong> Proteína completa de alto valor biológico que mantém e revela a musculatura abdominal sem disparar insulina.</div><div class="section-label">✦ ELIXIR DO SONO ESCULTOR</div><div class="body-text"><strong>Ingredientes:</strong> 200ml de leite de coco light, 1 pitada de ashwagandha em pó, 1 col. chá de cúrcuma, 1 pitada de canela, 1 pitada de pimenta-do-reino.</div><div class="body-text"><strong>Preparo:</strong> Aqueça o leite de coco (não ferva), adicione todos os ingredientes e mexa. Beba morno 30 min antes de dormir.</div><div class="body-text"><strong>Benefício:</strong> Ashwagandha reduz cortisol noturno em até 27%. Com cortisol baixo, o GH é liberado em pico máximo — construindo e revelando músculo enquanto você dorme.</div></div></div>
+</div></div></div>
+
+<!-- P7 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page7" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p7_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O PODER DOS INGREDIENTES NATURAIS</span></div></div></div>
+  <div class="tb in-pg" id="p7_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p7_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="section-label">■ Ovos</div><div class="body-text">Nos papiros médicos do período ramessida, os ovos eram chamados de "a semente completa" — o único alimento que contém todos os aminoácidos essenciais em proporções perfeitas para a construção muscular. Na Fase 3, são a principal ferramenta de escultura: fornecem leucina — o aminoácido que ativa diretamente a síntese proteica muscular — e colina, que mobiliza gordura do fígado para ser queimada. Proteína mais completa e acessível da natureza.</div><div class="section-label">■ Espinafre</div><div class="body-text">Os guerreiros da guarda real do Faraó Ramsés II consumiam folhas verdes escuras diariamente para "manter os músculos firmes sob o calor do deserto". O espinafre contém ecdisterona — composto fitoquímico que aumenta a síntese proteica nos músculos de forma natural, sem nenhum efeito hormonal indesejado. Também é rico em magnésio, que reduz o cortisol e melhora a qualidade do sono profundo.</div><div class="section-label">■ Linhaça Dourada</div><div class="body-text">Cultivada às margens do Nilo desde o período pré-dinástico, a linhaça era prescrita pelas sacerdotisas de Ísis para "afinar e firmar o templo corporal das mulheres". Rica em ácido alfa-linolênico e ácido linoleico conjugado natural, ela ataca especificamente a gordura subcutânea fina que cobre a musculatura — acelerando a revelação dos contornos finais.</div><div class="section-label">■ Ashwagandha</div><div class="body-text">Chegou ao Egito pelas rotas comerciais com a Índia e foi imediatamente adotada pelos escribas-médicos como "a raiz que derrota o cansaço do guerreiro". Adaptógeno comprovado, reduz o cortisol sérico em até 27% em 8 semanas. Na Fase 3, trabalha especificamente para eliminar o cortisol que ainda destrói músculo e acumula gordura abdominal residual — o bloqueio final antes da definição completa.</div><div class="section-label">■ Azeite Extravirgem</div><div class="body-text">O "ouro líquido do Mediterrâneo" chegou ao Egito com os comerciantes cretenses e foi rapidamente incorporado à medicina dos templos. Seu oleocanthal — anti-inflamatório tão potente quanto o ibuprofeno em doses alimentares — combate a inflamação residual nos tecidos. Seus ácidos graxos monoinsaturados ativam genes que suprimem o armazenamento de gordura e promovem a firmeza do tecido adiposo restante.</div></div></div>
+</div></div></div>
+
+<!-- P8 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page8" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p8_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="page-title"><span style="font-size: 28px;">ONDE ENCONTRAR OS INGREDIENTES</span></div></div></div>
+  <div class="tb in-pg" id="p8_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p8_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="body-text">Os ingredientes da Fase 3 são os mais <strong>fáceis de encontrar</strong> de toda a Saga Definição — muitos estão em qualquer cozinha brasileira. A escultura final não exige raridades.</div><div class="section-label">✦ Feiras Livres e Mercados Populares</div><div class="body-text">Ovos caipira, espinafre, rúcula, tomate-cereja, pepino, limão, gengibre fresco, cebola roxa, alho, peixe fresco ou sardinha, frango inteiro ou filé. Prefira ovos caipira — têm mais ômega-3 e gema mais nutritiva que os convencionais.</div><div class="section-label">✦ Supermercados</div><div class="body-text">Vinagre de maçã orgânico, azeite extravirgem, cúrcuma em pó, canela, pimenta cayena, chá verde, linhaça dourada, iogurte natural integral (sem açúcar, sem sabor), leite de coco light, sal rosa ou marinho.</div><div class="section-label">✦ Lojas de Produtos Naturais</div><div class="body-text">Ashwagandha em pó (KSM-66 ou Sensoril — as formas mais estudadas), chá verde a granel, linhaça dourada orgânica, vinagre de maçã com sedimento natural. Todos os produtos têm preço acessível e um pacote dura o mês inteiro.</div><div class="section-label">✦ Horta Caseira</div><div class="body-text">Espinafre e rúcula crescem rapidamente em vasos. Ervas frescas como manjericão, alecrim e hortelã — para aromatizar as refeições sem adicionar calorias. Gengibre em vaso. Uma vez plantados, são colheitas semanais sem custo adicional.</div></div></div>
+</div></div></div>
+
+<!-- P9 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page9" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p9_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="page-title"><span style="font-size: 28px;">DICAS EXTRAS DE DEFINIÇÃO FINAL</span></div></div></div>
+  <div class="tb in-pg" id="p9_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p9_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="section-label">◆ Meça a Cintura Todo Dia — O Termômetro do Progresso</div><div class="body-text">Na Fase 3, a perda de gordura subcutânea fina é melhor monitorada pela fita métrica do que pela balança. Meça a cintura na mesma hora todos os dias (pela manhã, em jejum). Registre. A redução diária — mesmo que seja 2mm — confirma que a escultura está acontecendo e mantém a motivação no nível máximo.</div><div class="section-label">◆ Jejum de 14 Horas — A Janela Máxima de GH</div><div class="body-text">Na Fase 3, aumente o jejum noturno para 14 horas: feche a alimentação às 18h e abra com o Disparo Matinal às 8h. Nessa janela, com insulina no nível mais baixo possível, o GH é liberado em quantidade máxima durante o sono — construindo músculo e eliminando gordura subcutânea simultaneamente.</div><div class="section-label">◆ Prancha + Abdômen Vácuo — O Acabamento Final</div><div class="body-text">Ao acordar, em jejum, faça 3 séries de prancha (30-45 segundos) e 5 repetições de abdômen vácuo (inspire fundo, esvazie o pulmão e suge o umbigo em direção à coluna por 20 segundos). O vácuo abdominal é a técnica que os guardas reais egípcios usavam para "selar o ventre" — ativa o transverso abdominal mais profundamente que qualquer outro exercício.</div><div class="section-label">◆ Evite Álcool, Açúcar e Farinha Branca — Os Destruidores da Escultura</div><div class="body-text">Na reta final, qualquer deslize com esses três inimigos reinicia o ciclo de insulina alta, cortisol elevado e retenção de líquidos — apagando dias de trabalho. Os últimos 7 dias são os mais importantes. Os escultores de Karnak protegiam as obras finais com o mesmo cuidado que as iniciais. Faça o mesmo.</div><div class="section-label">◆ Fotografia de Progresso — A Evidência que Motiva</div><div class="body-text">Tire fotos no primeiro e no último dia da Fase 3. Com a mesma roupa, mesma iluminação, mesmo horário. A diferença visual de 7 dias de Definição Esculpida é frequentemente mais impressionante do que 30 dias de dieta comum — porque você está revelando, não apenas emagrecendo.</div></div></div>
+</div></div></div>
+
+<!-- P10 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page10" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p10_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="page-title"><span style="font-size: 28px;">VOCÊ COMPLETOU A SAGA DEFINIÇÃO!</span></div></div></div>
+  <div class="tb in-pg" id="p10_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p10_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 520px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="body-text">A escultura está feita. Em 21 dias — com alimentos acessíveis em qualquer feira ou supermercado e conhecimentos que civilizações antigas levaram gerações para aperfeiçoar — você desinflou, queimou e revelou. O <strong>Abdômen Faraônico está esculpido.</strong></div><div class="body-text">Meça agora. Compare a foto do Dia 1 com a de hoje. Sinta a firmeza ao toque, a leveza no movimento, a energia diferente. Esses não são resultados superficiais — são mudanças metabólicas, hormonais e celulares que se consolidaram ao longo dos 21 dias das três fases.</div><div class="body-text">Você alcançou o <strong>Nível Adepto</strong> da Dieta Milenar — o terceiro nível de um sistema que tem muito mais a oferecer. A Saga Definição transformou o abdômen. O que vem a seguir vai transformar o corpo inteiro.</div><div class="body-text"><strong>A próxima jornada: Saga Gordura Localizada — Queima Estratégica Faraônica.</strong></div><div class="body-text">Enquanto a Saga Definição atacou o abdômen, a Saga Gordura Localizada vai mapear e eliminar a gordura teimosa das outras regiões: coxas, braços, costas e culotes. Com os mesmos princípios ancestrais, mas com estratégias específicas para cada zona. O corpo proporcional e harmonioso que os faraós exibiam com orgulho.</div><div class="body-text">O Ka foi revelado. A jornada continua. Sua transformação está apenas no meio do caminho.</div></div></div>
+  <div class="tb in-pg" id="p10_assina" style="left: 200px; top: 705px; width: 496px; min-height: 80px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div><div class="closing-name">Marcelo R. Souza</div><div class="closing-role">Nutricionista Fitoterápico — Dieta Milenar</div></div></div>
+</div></div></div>
+
+</div><!-- /scroll-area -->
+
+
+<!-- ══ PAINEL DE SETAS ══ -->
+
+
+
+
+<!-- LOCK ZOOM -->
+
+
+<!-- PDF OVERLAY -->
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+
+
+
+
+</body></html>
