@@ -1,0 +1,47 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Admin Faraó",
+      "email": "admin@dietasmilenares.com",
+      "role": "ADMIN",
+      "status": "active",
+      "createdAt": "2026-03-06T19:05:49.869Z"
+    },
+    {
+      "id": "2",
+      "name": "João Revendedor",
+      "email": "joao@dietasmilenares.com",
+      "role": "REVENDA",
+      "referralCode": "JOAO50",
+      "walletBalance": 0,
+      "status": "active",
+      "createdAt": "2026-03-06T19:05:49.870Z"
+    },
+    {
+      "id": "kcpicmvkj",
+      "name": "maria",
+      "email": "maria@dietasmilenares.com",
+      "role": "VISITANTE",
+      "status": "active",
+      "referredBy": null,
+      "createdAt": "2026-03-06T20:33:06.578Z"
+    }
+  ],
+  "products": [],
+  "orders": [],
+  "transactions": [],
+  "affiliates": [],
+  "affiliateClicks": [],
+  "commissions": [],
+  "withdrawalRequests": [],
+  "bots": [],
+  "timelines": [],
+  "executions": [],
+  "notifications": [],
+  "globalSettings": {
+    "appName": "Dieta Milenar",
+    "primaryColor": "#D4AF37",
+    "commissionRate": 0.5
+  }
+}
