@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #D4AF37; /* Metallic Gold */
+  --color-secondary: #111111; /* Rich Black */
+  --color-accent: #FFD700; /* Bright Gold */
+  --color-sand: #C2B280;
+  --color-success: #48bb78;
+  --color-error: #f56565;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Cormorant Garamond", serif;
+  --font-display: "Playfair Display", serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-sans text-gray-300 antialiased bg-black;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-black font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg;
+  }
+  
+  .text-gold {
+    @apply text-[#D4AF37];
+  }
+  
+  .bg-gold {
+    @apply bg-[#D4AF37];
+  }
+
+  .golden-gradient-glow {
+    background: linear-gradient(135deg, #8A6628 0%, #D4AF37 30%, #F9E498 50%, #D4AF37 70%, #8A6628 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 15px rgba(138, 102, 40, 0.4);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    transition: all 0.3s ease;
+    color: black;
+  }
+
+  .golden-gradient-glow:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 25px rgba(212, 175, 55, 0.6);
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+  }
+
+  .text-golden-gradient {
+    background: linear-gradient(135deg, #8A6628 0%, #D4AF37 30%, #F9E498 50%, #D4AF37 70%, #8A6628 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: skewX(-25deg);
+    animation: shine 3s infinite;
+  }
+
+  @keyframes shine {
+    0% { left: -100%; }
+    20% { left: 200%; }
+    100% { left: 200%; }
+  }
+
+  .conic-glow {
+    background: conic-gradient(from 0deg at 50% 50%, transparent 0%, #FFD700 25%, transparent 50%, transparent 100%);
+  }
+}

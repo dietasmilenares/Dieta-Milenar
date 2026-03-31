@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "mockWarning": "⚠️ TEMPLATE MOCKUP – Dados, métricas e depoimentos abaixo são fictícios e utilizados apenas para demonstração visual."
+  },
+  "hero": {
+    "title": "O Segredo dos Faraós Revelado",
+    "headline": "Por que você acha que homens e mulheres do Antigo Egito tinham corpos tão definidos?",
+    "subheadline": "Descubra a Dieta Milenar que permaneceu oculta por séculos e perca até 20 kg por mês sem exercícios exaustivos.",
+    "cta": "QUERO ACESSAR O SEGREDO AGORA",
+    "secureBadge": "Acesso Imediato e Seguro"
+  },
+  "metrics": {
+    "buyers": "8.000",
+    "buyersLabel": "Alunos Transformados",
+    "satisfaction": "98%",
+    "satisfactionLabel": "Satisfação Garantida",
+    "rating": "4.8",
+    "ratingLabel": "Nota Média",
+    "recommendation": "99%",
+    "recommendationLabel": "Recomendariam"
+  },
+  "testimonials": {
+    "title": "Histórias Reais de Transformação",
+    "subtitle": "Veja o que acontece quando você aplica a sabedoria milenar.",
+    "disclaimer": "Resultados variam de pessoa para pessoa. Imagens meramente ilustrativas.",
+    "items": []
+  },
+  "rating": {
+    "average": 4.8,
+    "totalReviews": 2847,
+    "distribution": {
+      "5": 85,
+      "4": 12,
+      "3": 2,
+      "2": 1,
+      "1": 0
+    },
+    "label": "Excelente"
+  },
+  "online": {
+    "text": "pessoas visualizando agora",
+    "count": 187
+  },
+  "admin": {
+    "loginTitle": "Acesso Administrativo",
+    "passwordPlaceholder": "Senha",
+    "loginButton": "Entrar",
+    "saveButton": "Salvar Alterações",
+    "resetButton": "Restaurar Padrões",
+    "successMessage": "Conteúdo atualizado com sucesso!",
+    "logoutButton": "Sair"
+  }
+}

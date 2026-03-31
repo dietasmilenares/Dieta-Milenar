@@ -1,0 +1,6 @@
+.git
+.gitignore
+node_modules
+access_log
+*.sql
+*.bak

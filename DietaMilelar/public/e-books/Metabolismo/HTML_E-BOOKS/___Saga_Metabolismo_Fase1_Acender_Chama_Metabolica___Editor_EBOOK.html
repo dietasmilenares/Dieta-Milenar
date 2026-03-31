@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta charset="UTF-8">
+
+<title>🏺 Saga_Metabolismo_Fase1_Acender_Chama_Metabolica — Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+/* ══════════════════════════════════════════════
+   VARIÁVEIS DE MARCA — DIETA MILENAR
+══════════════════════════════════════════════ */
+:root {
+  --dm-gold:       #B8861A;
+  --dm-gold-light: #D4A82A;
+  --dm-navy:       #0D2B5E;
+  --dm-charcoal:   #2A2A2A;
+  --dm-gray:       #4A4A4A;
+  --dm-sep:        #8B6914;
+  --f-display:     'Rajdhani', sans-serif;
+  --f-body:        'Lora', Georgia, serif;
+}
+
+/* ══ CAPA ══════════════════════════════════════ */
+.cover-saga {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.0;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.cover-fase {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.cover-fase-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.cover-tagline {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.65;
+}
+
+/* ══ ÍNDICE ═════════════════════════════════════ */
+.index-header {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.index-item {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+/* ══ SEPARADOR ══════════════════════════════════ */
+.separator {
+  font-family: var(--f-display);
+  color: var(--dm-sep);
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+/* ══ TÍTULOS DE PÁGINA ══════════════════════════ */
+.page-title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid var(--dm-gold);
+}
+.page-subtitle {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-gold);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.page-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ══ SEÇÕES / SUBSEÇÕES ═════════════════════════ */
+.section-label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: left;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  border-left: 3px solid var(--dm-gold-light, #D4A82A);
+  padding-left: 9px;
+}
+
+/* ══ CORPO DO TEXTO ══════════════════════════════ */
+.body-text {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: justify;
+  line-height: 1.68;
+  margin-bottom: 8px;
+  letter-spacing: 0.15px;
+}
+.body-text strong {
+  font-family: var(--f-body);
+  font-weight: 700;
+  color: var(--dm-navy);
+}
+
+/* ══ ASSINATURA ═════════════════════════════════ */
+.closing-name {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.closing-role {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+/* ══════════════════════════════════════════════ */
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;overflow-x:hidden;background:#111;font-family:Georgia,serif;touch-action:pan-x pan-y}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  background:linear-gradient(135deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:6px 8px;
+  display:flex;align-items:center;gap:5px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#topbar::-webkit-scrollbar{display:none}
+.logo{
+  color:#f0c040;font-weight:bold;font-size:12px;
+  white-space:nowrap;margin-right:4px;flex-shrink:0;
+}
+.tbtn{
+  background:#8B6914;color:#fff;border:none;
+  padding:6px 9px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:background .15s;
+  min-height:32px;
+}
+.tbtn:active{background:#a07820}
+
+/* zoom controls */
+.zoom-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+#zoom-val{color:#f0c040;font-size:11px;font-weight:bold;min-width:36px;text-align:center}
+
+/* ══ FMTBAR ══ */
+#fmt-bar{
+  position:fixed;top:46px;left:0;right:0;z-index:899;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+  border-bottom:1px solid #ccc;box-shadow:0 2px 8px rgba(0,0,0,.18);
+  padding:4px 6px;
+  display:flex;align-items:center;gap:3px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#fmt-bar::-webkit-scrollbar{display:none}
+.fb{
+  background:transparent;border:1px solid transparent;
+  min-width:30px;height:30px;padding:0 5px;border-radius:4px;cursor:pointer;
+  font-size:13px;font-weight:bold;color:#222;
+  display:flex;align-items:center;justify-content:center;
+  white-space:nowrap;flex-shrink:0;transition:background .1s;
+  touch-action:manipulation;
+}
+.fb:hover{background:#e0e0e0;border-color:#ccc}
+.fb:active,.fb.on{background:#0D2B5E;color:#fff;border-color:#0D2B5E}
+.fb-sep{width:1px;height:22px;background:#ddd;margin:0 2px;flex-shrink:0}
+#sel-font{
+  height:28px;border:1px solid #ccc;border-radius:4px;
+  font-size:11px;padding:0 4px;cursor:pointer;
+  background:#fff;color:#222;flex-shrink:0;max-width:100px;
+}
+#fs-wrap{display:flex;align-items:center;gap:1px;flex-shrink:0}
+#fs-wrap button{
+  background:#f0f0f0;border:1px solid #ccc;color:#333;
+  width:22px;height:28px;cursor:pointer;font-size:14px;font-weight:bold;
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+#fs-wrap button:active{background:#ddd}
+#fs-val{
+  width:38px;height:28px;border:1px solid #ccc;border-radius:3px;
+  font-size:12px;text-align:center;background:#fff;color:#222;
+}
+#fc-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.fc-dot{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+}
+.fc-dot:hover,.fc-dot:active{border-color:#333;transform:scale(1.15)}
+#if-color{
+  width:22px;height:22px;border:1px solid #ccc;border-radius:3px;
+  cursor:pointer;padding:1px;background:#fff;flex-shrink:0;
+}
+
+
+/* ══ BARRA DE CORES ══ */
+#color-bar{
+  position:fixed;top:88px;left:0;right:0;z-index:898;
+  background:linear-gradient(180deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:5px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#color-bar::-webkit-scrollbar{display:none}
+#color-bar label{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#color-bar .fc-dot{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+}
+#color-bar .fc-dot:hover,
+#color-bar .fc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+
+
+
+/* ══ BARRA DE SOMBRA ══ */
+#shadow-bar{
+  position:fixed;top:124px;left:0;right:0;z-index:897;
+  background:linear-gradient(180deg,#111,#1a1a1a);
+  border-bottom:2px solid #555;
+  padding:4px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#shadow-bar::-webkit-scrollbar{display:none}
+#shadow-bar label{
+  color:#aaa;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-shadow-toggle{
+  background:#333;color:#fff;border:2px solid #555;
+  padding:3px 8px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:all .15s;min-height:26px;
+  text-shadow:1px 1px 3px rgba(0,0,0,.8);
+}
+#btn-shadow-toggle.active{
+  background:#8B6914;border-color:#f0c040;color:#fff;
+}
+#shadow-bar .sc-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+  opacity:.5;
+}
+#shadow-bar .sc-dot.enabled{opacity:1}
+#shadow-bar .sc-dot:hover,
+#shadow-bar .sc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+.sc-sep{width:1px;height:18px;background:#444;flex-shrink:0}
+/* sliders de sombra */
+.sh-slider-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;opacity:.5}
+.sh-slider-wrap.enabled{opacity:1}
+.sh-slider-wrap label{color:#aaa;font-size:9px;white-space:nowrap}
+.sh-slider{
+  width:52px;height:4px;cursor:pointer;flex-shrink:0;
+  accent-color:#8B6914;
+}
+
+/* ══ SCROLL AREA ══ */
+#scroll-area{
+  margin-top:162px;
+  padding:16px 0 80px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.pw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.plbl{color:#8B6914;font-size:10px;font-weight:bold;letter-spacing:2px;text-transform:uppercase}
+
+/* ══ PAGE-SIZER — container que cresce com o zoom, centraliza a página ══ */
+.page-sizer{
+  position:relative;
+  flex-shrink:0;
+  overflow:visible;
+  /* width e height definidos via JS em applyZoom() */
+}
+
+/* ══ PAGE — tamanho fixo A4-like, zoom via transform ══ */
+.page{
+  position:relative;
+  width:896px;height:1344px;
+  background-size:100% 100%;background-repeat:no-repeat;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);
+  flex-shrink:0;
+}
+
+/* ══ TEXT BLOCKS ══ */
+.tb{
+  position:absolute;border:1.5px dashed transparent;
+  border-radius:2px;transition:border-color .1s;
+}
+.tb:hover{border-color:rgba(139,105,20,.3)}
+
+/* selecionado — borda pontilhada dourada */
+.tb.sel{
+  border:2px dashed #f0c040 !important;
+  box-shadow:0 0 0 1px rgba(240,192,64,.15);
+}
+
+/* conteúdo — NÃO editável por padrão */
+.bc{
+  width:100%;min-height:10px;
+  outline:none;
+  cursor:default;        /* cursor normal enquanto não editando */
+  user-select:none;      /* impede seleção acidental ao clicar */
+  pointer-events:none;   /* clique atravessa para o .tb */
+}
+
+/* quando em modo edição */
+.tb.editing .bc{
+  cursor:text;
+  user-select:text;
+  pointer-events:auto;
+}
+
+/* ── botão ARRASTAR — centro inferior da borda ── */
+.drag-handle{
+  position:absolute;
+  bottom:-18px;          /* fica colado abaixo da borda inferior */
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;height:22px;
+  display:none;
+  align-items:center;justify-content:center;gap:3px;
+  background:#8B6914;
+  border-radius:11px;
+  color:#fff;font-size:11px;
+  cursor:move;z-index:10;
+  touch-action:none;user-select:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  white-space:nowrap;
+}
+.drag-handle::before{content:'⠿'; font-size:13px; letter-spacing:0}
+.tb.sel .drag-handle{display:flex}
+
+/* ── botão LÁPIS — canto superior direito ── */
+.edit-btn{
+  position:absolute;
+  top:-14px;right:-14px;
+  width:28px;height:28px;
+  display:none;
+  align-items:center;justify-content:center;
+  background:#0D2B5E;
+  border-radius:50%;
+  color:#fff;font-size:13px;
+  cursor:pointer;z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  touch-action:manipulation;
+  border:2px solid #fff;
+  transition:background .15s, transform .1s;
+}
+.edit-btn:active{background:#1a4a9e;transform:scale(.92)}
+.tb.sel .edit-btn{display:flex}
+
+/* lápis ativo = modo edição */
+.tb.editing .edit-btn{background:#c0392b;}
+
+/* ── resize handle — canto inferior direito ── */
+.rh{
+  position:absolute;bottom:-3px;right:-3px;
+  width:20px;height:20px;
+  cursor:se-resize;touch-action:none;display:none;
+  z-index:10;
+}
+.rh::after{
+  content:'';position:absolute;bottom:3px;right:3px;
+  width:10px;height:10px;
+  border-right:2.5px solid #f0c040;border-bottom:2.5px solid #f0c040;
+}
+.tb.sel .rh{display:block}
+
+/* ══ COORDS BAR ══ */
+#coords{
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:rgba(20,14,0,.92);color:#f0c040;
+  font-family:monospace;font-size:11px;padding:4px 12px;
+  border-top:1px solid #8B6914;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  pointer-events:none;
+}
+
+/* ══ TEXT CLASSES ══ */
+.cover-saga{font-size:28px;font-weight:bold;color:#1A1A1A;text-align:center;line-height:1.2}
+.cover-fase{font-size:18px;font-weight:bold;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-fase-italic{font-size:14px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-tagline{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.5}
+.separator{color:#8B6914;font-size:8px;text-align:center;letter-spacing:1px;margin:4px 0;line-height:1}
+.index-header{font-size:13px;font-weight:bold;color:#1A1A1A;text-align:center;margin-bottom:8px}
+.index-item{font-size:12px;color:#3D3D3D;text-align:center;line-height:1.8}
+.page-title{font-size:18px;font-weight:bold;color:#1A1A1A;text-align:center;letter-spacing:.5px}
+.page-subtitle{font-size:14px;font-weight:bold;color:#0D2B5E;text-align:center}
+.page-italic{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center}
+.section-label{font-size:12px;font-weight:bold;color:#7A5C10;text-align:left;margin-top:10px;margin-bottom:3px;line-height:1.4}
+.body-text{font-size:11.5px;color:#3D3D3D;text-align:justify;line-height:1.55;margin-bottom:7px}
+.closing-name{font-size:13px;font-weight:bold;font-style:italic;color:#1A1A1A;text-align:center;margin-top:8px;margin-bottom:3px}
+.closing-role{font-size:11px;font-style:italic;color:#7A5C10;text-align:center}
+
+/* ══ PDF OVERLAY ══ */
+#pdf-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#pdf-overlay.show{display:flex}
+#pdf-overlay .msg{color:#f0c040;font-size:16px;font-weight:bold;font-family:Georgia,serif}
+#pdf-overlay .sub{color:#aaa;font-size:12px;font-family:monospace}
+#pdf-progress-bar{width:280px;height:8px;background:#333;border-radius:4px;overflow:hidden}
+#pdf-progress-fill{height:100%;width:0%;background:#8B6914;border-radius:4px;transition:width .3s}
+
+
+/* ══ RÉGUA ══ */
+.ruler-h{
+  position:absolute;top:0;left:0;height:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+.ruler-v{
+  position:absolute;top:0;left:0;width:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+canvas.ruler-canvas{display:block}
+
+/* ══ GUIAS MAGNÉTICAS ══ */
+.guide-line{
+  position:absolute;pointer-events:none;z-index:60;
+  background:rgba(0,180,255,.7);
+}
+.guide-line.h{left:0;right:0;height:1px}
+.guide-line.v{top:0;bottom:0;width:1px}
+
+/* ══ SELEÇÃO MÚLTIPLA ══ */
+.tb.sel-multi{
+  border:2px dashed #00cfff !important;
+  box-shadow:0 0 0 1px rgba(0,207,255,.2);
+}
+
+
+/* ══ GRUPO ══ */
+.tb.grouped{
+  outline:2px solid rgba(240,192,64,.25);
+  outline-offset:2px;
+}
+/* Indicador de grupo no canto superior esquerdo */
+.tb.grouped::before{
+  content:'⛓';
+  position:absolute;top:-16px;left:2px;
+  font-size:11px;opacity:.5;pointer-events:none;
+  z-index:5;
+}
+/* Botões agrupar/desagrupar na topbar — contextuais */
+#btn-group,#btn-ungroup,#btn-cut-ungroup,#btn-cut{display:none}
+#btn-group.visible,#btn-ungroup.visible,#btn-cut-ungroup.visible,#btn-cut.visible{display:inline-flex}
+#btn-cut-ungroup,#btn-cut{background:#c0392b}
+
+.tb.sel .ungroup-btn{display:flex}
+
+
+/* ══ PAINEL DE SETAS (posicionamento fino) ══ */
+#arrow-pad{
+  position:fixed;
+  bottom:36px;          /* acima da coords bar */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:850;
+  display:none;         /* só aparece com bloco selecionado */
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  pointer-events:auto;
+}
+#arrow-pad.show{display:flex}
+.arrow-row{display:flex;gap:2px}
+.arrow-btn{
+  width:44px;height:44px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:10px;
+  color:#f0c040;
+  font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  touch-action:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.6);
+  transition:background .1s, transform .08s;
+  -webkit-tap-highlight-color:transparent;
+}
+.arrow-btn:active{background:rgba(139,105,20,.9);transform:scale(.92)}
+.arrow-center{
+  width:44px;height:44px;
+  background:#000;
+  border:1px solid #8B6914;
+  border-radius:10px;
+  color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;letter-spacing:.5px;
+}
+/* step display */
+#arrow-step{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  text-align:center;
+  background:rgba(26,18,0,.7);
+  padding:2px 8px;border-radius:8px;
+  border:1px solid #8B6914;
+  margin-top:2px;
+  white-space:nowrap;
+}
+
+/* ══ LOCK ZOOM BUTTON ══ */
+#btn-lock-zoom{
+  position:fixed;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:960;
+  width:36px;height:36px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:50%;
+  color:#f0c040;
+  font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  transition:background .15s, border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+#btn-lock-zoom.locked{
+  background:#8B6914;
+  border-color:#f0c040;
+}
+
+/* ══ PRINT ══ */
+@media print{
+  #topbar,#fmt-bar,#coords,.ruler-h,.ruler-v,.guide-line,.edit-btn,.ungroup-btn,.drag-handle,.rh{display:none!important}
+  #scroll-area{margin-top:0;padding:0;gap:0;display:block}
+  body{background:#fff}
+  .pw{page-break-after:always;margin:0;padding:0}
+  .plbl{display:none}
+  .page{transform:none!important;box-shadow:none;margin:0!important}
+  .tb{border:none!important;box-shadow:none!important}
+  .drag-handle,.rh{display:none!important}
+}
+
+/* ══ TABLET responsive ══ */
+@media (max-width:960px){
+  .logo{font-size:11px}
+  .tbtn{font-size:10px;padding:5px 7px}
+}
+</style>
+
+<!-- SCRIPTS — carregados uma única vez -->
+
+
+<style id="ebook-clean-style">
+    #topbar,#fmt-bar,#coords,#pdf-overlay,
+    #color-bar,#shadow-bar,#arrow-pad,#btn-lock-zoom,
+    .ruler-h,.ruler-v,.guide-line,.plbl,
+    .drag-handle,.edit-btn,.rh,.ungroup-btn,.arrow-btn,
+    #btn-shadow-toggle { display:none !important; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #111;
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+    #scroll-area {
+      margin-top: 0 !important;
+      padding: 20px 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      overflow-x: auto;
+    }
+    .pw {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-sizer {
+      display: block;
+      overflow: visible;
+    }
+    .page {
+      position: relative;
+      width: 896px;
+      height: 1344px;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      box-shadow: 0 8px 40px rgba(0,0,0,.8);
+    }
+    .tb {
+      position: absolute;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .bc {
+      width: 100%;
+      min-height: 10px;
+      outline: none;
+      cursor: default;
+    }
+  </style></head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     FORMAT BAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE CORES
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE SOMBRA
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     PÁGINAS
+══════════════════════════════════════════════ -->
+<div id="scroll-area" style="margin-top: 0px;">
+
+<!-- P1 CAPA -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page1" style="background-image: url(&quot;https://i.ibb.co/JRDWLVqK/file-00000000ff7471f5ba693312bf1124ad.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="capa_saga" style="left: 112px; top: 385.317px; width: 672px; min-height: 36px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 2px 8px rgba(0,0,0,0.45);"><div class="cover-saga"><span style="font-size: 42px;">SAGA METABOLISMO</span></div></div></div>
+  <div class="tb in-pg" id="capa_fase" style="left: 112px; top: 477.659px; width: 672px; min-height: 30px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-fase"><span style="font-size: 35px;">FASE 1</span></div></div></div>
+  <div class="tb in-pg" id="capa_subtitulo" style="left: 122px; top: 526.878px; width: 672px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 0px 1px 6px rgba(255,255,255,0.6);"><div class="cover-fase-italic"><span style="font-size: 28px;">Acender a Chama Metabólica</span></div></div></div>
+  <div class="tb in-pg" id="capa_tagline" style="left: 160px; top: 592.363px; width: 576px; min-height: 40px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-tagline"><span style="font-size: 15px;">O Protocolo Ancestral para Despertar o Fogo Digestivo dos Guerreiros Núbios</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_header" style="left: 160px; top: 633.878px; width: 576px; min-height: 46px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="separator"><span style="font-size: 40px; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 8px; color: #B8861A;">— ÍNDICE —</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_itens" style="left: 160px; top: 705.604px; width: 576px; min-height: 220px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.75);"><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Introdução — O Fogo dos Guerreiros Núbios</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Que É a Chama Metabólica</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Os Três Pilares da Fase 1</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Plano Alimentar Completo — 7 Dias</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Receitas Fitoterápicas Termogênicas</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Poder dos Ingredientes Naturais</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Onde Encontrar os Ingredientes</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Dicas Extras de Aceleração Metabólica</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Prepare-se para a Fase 2</span></div></div></div>
+</div></div></div>
+
+<!-- P2 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page2" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p2_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-title"><span style="font-size: 28px;">INTRODUÇÃO</span></div></div></div>
+  <div class="tb in-pg" id="p2_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 24px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-subtitle">O Fogo dos Guerreiros Núbios</div></div></div>
+  <div class="tb in-pg" id="p2_sep" style="left: 88px; top: 157px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p2_corpo" style="left: 88px; top: 160px; width: 720px; min-height: 520px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="body-text">Às margens do Nilo Superior, onde o deserto encontra o rio e o calor é implacável, viviam os guerreiros núbios — considerados os combatentes mais resistentes do mundo antigo. Arqueiros incomparáveis, corpos esculpidos sem academias, energia sustentada mesmo em marchas de dias sob o sol escaldante do Saara. Seu segredo não era genético. Era alimentar.</div><div class="body-text">Os sacerdotes-médicos de Napata, capital do reino da Núbia, mantinham registros precisos sobre as ervas, raízes e alimentos que conferiam a esses guerreiros um metabolismo extraordinário. Enquanto soldados de outros exércitos definhavam em campo, os núbios mantinham a <strong>fornalha metabólica acesa</strong> — queimando gordura como combustível puro, sem acumular, sem inchar, sem enfermar.</div><div class="body-text">A ciência moderna descobriu o que esses sacerdotes já aplicavam empiricamente: o metabolismo lento não é inevitável. É resultado de inflamação crônica, resistência à insulina, desequilíbrio hormonal e intestino comprometido. Todos esses bloqueios têm antídoto natural — e ele está disponível em qualquer feira popular do Brasil.</div><div class="body-text">A <strong>Fase 1 — Acender a Chama Metabólica</strong> foi construída sobre o protocolo milenar dos guerreiros núbios, adaptado com precisão nutricional moderna. Nos próximos 7 dias, usando apenas termogênicos naturais, especiarias milenares e alimentos ativadores do metabolismo, você vai remover os bloqueios que mantêm sua fornalha interna apagada.</div><div class="body-text">O Ka dos guerreiros núbios chamava esse processo de <em>"acender o sol interior".</em> Para você, hoje, ele começa aqui. Siga cada protocolo com comprometimento. A chama está dentro de você — o papel da natureza é reacendê-la.</div></div></div>
+</div></div></div>
+
+<!-- P3 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page3" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p3_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O QUE É A CHAMA METABÓLICA</span></div></div></div>
+  <div class="tb in-pg" id="p3_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p3_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 630px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="section-label">• O Metabolismo como Fornalha</div><div class="body-text">Os sacerdotes núbios descreviam o metabolismo como <em>"a fornalha do templo"</em> — um fogo interno que transforma alimento em energia pura. Quando esse fogo está aceso, o corpo queima, regenera e sustenta. Quando apagado, o alimento se acumula como fumaça densa: gordura, inchaço, fadiga.</div><div class="section-label">• Por Que a Chama se Apaga?</div><div class="body-text">Quatro inimigos silenciosos extinguem o metabolismo: a inflamação crônica — causada por alimentos ultraprocessados e estresse — reduz em até 40% a eficiência das mitocôndrias, as usinas de energia celular. A resistência à insulina bloqueia a entrada de glicose nas células. O intestino comprometido impede a absorção de nutrientes ativadores. E o cortisol elevado ordena ao organismo que armazene gordura em vez de queimá-la.</div><div class="section-label">• O Que Acontece Quando Ela É Reacendida?</div><div class="body-text">Com o metabolismo ativo, o organismo entra em modo de queima contínua — utilizando gordura armazenada como combustível mesmo em repouso. A energia aumenta visivelmente já nos primeiros dias. A digestão melhora. O inchaço recua. A composição corporal começa a mudar mesmo antes da balança registrar.</div><div class="section-label">• O Que Esperar dos 7 Dias da Fase 1?</div><div class="body-text">Ao final desta fase você vai perceber: aumento real de energia e calor interno após as refeições, melhora significativa da digestão, redução do inchaço abdominal, início da perda de gordura visceral e o despertar de um metabolismo que antes parecia impossível de movimentar.</div></div></div>
+</div></div></div>
+
+<!-- P4 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page4" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p4_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="page-title"><span style="font-size: 28px;">OS TRÊS PILARES DA FASE 1</span></div></div></div>
+  <div class="tb in-pg" id="p4_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p4_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="body-text">Os guerreiros núbios jamais entravam em batalha sem preparação alimentar estratégica. Seus três pilares nutricionais eram passados de geração em geração pelos sacerdotes de Napata — e correspondem exatamente aos três pilares que a nutrição funcional moderna identifica como fundamentais para a ativação metabólica.</div><div class="section-label">PILAR 1 — Acender o Fogo Digestivo</div><div class="body-text">Nenhuma queima metabólica acontece sem um aparelho digestivo eficiente. Gengibre, pimenta-do-reino e canela — as três especiarias termogênicas mais poderosas do mundo natural — ativam enzimas digestivas, aceleram o trânsito intestinal e elevam a temperatura corporal interna. Esse aumento térmico força o organismo a gastar mais energia apenas para manter a homeostase, acelerando o metabolismo de repouso.</div><div class="section-label">PILAR 2 — Remover os Bloqueios Anti-Metabólicos</div><div class="body-text">Açúcar refinado, farinhas brancas e óleos vegetais industrializados são os três maiores inimigos do metabolismo. Bloqueiam receptores de insulina, inflamam o intestino e suprimem a produção de adiponectina — o hormônio que sinaliza queima de gordura. Removê-los por 7 dias libera o metabolismo de amarras invisíveis que atuam há anos.</div><div class="section-label">PILAR 3 — Nutrir as Mitocôndrias</div><div class="body-text">As mitocôndrias são as usinas de energia das células — e precisam de nutrientes específicos para funcionar em plena capacidade: magnésio do abacate e sementes, coenzimas do brócolis e couve, ferro do feijão e da lentilha. Esses alimentos, presentes em toda feira popular, transformam glicose e gordura em energia pura com eficiência máxima.</div></div></div>
+</div></div></div>
+
+<!-- P5 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page5" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p5_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PLANO ALIMENTAR — 7 DIAS</span></div></div></div>
+  <div class="tb in-pg" id="p5_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 22px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-italic">Estrutura Diária — Repita por 7 dias consecutivos</div></div></div>
+  <div class="tb in-pg" id="p5_sep" style="left: 88px; top: 155px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p5_corpo" style="left: 88px; top: 159px; width: 720px; min-height: 590px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="section-label">■ AO ACORDAR</div><div class="body-text">1 copo de água morna com suco de meio limão + 1 colher de chá de gengibre ralado + 1 pitada de pimenta-do-reino. Aguarde 20 minutos. Esse protocolo ativa o fogo digestivo e eleva o metabolismo de repouso já no início do dia.</div><div class="section-label">■ CAFÉ DA MANHÃ</div><div class="body-text">Omelete de 2 ovos com cúrcuma, cebola e alho + 1 fatia de pão integral ou tapioca + 1 xícara de chá de gengibre com canela. Rico em proteína para sustentar a saciedade por horas.</div><div class="section-label">■ MEIO DA MANHÃ</div><div class="body-text">1 punhado de castanhas naturais (castanha-do-pará ou amendoim torrado sem sal) + 1 fruta vermelha (morango, ameixa ou melancia). Gordura boa e antioxidantes que mantêm o metabolismo ativo.</div><div class="section-label">■ ALMOÇO</div><div class="body-text">Arroz integral + feijão ou lentilha + proteína magra (frango, peixe ou ovo) + legumes temperados com azeite, alho, cúrcuma e pimenta-do-reino. A combinação proteína + fibra + termogênicos é a mais eficiente para queima contínua.</div><div class="section-label">■ LANCHE DA TARDE</div><div class="body-text">1 xícara de chá termogênico (hibisco + canela + gengibre) + 1 fruta de baixo índice glicêmico (maçã, pera ou goiaba).</div><div class="section-label">■ JANTAR</div><div class="body-text">Sopa de legumes com gengibre, alho e cúrcuma — ou salada com folhas verdes escuras, proteína magra e azeite. Carboidratos mínimos à noite para manter a queima noturna ativa.</div><div class="section-label">■ ANTES DE DORMIR</div><div class="body-text">1 xícara de chá de canela com cravo e cardamomo. Regula a insulina durante o sono, potencializando a queima de gordura noturna — o momento mais produtivo do ciclo metabólico.</div></div></div>
+</div></div></div>
+
+<!-- P6 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page6" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p6_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="page-title"><span style="font-size: 28px;">RECEITAS FITOTERÁPICAS TERMOGÊNICAS</span></div></div></div>
+  <div class="tb in-pg" id="p6_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p6_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 630px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="section-label">✦ CHÁ TERMOGÊNICO DOS GUERREIROS NÚBIOS</div><div class="body-text"><strong>Ingredientes:</strong> 1 colher de chá de gengibre ralado, 1 pau de canela, 3 cravos-da-índia, 1 pitada de pimenta-do-reino, 250ml de água quente.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água, adicione todos os ingredientes, tampe e deixe repousar por 8 minutos. Coe e beba quente. Ideal ao acordar e após o almoço.</div><div class="body-text"><strong>Benefício:</strong> Eleva a termogênese em até 15%, acelera o metabolismo e combate a resistência à insulina.</div><div class="section-label">✦ INFUSÃO DO FOGO INTERNO</div><div class="body-text"><strong>Ingredientes:</strong> 1 colher de chá de cúrcuma, 1 colher de chá de gengibre, 1/2 colher de chá de canela em pó, suco de 1 limão, 1 pitada de pimenta-do-reino, 200ml de água quente.</div><div class="body-text"><strong>Preparo:</strong> Misture os pós na água quente, adicione o limão e a pimenta. Mexa bem e beba sem coar. Consuma em jejum pela manhã.</div><div class="body-text"><strong>Benefício:</strong> Potente anti-inflamatório, ativa o fígado e libera enzimas metabólicas bloqueadas.</div><div class="section-label">✦ SUCO VERDE METABÓLICO</div><div class="body-text"><strong>Ingredientes:</strong> 2 folhas de couve, 1/2 pepino, 1 maçã verde, 1 colher de chá de gengibre, 1 limão, 200ml de água filtrada.</div><div class="body-text"><strong>Preparo:</strong> Bata tudo no liquidificador, coe e beba imediatamente. Melhor horário: meio da manhã.</div><div class="body-text"><strong>Benefício:</strong> Alcaliniza o organismo, fornece magnésio e clorofila para ativar as mitocôndrias.</div><div class="section-label">✦ SHOT DE ACELERAÇÃO METABÓLICA</div><div class="body-text"><strong>Ingredientes:</strong> 2 colheres de sopa de suco de limão, 1 colher de chá de gengibre ralado, 1 pitada de pimenta-do-reino, 1 pitada de cúrcuma, 50ml de água morna.</div><div class="body-text"><strong>Preparo:</strong> Misture tudo e beba de uma vez, 30 minutos antes de qualquer refeição principal.</div><div class="body-text"><strong>Benefício:</strong> Ativa o sistema digestivo, prepara o metabolismo para máxima absorção e queima imediata.</div></div></div>
+</div></div></div>
+
+<!-- P7 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page7" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p7_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O PODER DOS INGREDIENTES NATURAIS</span></div></div></div>
+  <div class="tb in-pg" id="p7_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p7_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 630px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="section-label">■ Gengibre</div><div class="body-text">Nos mercados das caravanas que ligavam a Núbia ao Egito, o gengibre era trocado peso a peso com ouro. Os guerreiros núbios o consumiam cru antes das batalhas para "acender o sol interior" e sustentar a resistência em campo. Termogênico natural, eleva a temperatura corporal interna e acelera o metabolismo basal em até 20%. Inibe a lipogênese — o processo de criação de novas células de gordura — e estimula a lipólise, a queima de gordura já armazenada.</div><div class="section-label">■ Canela</div><div class="body-text">Nos pergaminhos de Heliópolis, a canela aparece como "a casca que equilibra o fogo interno". Seu princípio ativo, o cinamaldeído, mimetiza a ação da insulina nas células musculares — melhorando a captação de glicose sem precisar do hormônio. Resultado: a glicose vira energia muscular em vez de gordura armazenada. Reduz a glicemia pós-prandial em até 30%.</div><div class="section-label">■ Pimenta-do-reino</div><div class="body-text">Chamada de "semente do trovão" pelos mercadores núbios, a pimenta-do-reino contém piperina — o composto que aumenta a biodisponibilidade de todos os outros nutrientes em até 2.000%. Sem a piperina, a cúrcuma tem absorção de apenas 5%. Com ela, atinge 100%. A piperina também estimula receptores de calor no intestino, acelerando o trânsito e ativando termogênese.</div><div class="section-label">■ Cúrcuma</div><div class="body-text">Presente nas câmaras rituais dos templos de Napata, a cúrcuma era queimada como incenso medicinal e consumida em sopas pelos guerreiros em recuperação. Sua curcumina combate a inflamação nos tecidos adiposos — a principal causa de metabolismo resistente em pessoas com excesso de peso. Ao reduzir a inflamação, desbloqueia os receptores hormonais responsáveis pela queima de gordura.</div><div class="section-label">■ Alho</div><div class="body-text">Os construtores das pirâmides recebiam rações diárias de alho para manter força e saúde em condições extremas. A alicina do alho fresco estimula a produção de adiponectina — o hormônio que acelera o metabolismo das gorduras e melhora a sensibilidade à insulina. É o termogênico mais acessível e mais subestimado das feiras populares brasileiras.</div></div></div>
+</div></div></div>
+
+<!-- P8 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page8" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p8_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="page-title"><span style="font-size: 28px;">ONDE ENCONTRAR OS INGREDIENTES</span></div></div></div>
+  <div class="tb in-pg" id="p8_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p8_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="body-text">Todos os ingredientes deste protocolo foram selecionados por um critério absoluto: <strong>devem estar disponíveis em qualquer cidade do Brasil, a preço acessível.</strong> Os guerreiros núbios utilizavam o que o território oferecia — e o território brasileiro oferece os melhores termogênicos naturais do mundo.</div><div class="section-label">✦ Feiras Livres e Mercados Populares</div><div class="body-text">Gengibre fresco, canela em pau, cúrcuma em pó, alho, cebola, limão, couve, brócolis, maçã verde, pepino — todos encontrados frescos, baratos e abundantes nas feiras de bairro de qualquer cidade. Dê preferência ao gengibre e alho frescos (mais potentes que os em pó).</div><div class="section-label">✦ Supermercados</div><div class="body-text">Canela em pó, cúrcuma em pó, pimenta-do-reino moída, cravo-da-índia, cardamomo, chá de hibisco, chá verde, azeite de oliva extravirgem, ovos caipiras, feijão, lentilha, arroz integral — todos disponíveis na seção de temperos, chás e cereais.</div><div class="section-label">✦ Lojas de Produtos Naturais</div><div class="body-text">Castanha-do-pará, amendoim natural sem sal, sementes de abóbora e girassol, pimenta-de-caiena, noz-moscada e cardamomo inteiro — encontrados a preços razoáveis em lojas de produtos naturais, empórios e até em alguns supermercados maiores.</div><div class="section-label">✦ Horta Caseira ou Quintal</div><div class="body-text">Gengibre, alho, cúrcuma e canela podem ser cultivados em vasos. O alho cresce em qualquer recipiente com terra. O gengibre se multiplica facilmente no quintal. Uma pequena horta doméstica torna o protocolo ainda mais acessível e garante ingredientes frescos o ano inteiro.</div></div></div>
+</div></div></div>
+
+<!-- P9 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page9" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p9_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="page-title"><span style="font-size: 28px;">DICAS EXTRAS DE ACELERAÇÃO METABÓLICA</span></div></div></div>
+  <div class="tb in-pg" id="p9_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p9_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 630px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="section-label">◆ Café Termogênico Matinal</div><div class="body-text">Se você consome café, potencialize-o: adicione 1 pitada de canela, 1 pitada de cúrcuma e 1 pitada de pimenta-do-reino ao pó antes de preparar. O resultado é uma bebida termogênica natural que eleva o metabolismo por até 4 horas após o consumo — sem adição de calorias.</div><div class="section-label">◆ Proteína em Cada Refeição</div><div class="body-text">A digestão de proteína gasta até 30% de suas próprias calorias em energia (efeito térmico dos alimentos). Incluir ovos, feijão, lentilha, frango ou peixe em cada refeição principal mantém o metabolismo elevado por horas após comer — o chamado "efeito pós-queima metabólica".</div><div class="section-label">◆ Temperatura da Água</div><div class="body-text">Beba água gelada entre as refeições: o organismo precisa gastar energia para aquecer a água à temperatura corporal. Cada litro de água gelada queima aproximadamente 30 calorias extras só no processo de aquecimento — um termogênico natural e gratuito.</div><div class="section-label">◆ Jejum Noturno Estendido</div><div class="body-text">Feche a alimentação até as 20h e só retome ao acordar — criando um jejum natural de 11 a 12 horas. Nesse período, os níveis de insulina despencam e o organismo ativa a queima de gordura visceral como combustível principal.</div><div class="section-label">◆ Movimento Pós-Refeição</div><div class="body-text">Uma caminhada leve de apenas 10 a 15 minutos após o almoço reduz o pico de insulina pós-prandial em até 30%. Menos insulina = menos sinal de armazenamento de gordura. Essa simples prática multiplica os efeitos do plano alimentar termogênico.</div><div class="section-label">◆ O Que Sabota o Metabolismo</div><div class="body-text">Evite completamente nos 7 dias: açúcar refinado, refrigerantes, sucos industriais, frituras em óleo vegetal, farinhas brancas e álcool. Qualquer um desses itens eleva a inflamação, aumenta a resistência à insulina e apaga a chama metabólica que você está acendendo.</div></div></div>
+</div></div></div>
+
+<!-- P10 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page10" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p10_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PARABÉNS — VOCÊ COMPLETOU A FASE 1!</span></div></div></div>
+  <div class="tb in-pg" id="p10_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p10_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 520px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="body-text">Ao completar os 7 dias do <strong>Acender a Chama Metabólica</strong>, seu organismo passou por uma transformação silenciosa e profunda. Os bloqueios anti-metabólicos foram removidos, as enzimas digestivas reativadas e a fornalha interna foi acesa — talvez pela primeira vez em anos.</div><div class="body-text">Você provavelmente já sente os sinais: calor interno após as refeições, mais energia, digestão mais eficiente e o início de uma leveza corporal que parecia distante. São as respostas do organismo confirmando que a <strong>chama metabólica foi reacendida.</strong></div><div class="body-text">Mas atenção: a Fase 1 apenas acendeu a fornalha. As camadas mais profundas de aceleração — aquelas que transformam o metabolismo de forma permanente e irreversível — ainda estão por vir. O fogo foi despertado. Agora é hora de intensificá-lo.</div><div class="body-text"><strong>A Fase 2 — Acelerar a Fornalha Interna — está esperando por você.</strong></div><div class="body-text">Nela você vai adicionar protocolos de termogênese avançada, combinações sinérgicas de especiarias milenares e um plano alimentar que mantém o metabolismo acelerado por até 48 horas após cada refeição. O que você construiu na Fase 1 será a base para um nível de queima que os guerreiros núbios chamavam de <em>"o fogo que não se apaga mais".</em></div><div class="body-text">Continue a jornada. A fornalha está acesa. Os antigos guerreiros estão com você.</div></div></div>
+  <div class="tb in-pg" id="p10_assina" style="left: 200px; top: 705px; width: 496px; min-height: 80px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div><div class="closing-name">Marcelo R. Souza</div><div class="closing-role">Nutricionista Fitoterápico — Dieta Milenar</div></div></div>
+</div></div></div>
+
+</div><!-- /scroll-area -->
+
+
+<!-- ══ PAINEL DE SETAS ══ -->
+
+
+
+
+<!-- LOCK ZOOM -->
+
+
+<!-- PDF OVERLAY -->
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+
+
+
+
+</body></html>

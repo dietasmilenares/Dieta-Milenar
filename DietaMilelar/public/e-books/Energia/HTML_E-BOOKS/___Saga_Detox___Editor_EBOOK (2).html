@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta charset="UTF-8">
+
+<title>🏺 Saga Detox — Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+/* ══════════════════════════════════════════════
+   VARIÁVEIS DE MARCA — DIETA MILENAR
+══════════════════════════════════════════════ */
+:root {
+  --dm-gold:       #B8861A;
+  --dm-gold-light: #D4A82A;
+  --dm-navy:       #0D2B5E;
+  --dm-charcoal:   #2A2A2A;
+  --dm-gray:       #4A4A4A;
+  --dm-sep:        #8B6914;
+  --f-display:     'Rajdhani', sans-serif;
+  --f-body:        'Lora', Georgia, serif;
+}
+
+/* ══ CAPA ══════════════════════════════════════ */
+.cover-saga {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.0;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.cover-fase {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.cover-fase-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.cover-tagline {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.65;
+}
+
+/* ══ ÍNDICE ═════════════════════════════════════ */
+.index-header {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.index-item {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+/* ══ SEPARADOR ══════════════════════════════════ */
+.separator {
+  font-family: var(--f-display);
+  color: var(--dm-sep);
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+/* ══ TÍTULOS DE PÁGINA ══════════════════════════ */
+.page-title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid var(--dm-gold);
+}
+.page-subtitle {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-gold);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.page-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ══ SEÇÕES / SUBSEÇÕES ═════════════════════════ */
+.section-label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: left;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  border-left: 3px solid var(--dm-gold-light, #D4A82A);
+  padding-left: 9px;
+}
+
+/* ══ CORPO DO TEXTO ══════════════════════════════ */
+.body-text {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: justify;
+  line-height: 1.68;
+  margin-bottom: 8px;
+  letter-spacing: 0.15px;
+}
+.body-text strong {
+  font-family: var(--f-body);
+  font-weight: 700;
+  color: var(--dm-navy);
+}
+
+/* ══ ASSINATURA ═════════════════════════════════ */
+.closing-name {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.closing-role {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+/* ══════════════════════════════════════════════ */
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;overflow-x:hidden;background:#111;font-family:Georgia,serif;touch-action:pan-x pan-y}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  background:linear-gradient(135deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:6px 8px;
+  display:flex;align-items:center;gap:5px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#topbar::-webkit-scrollbar{display:none}
+.logo{
+  color:#f0c040;font-weight:bold;font-size:12px;
+  white-space:nowrap;margin-right:4px;flex-shrink:0;
+}
+.tbtn{
+  background:#8B6914;color:#fff;border:none;
+  padding:6px 9px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:background .15s;
+  min-height:32px;
+}
+.tbtn:active{background:#a07820}
+
+/* zoom controls */
+.zoom-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+#zoom-val{color:#f0c040;font-size:11px;font-weight:bold;min-width:36px;text-align:center}
+
+/* ══ FMTBAR ══ */
+#fmt-bar{
+  position:fixed;top:46px;left:0;right:0;z-index:899;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+  border-bottom:1px solid #ccc;box-shadow:0 2px 8px rgba(0,0,0,.18);
+  padding:4px 6px;
+  display:flex;align-items:center;gap:3px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#fmt-bar::-webkit-scrollbar{display:none}
+.fb{
+  background:transparent;border:1px solid transparent;
+  min-width:30px;height:30px;padding:0 5px;border-radius:4px;cursor:pointer;
+  font-size:13px;font-weight:bold;color:#222;
+  display:flex;align-items:center;justify-content:center;
+  white-space:nowrap;flex-shrink:0;transition:background .1s;
+  touch-action:manipulation;
+}
+.fb:hover{background:#e0e0e0;border-color:#ccc}
+.fb:active,.fb.on{background:#0D2B5E;color:#fff;border-color:#0D2B5E}
+.fb-sep{width:1px;height:22px;background:#ddd;margin:0 2px;flex-shrink:0}
+#sel-font{
+  height:28px;border:1px solid #ccc;border-radius:4px;
+  font-size:11px;padding:0 4px;cursor:pointer;
+  background:#fff;color:#222;flex-shrink:0;max-width:100px;
+}
+#fs-wrap{display:flex;align-items:center;gap:1px;flex-shrink:0}
+#fs-wrap button{
+  background:#f0f0f0;border:1px solid #ccc;color:#333;
+  width:22px;height:28px;cursor:pointer;font-size:14px;font-weight:bold;
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+#fs-wrap button:active{background:#ddd}
+#fs-val{
+  width:38px;height:28px;border:1px solid #ccc;border-radius:3px;
+  font-size:12px;text-align:center;background:#fff;color:#222;
+}
+#fc-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.fc-dot{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+}
+.fc-dot:hover,.fc-dot:active{border-color:#333;transform:scale(1.15)}
+#if-color{
+  width:22px;height:22px;border:1px solid #ccc;border-radius:3px;
+  cursor:pointer;padding:1px;background:#fff;flex-shrink:0;
+}
+
+
+/* ══ BARRA DE CORES ══ */
+#color-bar{
+  position:fixed;top:88px;left:0;right:0;z-index:898;
+  background:linear-gradient(180deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:5px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#color-bar::-webkit-scrollbar{display:none}
+#color-bar label{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#color-bar .fc-dot{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+}
+#color-bar .fc-dot:hover,
+#color-bar .fc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+
+
+
+/* ══ BARRA DE SOMBRA ══ */
+#shadow-bar{
+  position:fixed;top:124px;left:0;right:0;z-index:897;
+  background:linear-gradient(180deg,#111,#1a1a1a);
+  border-bottom:2px solid #555;
+  padding:4px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#shadow-bar::-webkit-scrollbar{display:none}
+#shadow-bar label{
+  color:#aaa;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-shadow-toggle{
+  background:#333;color:#fff;border:2px solid #555;
+  padding:3px 8px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:all .15s;min-height:26px;
+  text-shadow:1px 1px 3px rgba(0,0,0,.8);
+}
+#btn-shadow-toggle.active{
+  background:#8B6914;border-color:#f0c040;color:#fff;
+}
+#shadow-bar .sc-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+  opacity:.5;
+}
+#shadow-bar .sc-dot.enabled{opacity:1}
+#shadow-bar .sc-dot:hover,
+#shadow-bar .sc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+.sc-sep{width:1px;height:18px;background:#444;flex-shrink:0}
+/* sliders de sombra */
+.sh-slider-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;opacity:.5}
+.sh-slider-wrap.enabled{opacity:1}
+.sh-slider-wrap label{color:#aaa;font-size:9px;white-space:nowrap}
+.sh-slider{
+  width:52px;height:4px;cursor:pointer;flex-shrink:0;
+  accent-color:#8B6914;
+}
+
+/* ══ SCROLL AREA ══ */
+#scroll-area{
+  margin-top:162px;
+  padding:16px 0 80px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.pw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.plbl{color:#8B6914;font-size:10px;font-weight:bold;letter-spacing:2px;text-transform:uppercase}
+
+/* ══ PAGE-SIZER — container que cresce com o zoom, centraliza a página ══ */
+.page-sizer{
+  position:relative;
+  flex-shrink:0;
+  overflow:visible;
+  /* width e height definidos via JS em applyZoom() */
+}
+
+/* ══ PAGE — tamanho fixo A4-like, zoom via transform ══ */
+.page{
+  position:relative;
+  width:896px;height:1344px;
+  background-size:100% 100%;background-repeat:no-repeat;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);
+  flex-shrink:0;
+}
+
+/* ══ TEXT BLOCKS ══ */
+.tb{
+  position:absolute;border:1.5px dashed transparent;
+  border-radius:2px;transition:border-color .1s;
+}
+.tb:hover{border-color:rgba(139,105,20,.3)}
+
+/* selecionado — borda pontilhada dourada */
+.tb.sel{
+  border:2px dashed #f0c040 !important;
+  box-shadow:0 0 0 1px rgba(240,192,64,.15);
+}
+
+/* conteúdo — NÃO editável por padrão */
+.bc{
+  width:100%;min-height:10px;
+  outline:none;
+  cursor:default;        /* cursor normal enquanto não editando */
+  user-select:none;      /* impede seleção acidental ao clicar */
+  pointer-events:none;   /* clique atravessa para o .tb */
+}
+
+/* quando em modo edição */
+.tb.editing .bc{
+  cursor:text;
+  user-select:text;
+  pointer-events:auto;
+}
+
+/* ── botão ARRASTAR — centro inferior da borda ── */
+.drag-handle{
+  position:absolute;
+  bottom:-18px;          /* fica colado abaixo da borda inferior */
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;height:22px;
+  display:none;
+  align-items:center;justify-content:center;gap:3px;
+  background:#8B6914;
+  border-radius:11px;
+  color:#fff;font-size:11px;
+  cursor:move;z-index:10;
+  touch-action:none;user-select:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  white-space:nowrap;
+}
+.drag-handle::before{content:'⠿'; font-size:13px; letter-spacing:0}
+.tb.sel .drag-handle{display:flex}
+
+/* ── botão LÁPIS — canto superior direito ── */
+.edit-btn{
+  position:absolute;
+  top:-14px;right:-14px;
+  width:28px;height:28px;
+  display:none;
+  align-items:center;justify-content:center;
+  background:#0D2B5E;
+  border-radius:50%;
+  color:#fff;font-size:13px;
+  cursor:pointer;z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  touch-action:manipulation;
+  border:2px solid #fff;
+  transition:background .15s, transform .1s;
+}
+.edit-btn:active{background:#1a4a9e;transform:scale(.92)}
+.tb.sel .edit-btn{display:flex}
+
+/* lápis ativo = modo edição */
+.tb.editing .edit-btn{background:#c0392b;}
+
+/* ── resize handle — canto inferior direito ── */
+.rh{
+  position:absolute;bottom:-3px;right:-3px;
+  width:20px;height:20px;
+  cursor:se-resize;touch-action:none;display:none;
+  z-index:10;
+}
+.rh::after{
+  content:'';position:absolute;bottom:3px;right:3px;
+  width:10px;height:10px;
+  border-right:2.5px solid #f0c040;border-bottom:2.5px solid #f0c040;
+}
+.tb.sel .rh{display:block}
+
+/* ══ COORDS BAR ══ */
+#coords{
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:rgba(20,14,0,.92);color:#f0c040;
+  font-family:monospace;font-size:11px;padding:4px 12px;
+  border-top:1px solid #8B6914;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  pointer-events:none;
+}
+
+/* ══ TEXT CLASSES ══ */
+.cover-saga{font-size:28px;font-weight:bold;color:#1A1A1A;text-align:center;line-height:1.2}
+.cover-fase{font-size:18px;font-weight:bold;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-fase-italic{font-size:14px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-tagline{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.5}
+.separator{color:#8B6914;font-size:8px;text-align:center;letter-spacing:1px;margin:4px 0;line-height:1}
+.index-header{font-size:13px;font-weight:bold;color:#1A1A1A;text-align:center;margin-bottom:8px}
+.index-item{font-size:12px;color:#3D3D3D;text-align:center;line-height:1.8}
+.page-title{font-size:18px;font-weight:bold;color:#1A1A1A;text-align:center;letter-spacing:.5px}
+.page-subtitle{font-size:14px;font-weight:bold;color:#0D2B5E;text-align:center}
+.page-italic{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center}
+.section-label{font-size:12px;font-weight:bold;color:#7A5C10;text-align:left;margin-top:10px;margin-bottom:3px;line-height:1.4}
+.body-text{font-size:11.5px;color:#3D3D3D;text-align:justify;line-height:1.55;margin-bottom:7px}
+.closing-name{font-size:13px;font-weight:bold;font-style:italic;color:#1A1A1A;text-align:center;margin-top:8px;margin-bottom:3px}
+.closing-role{font-size:11px;font-style:italic;color:#7A5C10;text-align:center}
+
+/* ══ PDF OVERLAY ══ */
+#pdf-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#pdf-overlay.show{display:flex}
+#pdf-overlay .msg{color:#f0c040;font-size:16px;font-weight:bold;font-family:Georgia,serif}
+#pdf-overlay .sub{color:#aaa;font-size:12px;font-family:monospace}
+#pdf-progress-bar{width:280px;height:8px;background:#333;border-radius:4px;overflow:hidden}
+#pdf-progress-fill{height:100%;width:0%;background:#8B6914;border-radius:4px;transition:width .3s}
+
+
+/* ══ RÉGUA ══ */
+.ruler-h{
+  position:absolute;top:0;left:0;height:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+.ruler-v{
+  position:absolute;top:0;left:0;width:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+canvas.ruler-canvas{display:block}
+
+/* ══ GUIAS MAGNÉTICAS ══ */
+.guide-line{
+  position:absolute;pointer-events:none;z-index:60;
+  background:rgba(0,180,255,.7);
+}
+.guide-line.h{left:0;right:0;height:1px}
+.guide-line.v{top:0;bottom:0;width:1px}
+
+/* ══ SELEÇÃO MÚLTIPLA ══ */
+.tb.sel-multi{
+  border:2px dashed #00cfff !important;
+  box-shadow:0 0 0 1px rgba(0,207,255,.2);
+}
+
+
+/* ══ GRUPO ══ */
+.tb.grouped{
+  outline:2px solid rgba(240,192,64,.25);
+  outline-offset:2px;
+}
+/* Indicador de grupo no canto superior esquerdo */
+.tb.grouped::before{
+  content:'⛓';
+  position:absolute;top:-16px;left:2px;
+  font-size:11px;opacity:.5;pointer-events:none;
+  z-index:5;
+}
+/* Botões agrupar/desagrupar na topbar — contextuais */
+#btn-group,#btn-ungroup,#btn-cut-ungroup,#btn-cut{display:none}
+#btn-group.visible,#btn-ungroup.visible,#btn-cut-ungroup.visible,#btn-cut.visible{display:inline-flex}
+#btn-cut-ungroup,#btn-cut{background:#c0392b}
+
+.tb.sel .ungroup-btn{display:flex}
+
+
+/* ══ PAINEL DE SETAS (posicionamento fino) ══ */
+#arrow-pad{
+  position:fixed;
+  bottom:36px;          /* acima da coords bar */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:850;
+  display:none;         /* só aparece com bloco selecionado */
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  pointer-events:auto;
+}
+#arrow-pad.show{display:flex}
+.arrow-row{display:flex;gap:2px}
+.arrow-btn{
+  width:44px;height:44px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:10px;
+  color:#f0c040;
+  font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  touch-action:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.6);
+  transition:background .1s, transform .08s;
+  -webkit-tap-highlight-color:transparent;
+}
+.arrow-btn:active{background:rgba(139,105,20,.9);transform:scale(.92)}
+.arrow-center{
+  width:44px;height:44px;
+  background:#000;
+  border:1px solid #8B6914;
+  border-radius:10px;
+  color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;letter-spacing:.5px;
+}
+/* step display */
+#arrow-step{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  text-align:center;
+  background:rgba(26,18,0,.7);
+  padding:2px 8px;border-radius:8px;
+  border:1px solid #8B6914;
+  margin-top:2px;
+  white-space:nowrap;
+}
+
+/* ══ LOCK ZOOM BUTTON ══ */
+#btn-lock-zoom{
+  position:fixed;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:960;
+  width:36px;height:36px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:50%;
+  color:#f0c040;
+  font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  transition:background .15s, border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+#btn-lock-zoom.locked{
+  background:#8B6914;
+  border-color:#f0c040;
+}
+
+/* ══ PRINT ══ */
+@media print{
+  #topbar,#fmt-bar,#coords,.ruler-h,.ruler-v,.guide-line,.edit-btn,.ungroup-btn,.drag-handle,.rh{display:none!important}
+  #scroll-area{margin-top:0;padding:0;gap:0;display:block}
+  body{background:#fff}
+  .pw{page-break-after:always;margin:0;padding:0}
+  .plbl{display:none}
+  .page{transform:none!important;box-shadow:none;margin:0!important}
+  .tb{border:none!important;box-shadow:none!important}
+  .drag-handle,.rh{display:none!important}
+}
+
+/* ══ TABLET responsive ══ */
+@media (max-width:960px){
+  .logo{font-size:11px}
+  .tbtn{font-size:10px;padding:5px 7px}
+}
+</style>
+
+<!-- SCRIPTS — carregados uma única vez -->
+
+
+<style id="ebook-clean-style">
+    #topbar,#fmt-bar,#coords,#pdf-overlay,
+    #color-bar,#shadow-bar,#arrow-pad,#btn-lock-zoom,
+    .ruler-h,.ruler-v,.guide-line,.plbl,
+    .drag-handle,.edit-btn,.rh,.ungroup-btn,.arrow-btn,
+    #btn-shadow-toggle { display:none !important; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #111;
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+    #scroll-area {
+      margin-top: 0 !important;
+      padding: 20px 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      overflow-x: auto;
+    }
+    .pw {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-sizer {
+      display: block;
+      overflow: visible;
+    }
+    .page {
+      position: relative;
+      width: 896px;
+      height: 1344px;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      box-shadow: 0 8px 40px rgba(0,0,0,.8);
+    }
+    .tb {
+      position: absolute;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .bc {
+      width: 100%;
+      min-height: 10px;
+      outline: none;
+      cursor: default;
+    }
+  </style></head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     FORMAT BAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE CORES
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE SOMBRA
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     PÁGINAS
+══════════════════════════════════════════════ -->
+<div id="scroll-area" style="margin-top: 0px;">
+
+<!-- P1 CAPA -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page1" style="background-image: url(&quot;https://i.ibb.co/JRDWLVqK/file-00000000ff7471f5ba693312bf1124ad.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="capa_saga" style="left: 112px; top: 385.317px; width: 672px; min-height: 36px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 2px 8px rgba(0,0,0,0.45);"><div class="cover-saga"><span style="font-size: 65px;">SAGA ENERGIA</span></div></div></div>
+  <div class="tb in-pg" id="capa_fase" style="left: 112px; top: 477.659px; width: 672px; min-height: 30px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-fase"><span style="font-size: 32px;">BÔNUS EXCLUSIVO</span></div></div></div>
+  <div class="tb in-pg" id="capa_subtitulo" style="left: 122px; top: 526.878px; width: 672px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 0px 1px 6px rgba(255,255,255,0.6);"><div class="cover-fase-italic"><span style="font-size: 26px;">Tônicos Energéticos Milenares</span></div></div></div>
+  <div class="tb in-pg" id="capa_tagline" style="left: 160px; top: 592.363px; width: 576px; min-height: 40px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-tagline"><span style="font-size: 15px;">Bebidas Sagradas que Dão Energia Instantânea, Foco Prolongado e Resistência sem Estimulantes</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_header" style="left: 160px; top: 633.878px; width: 576px; min-height: 46px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="separator"><span style="font-size: 40px; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 8px; color: #B8861A;">— ÍNDICE —</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_itens" style="left: 160px; top: 705.604px; width: 576px; min-height: 220px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.75);"><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Introdução — O Segredo das Bebidas Sagradas</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">A Ciência dos Tônicos Ancestrais</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Os 12 Tônicos Energéticos Milenares</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Tônicos para Energia Imediata</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Tônicos para Foco e Clareza Mental</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Tônicos para Resistência e Recuperação</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Tônicos Noturnos de Restauração</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Ingredientes e Onde Encontrar</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Guia de Uso — Quando Tomar Cada Tônico</span></div></div></div>
+</div></div></div>
+
+<!-- P2 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page2" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p2_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-title"><span style="font-size: 28px;">INTRODUÇÃO</span></div></div></div>  <div class="tb in-pg" id="p2_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 24px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-subtitle">O Segredo das Bebidas Sagradas</div></div></div>  <div class="tb in-pg" id="p2_sep" style="left: 88px; top: 157px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p2_corpo" style="left: 88px; top: 160px; width: 720px; min-height: 500px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="body-text">Nos arquivos médicos mais antigos da humanidade — o Papiro de Ebers, datado de 1550 a.C. — há uma seção inteira dedicada ao que os escribas chamavam de <strong>"bebidas do Ka"</strong>: preparações líquidas de ervas, raízes e sementes consumidas pelos sacerdotes e guerreiros para sustentar energia em situações de extrema demanda. Não eram remédios para doenças. Eram ferramentas de performance para corpos que precisavam funcionar no limite do possível.</div><div class="body-text">Esses tônicos não foram substituídos pela modernidade — foram esquecidos. O mundo trocou as raízes por cafeína, as ervas adaptógenas por energéticos industriais e as sementes sagradas por suplementos sintéticos. O resultado está visível: a geração mais estimulada da história é também a mais cronicamente fatigada.</div><div class="body-text">Este bônus resgata os <strong>12 tônicos energéticos milenares</strong> que sustentaram as civilizações mais produtivas da história. Cada receita foi desenvolvida com base em princípios fitoterápicos, ayurvédicos e da medicina tradicional chinesa — e todos os ingredientes estão disponíveis em feiras e lojas de produtos naturais do Brasil por preço acessível.</div><div class="body-text">Nenhuma cafeína. Nenhum estimulante artificial. Apenas o poder que a natureza sempre teve — e que o mundo moderno parou de usar.</div></div></div>
+</div></div></div>
+
+<!-- P3 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page3" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p3_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="page-title"><span style="font-size: 28px;">A CIÊNCIA DOS TÔNICOS ANCESTRAIS</span></div></div></div>  <div class="tb in-pg" id="p3_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p3_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="body-text">Por que uma bebida pode dar energia quando um alimento sólido leva horas para fazer o mesmo efeito? A resposta está na biodisponibilidade: compostos bioativos em forma líquida são absorvidos pelo organismo em 15 a 30 minutos, enquanto alimentos sólidos levam de 2 a 4 horas para liberar seus nutrientes. Os sacerdotes egípcios não tinham o vocabulário científico — mas tinham a observação precisa do resultado.</div><div class="section-label">• Adaptógenos: A Base dos Tônicos</div><div class="body-text">Adaptógenos são compostos vegetais que ajudam o organismo a responder ao estresse sem entrar em colapso. Eles não estimulam artificialmente — eles <em>normalizam</em>. Se você está com energia baixa, elevam. Se está ansioso e agitado, acalmam. Os principais: ashwagandha (regula cortisol), maca (eixo hormonal), alcaçuz (suprarrenais), rhodiola (resistência mental) e gengibre (ativação metabólica geral).</div><div class="section-label">• Fitoquímicos Energéticos</div><div class="body-text">Além dos adaptógenos, os tônicos desta coleção usam fitoquímicos com ação energética direta: curcumina (anti-inflamatória mitocondrial), gingeróis (termogênicos), antocianinas (protetoras de vasos), polifenóis do cacau (dopamina e foco), e ácidos orgânicos do limão e romã (alcalinizantes e protetores celulares). Cada tônico é uma sinfonia de compostos que trabalham em sinergia.</div><div class="section-label">• A Regra de Ouro: Consistência Acima de Dose</div><div class="body-text">O erro mais comum com tônicos é beber uma vez e esperar um milagre. A ação dos adaptógenos é cumulativa: os estudos mostram efeitos mensuráveis a partir do 7º dia de uso consistente, com pico de eficácia entre 21 e 30 dias. Os sacerdotes de Karnak os consumiam <em>diariamente</em> — não ocasionalmente. A consistência é a chave.</div></div></div>
+</div></div></div>
+
+<!-- P4 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page4" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p4_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="page-title"><span style="font-size: 28px;">TÔNICOS PARA ENERGIA IMEDIATA</span></div></div></div>  <div class="tb in-pg" id="p4_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p4_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="body-text">Estes três tônicos agem em 15 a 30 minutos. Use-os ao acordar, antes de uma reunião importante ou em qualquer momento que precise de ativação rápida sem a queda posterior que o café e os energéticos provocam.</div><div class="section-label">✦ TÔNICO DO AMANHECER — O Ritual de Karnak</div><div class="body-text"><strong>Ingredientes:</strong> 200ml de água morna, suco de 1 limão, 1 col. chá de gengibre fresco ralado, 1 pitada de cúrcuma, 1 col. chá de mel puro, 1 pitada de pimenta-do-reino.</div><div class="body-text"><strong>Preparo:</strong> Misture em jejum. Beba lentamente em 5 minutos. Não aqueça demais — preserve as enzimas do mel.</div><div class="body-text"><strong>Ação:</strong> Ativa o metabolismo hepático, alcaliniza o sangue, estimula a produção de bile e desperta o sistema digestivo. Efeito sentido em 20 minutos. O ritual matinal dos sacerdotes de Karnak por 3.000 anos.</div><div class="section-label">✦ TÔNICO DO GUERREIRO NÚBIO</div><div class="body-text"><strong>Ingredientes:</strong> 200ml de água de coco, 1 col. chá de maca peruana em pó, 1 col. chá de ashwagandha em pó, suco de meio limão, 1 col. chá de mel, 1 pitada de canela.</div><div class="body-text"><strong>Preparo:</strong> Misture vigorosamente ou bata no liquidificador. Consuma pela manhã ou antes de qualquer atividade que exija resistência.</div><div class="body-text"><strong>Ação:</strong> Ativa o eixo HPA (hipotálamo-hipófise-adrenal), eleva testosterona e DHEA naturalmente, fornece eletrólitos e carboidratos de liberação inteligente. Energia sustentada por 4 a 5 horas.</div><div class="section-label">✦ ELIXIR DO SOL NASCENTE</div><div class="body-text"><strong>Ingredientes:</strong> Suco de 1 laranja, suco de 1 limão, 1 col. chá de gengibre fresco, 1 col. chá de mel, 1 pitada de cúrcuma, 150ml de água de coco.</div><div class="body-text"><strong>Preparo:</strong> Misture todos os ingredientes. Beba em temperatura ambiente pela manhã.</div><div class="body-text"><strong>Ação:</strong> Alta concentração de vitamina C (co-fator para síntese de carnitina, que transporta gordura para as mitocôndrias como combustível), eletrólitos e gingeróis. Ativação metabólica em 15 minutos.</div></div></div>
+</div></div></div>
+
+<!-- P5 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page5" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p5_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-title"><span style="font-size: 28px;">TÔNICOS PARA FOCO E CLAREZA MENTAL</span></div></div></div>  <div class="tb in-pg" id="p5_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p5_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="body-text">Os escribas do faraó precisavam de concentração absoluta por horas seguidas, decifrando e registrando hieróglifos com precisão milimétrica. Eles usavam tônicos específicos para o estado mental que chamavam de <em>"olho de Hórus aberto"</em> — foco cristalino sem agitação. Estes três tônicos recriam esse estado.</div><div class="section-label">✦ TÔNICO DO ESCRIBA — Foco de Longa Duração</div><div class="body-text"><strong>Ingredientes:</strong> 200ml de leite de coco morno, 1 col. chá de cacau em pó puro, 1 col. chá de mel, 1 pitada de canela, 1 pitada de pimenta-do-reino, 5 sementes de abóbora trituradas.</div><div class="body-text"><strong>Preparo:</strong> Aqueça o leite de coco (não ferva). Misture todos os ingredientes. Beba quente pela manhã ou no início da tarde.</div><div class="body-text"><strong>Ação:</strong> Feniletilamina do cacau eleva dopamina e foco. Magnésio das sementes de abóbora estabiliza o sistema nervoso. Gorduras do leite de coco alimentam diretamente o córtex pré-frontal. Foco sustentado por 3 a 4 horas sem pico.</div><div class="section-label">✦ ÁGUA SAGRADA DO LÓTUS — Clareza Mental</div><div class="body-text"><strong>Ingredientes:</strong> 500ml de água filtrada, 1 col. chá de ashwagandha, suco de meio limão, folhas de hortelã frescas, 1 col. chá de mel, 1 fatia fina de gengibre.</div><div class="body-text"><strong>Preparo:</strong> Misture tudo em uma jarra. Deixe repousar por 10 minutos. Beba ao longo da manhã, gole a gole.</div><div class="body-text"><strong>Ação:</strong> Ashwagandha reduz cortisol e melhora memória de trabalho. Hortelã aumenta oxigenação cerebral. Limão alcaliniza o ambiente celular para transmissão nervosa mais eficiente.</div><div class="section-label">✦ TÔNICO DO PENSAMENTO ETERNO — Foco Profundo</div><div class="body-text"><strong>Ingredientes:</strong> 1 xícara de chá verde preparado (3 min em infusão), 1 col. chá de mel, 1 pitada de cúrcuma, 5 folhas de hortelã, suco de meio limão.</div><div class="body-text"><strong>Preparo:</strong> Prepare o chá verde, adicione os demais ingredientes ainda quente. Deixe esfriar levemente. Beba antes de uma sessão de trabalho ou estudo que exija concentração máxima.</div><div class="body-text"><strong>Ação:</strong> L-teanina do chá verde + catequinas produzem foco calmo — sem a ansiedade da cafeína pura. Curcumina protege neurônios contra inflamação. Combinação clássica das academias de escribas do Antigo Egito.</div></div></div>
+</div></div></div>
+
+<!-- P6 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page6" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p6_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="page-title"><span style="font-size: 28px;">TÔNICOS PARA RESISTÊNCIA E RECUPERAÇÃO</span></div></div></div>  <div class="tb in-pg" id="p6_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p6_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="body-text">Os guerreiros que marchavam pelo deserto egípcio carregavam consigo não apenas armas e mantimentos — carregavam poções concentradas de ervas que permitiam recuperação em campo. Estes tônicos são o equivalente moderno dessas poções: usados após esforço físico, dias intensos de trabalho ou qualquer situação que tenha drenado suas reservas.</div><div class="section-label">✦ TÔNICO DA RECUPERAÇÃO RÁPIDA</div><div class="body-text"><strong>Ingredientes:</strong> 300ml de água de coco, suco de 1 limão, 1 col. chá de gengibre fresco, 1 col. sopa de mel puro, 1 pitada de sal marinho, 1 pitada de cúrcuma.</div><div class="body-text"><strong>Preparo:</strong> Misture e beba imediatamente após esforço físico ou no final de um dia exaustivo.</div><div class="body-text"><strong>Ação:</strong> Reposição rápida de eletrólitos (potássio, sódio, magnésio), anti-inflamação muscular pela curcumina e gingeróis, restauração de glicogênio pelo mel. Recuperação acelerada em 30 a 45 minutos.</div><div class="section-label">✦ CALDO SAGRADO DOS GUERREIROS</div><div class="body-text"><strong>Ingredientes:</strong> 400ml de caldo de legumes caseiro quente, 1 col. chá de cúrcuma, 1 col. chá de gengibre, 2 dentes de alho amassados, 1 col. sopa de azeite, sal e pimenta-do-reino.</div><div class="body-text"><strong>Preparo:</strong> Aqueça o caldo, adicione todos os ingredientes e mexa bem. Beba quente como jantar leve ou após treino intenso.</div><div class="body-text"><strong>Ação:</strong> Anti-inflamatório sistêmico máximo, reconstitui a mucosa intestinal, fornece aminoácidos livres do caldo para reconstrução muscular imediata. O caldo que os guerreiros núbios bebiam antes de dormir após longos dias de batalha.</div><div class="section-label">✦ ELIXIR DA RESISTÊNCIA DIVINA</div><div class="body-text"><strong>Ingredientes:</strong> Suco de 1 romã (ou 150ml suco natural), 1 col. chá de ashwagandha, 1 col. chá de maca, 1 col. chá de mel, 200ml de água, suco de meio limão.</div><div class="body-text"><strong>Preparo:</strong> Misture tudo em temperatura ambiente. Beba no período da tarde ou após atividade intensa.</div><div class="body-text"><strong>Ação:</strong> Punicalagins da romã protegem mitocôndrias danificadas pelo esforço. Ashwagandha + maca restauram o eixo suprarrenal. O tônico de recuperação mais completo desta coleção — usado na Fase 3 da Saga Energia.</div></div></div>
+</div></div></div>
+
+<!-- P7 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page7" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p7_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="page-title"><span style="font-size: 28px;">TÔNICOS NOTURNOS DE RESTAURAÇÃO</span></div></div></div>  <div class="tb in-pg" id="p7_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p7_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="body-text">A energia do dia seguinte é construída durante a noite. Os sacerdotes egípcios sabiam disso — e por isso tinham rituais noturnos tão elaborados quanto os matinais. Estes tônicos não dão energia imediata: eles <strong>constroem a energia que você vai ter amanhã</strong>, preparando o sistema nervoso, o fígado e as glândulas suprarrenais para o trabalho de regeneração que só acontece durante o sono profundo.</div><div class="section-label">✦ CHÁ DO SACERDOTE — O Clássico Noturno</div><div class="body-text"><strong>Ingredientes:</strong> 1 col. chá de ashwagandha em pó, 1 col. chá de camomila, 1 pau de canela, 3 cravos-da-índia, 300ml de água quente, mel a gosto.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água, adicione todos os ingredientes, tampe e deixe em infusão por 10 minutos. Coe e adoce. Beba 30 minutos antes de dormir.</div><div class="body-text"><strong>Ação:</strong> Ashwagandha reduz cortisol noturno. Camomila induz relaxamento do sistema nervoso. Canela e cravo estabilizam glicemia durante o jejum noturno. O sono que se segue é 40% mais profundo.</div><div class="section-label">✦ ELIXIR DA REGENERAÇÃO CELULAR</div><div class="body-text"><strong>Ingredientes:</strong> 200ml de leite de coco morno, 1 col. chá de alcaçuz em pó ou raiz, 1 col. chá de mel cru, 1 pitada de cardamomo, 1 pitada de noz-moscada.</div><div class="body-text"><strong>Preparo:</strong> Aqueça o leite de coco (não ferva). Misture os ingredientes. Beba quente 45 minutos antes de dormir.</div><div class="body-text"><strong>Ação:</strong> Alcaçuz restaura as suprarrenais e eleva DHEA durante o sono. Cardamomo melhora a digestão noturna. Gorduras do coco fornecem energia de longa duração para o cérebro durante as horas de jejum.</div><div class="section-label">✦ INFUSÃO DA LUA — Sono Profundo</div><div class="body-text"><strong>Ingredientes:</strong> 1 col. chá de maracujá seco ou passionflora, 1 col. chá de camomila, 1 col. chá de erva-cidreira, 1 folha de alecrim fresco, 300ml de água quente, mel a gosto.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água, adicione todas as ervas, tampe por 8 minutos. Coe e adoce levemente. Beba morno 20 minutos antes de deitar.</div><div class="body-text"><strong>Ação:</strong> Passionflora aumenta GABA — o neurotransmissor do relaxamento profundo. Erva-cidreira reduz ansiedade e melhora qualidade das fases de sono profundo. A infusão da noite dos sacerdotes que precisavam acordar renovados antes do amanhecer.</div></div></div>
+</div></div></div>
+
+<!-- P8 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page8" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p8_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="page-title"><span style="font-size: 28px;">INGREDIENTES E ONDE ENCONTRAR</span></div></div></div>  <div class="tb in-pg" id="p8_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p8_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="body-text">Todos os ingredientes desta coleção seguem o princípio fundamental da Dieta Milenar: <strong>acessíveis, naturais e encontráveis em qualquer cidade brasileira</strong>. Nenhum item importado caro, nenhuma fórmula especial. Apenas o que a terra e o mercado popular oferecem.</div><div class="section-label">✦ Feiras Livres e Mercados Populares</div><div class="body-text">Gengibre fresco, limão, laranja, hortelã, erva-cidreira, alecrim fresco, alho, cúrcuma fresca (açafrão-da-terra), canela em pau, cravo-da-índia, banana, romã (em estação). Compre gengibre e cúrcuma em quantidade — duram semanas na geladeira e meses no freezer ralados.</div><div class="section-label">✦ Supermercados</div><div class="body-text">Mel puro (leia o rótulo: deve constar apenas "mel"), água de coco natural, leite de coco (lata ou caixinha sem aditivos), cacau em pó puro (sem açúcar), canela em pó, cardamomo em pó, noz-moscada, chá verde em saquinhos, camomila, pimenta-do-reino moída.</div><div class="section-label">✦ Lojas de Produtos Naturais</div><div class="body-text">Ashwagandha em pó, maca peruana em pó, alcaçuz seco (raiz ou pó), passionflora (maracujá seco) ou extrato, sementes de abóbora cruas, cúrcuma orgânica em pó. Compre pós em potes de 100g a 200g — duram meses e o custo por dose é mínimo. Uma loja de produtos naturais bem abastecida resolve 90% desta lista.</div><div class="section-label">✦ Conservação e Dicas Práticas</div><div class="body-text">Gengibre ralado: congele em formas de gelo — cada cubo = 1 colher de chá. Cúrcuma em pó: armazene em pote escuro, longe de calor. Ashwagandha e maca: em potes fechados duram 6 meses. Mel puro: nunca refrigere — cristaliza. Ervas frescas (hortelã, erva-cidreira): cultive em vasos na janela — crescem com qualquer atenção mínima.</div></div></div>
+</div></div></div>
+
+<!-- P9 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page9" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p9_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="page-title"><span style="font-size: 28px;">GUIA DE USO — QUANDO TOMAR CADA TÔNICO</span></div></div></div>  <div class="tb in-pg" id="p9_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p9_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="body-text">Os sacerdotes de Karnak não tomavam seus tônicos aleatoriamente — havia uma lógica precisa de timing que maximizava o efeito de cada preparação. O organismo tem ritmos biológicos que determinam quando cada tipo de composto é mais bem absorvido e utilizado. Respeitar esse timing multiplica os resultados.</div><div class="section-label">◆ Ao Acordar (em Jejum) — Tônicos de Ativação</div><div class="body-text">Tônico do Amanhecer ou Elixir do Sol Nascente. Em jejum, a absorção de compostos bioativos é máxima — até 3x maior que após refeições. Aguarde 20 a 30 minutos antes do café da manhã para não diluir o efeito.</div><div class="section-label">◆ Meio da Manhã (9h–11h) — Tônicos de Foco</div><div class="body-text">Água Sagrada do Lótus ou Tônico do Guerreiro Núbio. Neste horário o cortisol está em queda natural e o foco começa a diminuir. Um tônico adaptogênico nessa janela sustenta a energia mental até o almoço sem o crash pós-pico.</div><div class="section-label">◆ Início da Tarde (13h–15h) — Tônicos Anti-Queda</div><div class="body-text">Tônico do Escriba ou Tônico do Pensamento Eterno. A queda de energia das 15h é um fenômeno biológico real (ritmo circadiano). Um tônico de foco nessa janela substitui o café da tarde sem gerar insônia noturna.</div><div class="section-label">◆ Pós-Esforço ou Final de Dia (17h–19h) — Tônicos de Recuperação</div><div class="body-text">Tônico da Recuperação Rápida ou Elixir da Resistência Divina. Após qualquer desgaste físico ou mental intenso. Não use adaptógenos estimulantes (maca, gengibre em dose alta) após as 18h — podem dificultar o início do sono.</div><div class="section-label">◆ 30–45 Minutos Antes de Dormir — Tônicos Noturnos</div><div class="body-text">Chá do Sacerdote, Elixir da Regeneração Celular ou Infusão da Lua. Nunca misture tônicos noturnos com tônicos estimulantes. O ritual de escolha e preparo do tônico noturno em si já sinaliza ao sistema nervoso que é hora de desacelerar — comece o preparo com intenção e calma.</div><div class="section-label">◆ Regra de Ouro: Um Tônico por Janela</div><div class="body-text">Não acumule tônicos. Escolha um por janela de tempo e mantenha consistência por pelo menos 7 dias antes de avaliar resultados. A tentação de tomar tudo ao mesmo tempo é grande — mas a sabedoria dos sacerdotes era precisamente a disciplina do simples e consistente.</div></div></div>
+</div></div></div>
+
+<!-- P10 -->
+
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page10" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p10_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="page-title"><span style="font-size: 28px;">VOCÊ DOMINA OS TÔNICOS DO KA!</span></div></div></div>  <div class="tb in-pg" id="p10_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>  <div class="tb in-pg" id="p10_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 520px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="body-text">Com este bônus, você possui agora o arsenal completo da Saga Energia. Não apenas os protocolos alimentares das três fases — mas as <strong>bebidas sagradas</strong> que os sacerdotes usavam para ir além dos limites comuns do corpo humano. Você tem em mãos 12 tônicos que cobrem cada necessidade energética do dia: do despertar ao sono, da ativação ao foco, da resistência à regeneração.</div><div class="body-text">Use estes tônicos como rituais. Os sacerdotes egípcios entendiam que a forma como você prepara uma bebida medicinal é tão importante quanto os ingredientes: a intenção, a atenção e a consistência são parte ativa do protocolo. Prepare cada tônico com presença — não mecanicamente, mas conscientemente, como um ato de cuidado com o templo que você habita.</div><div class="body-text">A Saga Energia está agora verdadeiramente completa. Você tem as fases que reconstroem a vitalidade celular, e agora tem as bebidas que a sustentam e amplificam no dia a dia. O próximo passo na jornada da Dieta Milenar é a <strong>Saga Metabolismo</strong> — onde o Ka energizado vai encontrar o fogo metabólico que transforma o corpo de forma visível e permanente.</div><div class="body-text">O Nilo continua fluindo. E você continua avançando.</div></div></div>  <div class="tb in-pg" id="p10_assina" style="left: 200px; top: 705px; width: 496px; min-height: 80px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div><div class="closing-name">Marcelo R. Souza</div><div class="closing-role">Nutricionista Fitoterápico — Dieta Milenar</div></div></div>
+</div></div></div>
+
+</div><!-- /scroll-area -->
+
+
+<!-- ══ PAINEL DE SETAS ══ -->
+
+
+
+
+<!-- LOCK ZOOM -->
+
+
+<!-- PDF OVERLAY -->
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+
+
+
+
+</body></html>

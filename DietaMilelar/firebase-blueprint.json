@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System users including admins, resellers, and members",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["ADMIN", "REVENDA", "MEMBRO", "VISITANTE", "VIP"] },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "referralCode": { "type": "string" },
+        "walletBalance": { "type": "number" },
+        "pixKey": { "type": "string" },
+        "pixKeyType": { "type": "string", "enum": ["cpf", "email", "phone", "random"] },
+        "referredBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Digital products (e-books/courses)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "coverImage": { "type": "string" },
+        "active": { "type": "boolean" },
+        "modules": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Purchase records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "productId": { "type": "string" },
+        "affiliateId": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "paid", "refunded", "approved"] },
+        "proofUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "productId", "totalAmount", "status"]
+    },
+    "Commission": {
+      "title": "Commission",
+      "description": "Affiliate earnings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "affiliateId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "released", "cancelled"] },
+        "releaseDate": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "affiliateId", "orderId", "amount", "status"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notifications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string" }
+      },
+      "required": ["id", "userId", "message"]
+    },
+    "WithdrawalRequest": {
+      "title": "WithdrawalRequest",
+      "description": "Requests for commission payouts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["requested", "approved", "rejected"] },
+        "date": { "type": "string", "format": "date-time" },
+        "pixKey": { "type": "string" }
+      },
+      "required": ["id", "userId", "amount", "status"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Library categories (Modalidades)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "order": { "type": "number" },
+        "isMandatory": { "type": "boolean" },
+        "dripDays": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name"]
+    },
+    "Subcategory": {
+      "title": "Subcategory",
+      "description": "Library subcategories",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "order": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "categoryId", "name"]
+    },
+    "Ebook": {
+      "title": "Ebook",
+      "description": "Library e-books (Fases)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "subcategoryId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "content": { "type": "string" },
+        "downloadUrl": { "type": "string" },
+        "order": { "type": "number" },
+        "dripDays": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "categoryId", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Available products"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Sales records"
+    },
+    "/commissions/{commissionId}": {
+      "schema": "Commission",
+      "description": "Affiliate commissions"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    },
+    "/withdrawals/{withdrawalId}": {
+      "schema": "WithdrawalRequest",
+      "description": "Payout requests"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Library categories"
+    },
+    "/subcategories/{subcategoryId}": {
+      "schema": "Subcategory",
+      "description": "Library subcategories"
+    },
+    "/ebooks/{ebookId}": {
+      "schema": "Ebook",
+      "description": "Library e-books"
+    },
+    "/settings/global": {
+      "schema": "object",
+      "description": "Global app settings"
+    }
+  }
+}

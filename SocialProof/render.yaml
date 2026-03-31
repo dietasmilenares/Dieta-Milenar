@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: social-proof-engine
+    env: php
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: DB_HOST
+        value: crossover.proxy.rlwy.net
+      - key: DB_PORT
+        value: "23106"
+      - key: DB_NAME
+        value: railway
+      - key: DB_USER
+        value: root
+      - key: DB_PASS
+        sync: false   # preencha no dashboard do Render (não colocar senha aqui)
