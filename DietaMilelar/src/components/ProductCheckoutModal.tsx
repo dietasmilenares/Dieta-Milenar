@@ -38,22 +38,7 @@ export const ProductCheckoutModal: React.FC<ProductCheckoutModalProps> = ({ isOp
   }, [isOpen, currentUser]);
 
   const copyToClipboard = () => {
-    const fallback = (text: string) => {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    };
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(effectivePixKey).catch(() => fallback(effectivePixKey));
-    } else {
-      fallback(effectivePixKey);
-    }
+    navigator.clipboard.writeText(effectivePixKey);
     setCopied(true);
     toast.success('Chave Pix copiada!');
     setTimeout(() => setCopied(false), 2000);
