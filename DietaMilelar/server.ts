@@ -867,86 +867,159 @@ Seja bem-vindo ao seu novo capítulo. 🌟`;
     }
   });
 
-  // TICKETS
+  // ── TICKETS ──────────────────────────────────────────────────────────────────
+
+  // GET /api/tickets — lista tickets (admin vê todos, membro vê os seus)
   app.get("/api/tickets", auth, async (req: any, res) => {
     try {
       const isAdmin = req.user.role === 'ADMIN';
-      const [rows]: any = isAdmin
-        ? await pool.query(`SELECT t.*, u.name as user_name, u.email as user_email, 0 as unread_count
-            FROM tickets t LEFT JOIN users u ON u.id = t.user_id ORDER BY t.updated_at DESC`)
-        : await pool.query(`SELECT t.*, 0 as unread_count
-            FROM tickets t WHERE t.user_id=? ORDER BY t.updated_at DESC`, [req.user.id]);
+      let rows: any[];
+      if (isAdmin) {
+        const [r]: any = await pool.query(
+          `SELECT t.id, t.user_id, t.subject, t.category, t.priority, t.status,
+                  t.created_at, t.updated_at,
+                  u.name AS user_name, u.email AS user_email
+           FROM tickets t
+           LEFT JOIN users u ON u.id = t.user_id
+           ORDER BY t.updated_at DESC`
+        );
+        rows = r;
+      } else {
+        const [r]: any = await pool.query(
+          `SELECT id, user_id, subject, category, priority, status, created_at, updated_at
+           FROM tickets
+           WHERE user_id = ?
+           ORDER BY updated_at DESC`,
+          [req.user.id]
+        );
+        rows = r;
+      }
       res.json(rows);
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
+  // POST /api/tickets — cria ticket + primeira mensagem
   app.post("/api/tickets", auth, async (req: any, res) => {
     try {
       const { subject, category, priority, message } = req.body;
-      if (!subject?.trim() || !message?.trim()) return res.status(400).json({ error: "Assunto e mensagem são obrigatórios" });
-      const id = randomUUID();
+      if (!subject?.trim() || !message?.trim())
+        return res.status(400).json({ error: "Assunto e mensagem são obrigatórios" });
+
+      const ticketId = randomUUID();
+      const msgId    = randomUUID();
+
       await pool.query(
-        "INSERT INTO tickets (id, user_id, subject, category, priority, status, created_at, updated_at) VALUES (?,?,?,?,?,'aberto',NOW(),NOW())",
-        [id, req.user.id, subject.trim(), category || 'outro', priority || 'media']
+        `INSERT INTO tickets (id, user_id, subject, category, priority, status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, 'aberto', NOW(), NOW())`,
+        [ticketId, req.user.id, subject.trim(), category || 'outro', priority || 'media']
       );
-      const msgId = randomUUID();
+
       await pool.query(
-        "INSERT INTO ticket_messages (id, ticket_id, user_id, message, is_admin, created_at) VALUES (?,?,?,?,0,NOW())",
-        [msgId, id, req.user.id, message.trim()]
+        `INSERT INTO ticket_messages (id, ticket_id, user_id, message, is_admin, created_at)
+         VALUES (?, ?, ?, ?, 0, NOW())`,
+        [msgId, ticketId, req.user.id, message.trim()]
       );
-      res.status(201).json({ id, subject, status: 'aberto' });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
+
+      res.status(201).json({ id: ticketId, subject: subject.trim(), status: 'aberto' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
+  // GET /api/tickets/:id/messages — mensagens de um ticket
   app.get("/api/tickets/:id/messages", auth, async (req: any, res) => {
     try {
-      const [ticket]: any = await pool.query("SELECT * FROM tickets WHERE id=?", [req.params.id]);
-      if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
-      if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
+      const [rows]: any = await pool.query(
+        "SELECT * FROM tickets WHERE id = ?", [req.params.id]
+      );
+      const ticket = rows[0];
+      if (!ticket) return res.status(404).json({ error: "Ticket não encontrado" });
+      if (req.user.role !== 'ADMIN' && ticket.user_id !== req.user.id)
+        return res.status(403).json({ error: "Acesso negado" });
+
       const [msgs]: any = await pool.query(
-        `SELECT m.id, m.ticket_id, m.user_id as sender_id, u.name as sender_name,
-          CASE WHEN m.is_admin = 1 THEN 'admin' ELSE 'user' END as sender_role,
-          m.message, 0 as is_read, m.created_at
+        `SELECT
+           m.id,
+           m.ticket_id,
+           m.user_id        AS sender_id,
+           COALESCE(u.name, 'Usuário') AS sender_name,
+           CASE WHEN m.is_admin = 1 THEN 'admin' ELSE 'user' END AS sender_role,
+           m.message,
+           m.created_at
          FROM ticket_messages m
          LEFT JOIN users u ON u.id = m.user_id
-         WHERE m.ticket_id=? ORDER BY m.created_at ASC`,
+         WHERE m.ticket_id = ?
+         ORDER BY m.created_at ASC`,
         [req.params.id]
       );
-      // Retorna objeto com messages e ticket (esperado pelo frontend)
-      res.json({ messages: msgs, ticket: ticket[0] });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
+
+      res.json({ ticket, messages: msgs });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
+  // POST /api/tickets/:id/messages — envia mensagem
   app.post("/api/tickets/:id/messages", auth, async (req: any, res) => {
     try {
       const { message } = req.body;
       if (!message?.trim()) return res.status(400).json({ error: "Mensagem vazia" });
-      const [ticket]: any = await pool.query("SELECT * FROM tickets WHERE id=?", [req.params.id]);
-      if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
-      if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
-      const isAdmin = req.user.role === 'ADMIN' ? 1 : 0;
+
+      const [rows]: any = await pool.query(
+        "SELECT * FROM tickets WHERE id = ?", [req.params.id]
+      );
+      const ticket = rows[0];
+      if (!ticket) return res.status(404).json({ error: "Ticket não encontrado" });
+      if (req.user.role !== 'ADMIN' && ticket.user_id !== req.user.id)
+        return res.status(403).json({ error: "Acesso negado" });
+
+      const isAdminSender = req.user.role === 'ADMIN' ? 1 : 0;
+      const newStatus     = isAdminSender ? 'em_atendimento' : ticket.status;
+
       await pool.query(
-        "INSERT INTO ticket_messages (id, ticket_id, user_id, message, is_admin, created_at) VALUES (?,?,?,?,?,NOW())",
-        [randomUUID(), req.params.id, req.user.id, message.trim(), isAdmin]
+        `INSERT INTO ticket_messages (id, ticket_id, user_id, message, is_admin, created_at)
+         VALUES (?, ?, ?, ?, ?, NOW())`,
+        [randomUUID(), req.params.id, req.user.id, message.trim(), isAdminSender]
       );
-      await pool.query("UPDATE tickets SET updated_at=NOW(), status=? WHERE id=?",
-        [isAdmin ? 'em_atendimento' : 'aberto', req.params.id]
+
+      await pool.query(
+        "UPDATE tickets SET updated_at = NOW(), status = ? WHERE id = ?",
+        [newStatus, req.params.id]
       );
+
       res.json({ ok: true });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
+  // PATCH /api/tickets/:id/status — atualiza status (admin only)
   app.patch("/api/tickets/:id/status", auth, async (req: any, res) => {
     try {
       const { status } = req.body;
       const allowed = ['aberto', 'em_atendimento', 'resolvido', 'fechado'];
-      if (!allowed.includes(status)) return res.status(400).json({ error: "Status inválido" });
-      const [ticket]: any = await pool.query("SELECT * FROM tickets WHERE id=?", [req.params.id]);
-      if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
-      if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
-      await pool.query("UPDATE tickets SET status=?, updated_at=NOW() WHERE id=?", [status, req.params.id]);
+      if (!allowed.includes(status))
+        return res.status(400).json({ error: "Status inválido" });
+
+      const [rows]: any = await pool.query(
+        "SELECT * FROM tickets WHERE id = ?", [req.params.id]
+      );
+      const ticket = rows[0];
+      if (!ticket) return res.status(404).json({ error: "Ticket não encontrado" });
+      if (req.user.role !== 'ADMIN' && ticket.user_id !== req.user.id)
+        return res.status(403).json({ error: "Acesso negado" });
+
+      await pool.query(
+        "UPDATE tickets SET status = ?, updated_at = NOW() WHERE id = ?",
+        [status, req.params.id]
+      );
+
       res.json({ ok: true });
-    } catch (err: any) { res.status(500).json({ error: err.message }); }
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   // TRACK CLICK
