@@ -872,11 +872,9 @@ Seja bem-vindo ao seu novo capítulo. 🌟`;
     try {
       const isAdmin = req.user.role === 'ADMIN';
       const [rows]: any = isAdmin
-        ? await pool.query(`SELECT t.*, u.name as user_name, u.email as user_email,
-            (SELECT COUNT(*) FROM ticket_messages m WHERE m.ticket_id = t.id AND m.is_admin = 0 AND m.is_read = 0) as unread_count
+        ? await pool.query(`SELECT t.*, u.name as user_name, u.email as user_email, 0 as unread_count
             FROM tickets t LEFT JOIN users u ON u.id = t.user_id ORDER BY t.updated_at DESC`)
-        : await pool.query(`SELECT t.*,
-            (SELECT COUNT(*) FROM ticket_messages m WHERE m.ticket_id = t.id AND m.is_admin = 1 AND m.is_read = 0) as unread_count
+        : await pool.query(`SELECT t.*, 0 as unread_count
             FROM tickets t WHERE t.user_id=? ORDER BY t.updated_at DESC`, [req.user.id]);
       res.json(rows);
     } catch (err: any) { res.status(500).json({ error: err.message }); }
@@ -906,10 +904,16 @@ Seja bem-vindo ao seu novo capítulo. 🌟`;
       if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
       if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
       const [msgs]: any = await pool.query(
-        "SELECT m.*, u.name as user_name FROM ticket_messages m LEFT JOIN users u ON u.id = m.user_id WHERE m.ticket_id=? ORDER BY m.created_at ASC",
+        `SELECT m.id, m.ticket_id, m.user_id as sender_id, u.name as sender_name,
+          CASE WHEN m.is_admin = 1 THEN 'admin' ELSE 'user' END as sender_role,
+          m.message, 0 as is_read, m.created_at
+         FROM ticket_messages m
+         LEFT JOIN users u ON u.id = m.user_id
+         WHERE m.ticket_id=? ORDER BY m.created_at ASC`,
         [req.params.id]
       );
-      res.json(msgs);
+      // Retorna objeto com messages e ticket (esperado pelo frontend)
+      res.json({ messages: msgs, ticket: ticket[0] });
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 

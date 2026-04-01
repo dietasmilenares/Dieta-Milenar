@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 01/04/2026 às 01:01
+-- Tempo de geração: 01/04/2026 às 02:23
 -- Versão do servidor: 8.0.45-0ubuntu0.24.04.1
 -- Versão do PHP: 8.3.6
 
@@ -157,8 +157,7 @@ INSERT INTO `categories` (`id`, `name`, `description`, `cover_image`, `sort_orde
 ('cat-equilibrio', 'Equilíbrio Interno', 'Hormônios e intestino: os dois fatores internos que mais impactam emagrecimento e definição.', '/e-books/file_00000000e3c0720e85b050f86952566c.png.pdf', 5, 0, 0, 1),
 ('cat-bonus', 'Bônus Complementares', 'Materiais extras que complementam sua jornada: beleza natural, longevidade e mais.', NULL, 6, 0, 0, 1),
 ('83419602-e17e-4133-82de-af74306e699e', 'EMAGRECIMENTO SOBERANO', 'Sistema de emagrecimento soberano', NULL, 7, 0, 0, 1),
-('a9d57858-c46e-4db3-9ebf-b28faa4c9b67', 'Valentim', 'Sou lindo.', NULL, 1, 1, 0, 1),
-('dca693f4-a924-46e4-9f37-d0c950afb132', 'Teste', 'Teste', NULL, 9, 0, 0, 1);
+('a9d57858-c46e-4db3-9ebf-b28faa4c9b67', 'Valentim', 'Sou lindo.', NULL, 1, 1, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -338,20 +337,7 @@ INSERT INTO `notifications` (`id`, `user_id`, `message`, `type`, `is_read`, `cre
 ('24f41236-c364-4f4a-ac4b-69ff8ec712ea', 'admin-default-001', 'Comprovante recebido!\n\nNome: João Batista \nE-mail: tirulipa@bol.com\nWhatsapp: 32985648965\n\nAdquiriu o \"Membro VIP - Mensal\"\nValor de: R$ 29,90', 'proof', 0, '2026-03-29 05:07:42'),
 ('55da57e2-1e97-46c7-aac3-b377738c7888', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Comprovante recebido!\n\nNome: João Batista \nE-mail: tirulipa@bol.com\nWhatsapp: 32985648965\n\nAdquiriu o \"Membro VIP - Mensal\"\nValor de: R$ 29,90', 'proof', 0, '2026-03-29 05:07:42'),
 ('d0d28954-dfdd-4429-8de8-94d8ad56cfb9', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-03-29 14:47:37'),
-('c9b839c2-e7f1-462b-af70-8fc888ab31cf', 'admin-default-001', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Protocolo Essencial\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:09:46'),
-('4d37a511-99f1-4620-aecb-dc2662ef500e', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Protocolo Essencial\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:09:46'),
-('aaa832b0-9ade-4682-aa65-efb27aef51bb', 'admin-default-001', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Membro VIP - Mensal\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:10:37'),
-('7abb29aa-5617-4d53-bb46-6ba66d3e0c37', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Membro VIP - Mensal\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:10:37'),
-('a07671ac-5a79-4775-bdf1-689646951371', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 00:11:13'),
-('ca98113a-fba9-42f5-af2f-05c1716701e2', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 00:11:20'),
-('27bbc6f1-b4a9-4fbc-9e04-325f7987864d', 'admin-default-001', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Membro VIP - Mensal\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:23:50'),
-('aaff0d6a-bba8-417b-bda1-9935e6c7ef48', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Membro VIP - Mensal\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:23:50'),
-('3df605f1-1434-4358-ae27-7b126bc79ee1', 'admin-default-001', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Protocolo Essencial\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:24:09'),
-('4cb2611b-fc68-40d0-bc1e-eb2608d2f8f6', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Comprovante recebido!\n\nNome: Membro - Sistema\nE-mail: Membro@admin.com\nWhatsapp: Não informado\n\nAdquiriu o \"Protocolo Essencial\"\nValor de: R$ 29,90', 'proof', 0, '2026-04-01 00:24:09'),
-('47246b57-10da-4d12-a988-fabb6e643b4f', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 00:24:40'),
-('135ff9d8-b057-4b1a-a6e8-1ecb3cdaea35', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 00:31:54'),
-('2d31ccd6-57b2-4300-b3f3-2c92b4e8bb64', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 00:31:58'),
-('1ecee6ee-ee48-42ab-acb7-620bd4e8874e', 'd5102e09-4041-4dce-b0b7-9594946b39eb', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 00:32:02');
+('38eb5d65-b7ca-4ae7-9c52-d1eb644cb851', 'd5102e09-4041-4dce-b0b7-9594946b39eb', 'Seu comprovante de pagamento foi recusado. Por favor, verifique o valor e a legibilidade do comprovante e envie novamente.', 'rejection', 0, '2026-04-01 01:27:27');
 
 -- --------------------------------------------------------
 
@@ -393,11 +379,7 @@ INSERT INTO `orders` (`id`, `user_id`, `product_id`, `affiliate_id`, `plan_name`
 ('3a0d6177-d71e-48de-9065-690bf23121db', 'd5102e09-4041-4dce-b0b7-9594946b39eb', NULL, NULL, 'Protocolo Essencial', 29.90, NULL, 'cancelled', '2026-03-28 22:15:13', '/proofs/proof_1774736112131_i96b332s2ej.jpg', NULL, NULL),
 ('8dfbc84a-fb75-47af-ab7b-5288826487fc', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', NULL, NULL, 'Protocolo Essencial', 29.90, NULL, 'cancelled', '2026-03-29 04:31:59', '/proofs/proof_1774758719666_ilbwngkwkvh.jpg', 'Olá tudo bem?', NULL),
 ('827131f9-5e25-48fa-aa84-760ac91206e7', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', NULL, NULL, 'Protocolo Essencial', 29.90, NULL, 'paid', '2026-03-29 04:59:05', '/proofs/proof_1774760345693_vczfolg4vq8.jpg', NULL, NULL),
-('8c744b66-75ad-4618-8835-520718c15791', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', 'fac9d7ec-fd02-46a3-9099-d0176d133616', NULL, 'Membro VIP - Mensal', 29.90, NULL, 'cancelled', '2026-03-29 05:07:42', '/proofs/proof_1774760862197_s050y4xtjua.pdf', NULL, 'Membro VIP - Mensal'),
-('19de7991-5a4b-460e-b3d1-d6fba7934136', '904c0d9f-6961-4975-bf73-a115f6b43605', NULL, NULL, 'Protocolo Essencial', 29.90, NULL, 'cancelled', '2026-04-01 00:09:46', '/proofs/proof_1775002186649_babnntfa9jg.gif', NULL, NULL),
-('fee7e3c4-1bed-4db2-9f52-94c34a5d2a90', '904c0d9f-6961-4975-bf73-a115f6b43605', 'fac9d7ec-fd02-46a3-9099-d0176d133616', NULL, 'Membro VIP - Mensal', 29.90, NULL, 'cancelled', '2026-04-01 00:10:37', '/proofs/proof_1775002237113_uh03j7xvg7.png', NULL, 'Membro VIP - Mensal'),
-('de0692de-c1a8-40fd-83b9-0962556da9dc', '904c0d9f-6961-4975-bf73-a115f6b43605', 'fac9d7ec-fd02-46a3-9099-d0176d133616', NULL, 'Membro VIP - Mensal', 29.90, NULL, 'cancelled', '2026-04-01 00:23:50', '/proofs/proof_1775003030201_1zlsk3xze0x.png', NULL, 'Membro VIP - Mensal'),
-('39d97630-14ab-435b-8629-831faaba2ba6', '904c0d9f-6961-4975-bf73-a115f6b43605', NULL, NULL, 'Protocolo Essencial', 29.90, NULL, 'cancelled', '2026-04-01 00:24:09', '/proofs/proof_1775003049020_qix44squf7.png', NULL, NULL);
+('8c744b66-75ad-4618-8835-520718c15791', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', 'fac9d7ec-fd02-46a3-9099-d0176d133616', NULL, 'Membro VIP - Mensal', 29.90, NULL, 'cancelled', '2026-03-29 05:07:42', '/proofs/proof_1774760862197_s050y4xtjua.pdf', NULL, 'Membro VIP - Mensal');
 
 -- --------------------------------------------------------
 
@@ -541,8 +523,7 @@ INSERT INTO `subcategories` (`id`, `category_id`, `name`, `description`, `cover_
 ('saga-hormonal', 'cat-equilibrio', 'SAGA HORMONAL - O Equilíbrio dos Deuses', 'Regule hormônios naturalmente. Testosterona, cortisol, insulina e hormônios femininos que controlam acúmulo de gordura.', NULL, 1, 0, 1),
 ('saga-intestinal', 'cat-equilibrio', 'SAGA INTESTINAL - O Protocolo da Barriga Desinchada', 'Intestino inflamado = barriga inchada e gordura que não sai. Regenere flora, elimine inchaço e destrave emagrecimento.', NULL, 2, 0, 1),
 ('saga-bonus', 'cat-bonus', 'BÔNUS EXTRAS - Sabedoria Complementar', 'Materiais complementares: beleza de dentro pra fora, longevidade, clareza mental e outros conhecimentos ancestrais.', NULL, 1, 0, 1),
-('0.9296745695681038', 'a9d57858-c46e-4db3-9ebf-b28faa4c9b67', 'Tião ', 'Fica saudável ', NULL, 1, 0, 1),
-('0.8508115545083379', '0.36651827174565266', 'Teste3', 'Teste2', NULL, 1, 0, 1);
+('0.9296745695681038', 'a9d57858-c46e-4db3-9ebf-b28faa4c9b67', 'Tião ', 'Fica saudável ', NULL, 1, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -561,6 +542,16 @@ CREATE TABLE `tickets` (
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Despejando dados para a tabela `tickets`
+--
+
+INSERT INTO `tickets` (`id`, `user_id`, `subject`, `category`, `priority`, `status`, `created_at`, `updated_at`) VALUES
+('65d9685b-e1b1-4e9a-892a-4f41965624f8', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Teste', 'conteudo', 'media', 'aberto', '2026-04-01 01:36:45', '2026-04-01 01:36:45'),
+('904d4063-7392-40a1-acca-b26fdebd4dd6', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Bnn', 'outro', 'media', 'aberto', '2026-04-01 01:26:01', '2026-04-01 01:26:01'),
+('9d2a9100-306f-47cf-9e46-39ec9b110d60', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Hxjxbx', 'outro', 'media', 'aberto', '2026-04-01 02:07:14', '2026-04-01 02:07:14'),
+('f5aa5d79-8f8b-4bdc-85d8-014b514c3753', 'admin-default-001', 'Gghh', 'outro', 'media', 'aberto', '2026-04-01 01:48:17', '2026-04-01 01:48:17');
+
 -- --------------------------------------------------------
 
 --
@@ -575,6 +566,16 @@ CREATE TABLE `ticket_messages` (
   `is_admin` tinyint(1) DEFAULT '0',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Despejando dados para a tabela `ticket_messages`
+--
+
+INSERT INTO `ticket_messages` (`id`, `ticket_id`, `user_id`, `message`, `is_admin`, `created_at`) VALUES
+('1183b79f-e414-4fde-ad12-94c8472a05d1', 'f5aa5d79-8f8b-4bdc-85d8-014b514c3753', 'admin-default-001', 'Ghh', 0, '2026-04-01 01:48:17'),
+('17125bc9-591d-4085-ba8b-310c5ccb042c', '904d4063-7392-40a1-acca-b26fdebd4dd6', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Hhhhh', 0, '2026-04-01 01:26:01'),
+('77d5edf1-e5d5-4b1b-8832-1f4fbc988a86', '9d2a9100-306f-47cf-9e46-39ec9b110d60', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Bcncnx', 0, '2026-04-01 02:07:14'),
+('eb20b0ab-4b8b-4cb7-9899-54cd8ab58a57', '65d9685b-e1b1-4e9a-892a-4f41965624f8', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Trsteee', 0, '2026-04-01 01:36:45');
 
 -- --------------------------------------------------------
 
