@@ -871,10 +871,10 @@ Seja bem-vindo ao seu novo capítulo. 🌟`;
   app.get("/api/tickets", auth, async (req: any, res) => {
     try {
       const isAdmin = req.user.role === 'ADMIN';
-      const rows = isAdmin
+      const [rows]: any = isAdmin
         ? await pool.query("SELECT t.*, u.name as user_name, u.email as user_email FROM tickets t LEFT JOIN users u ON u.id = t.user_id ORDER BY t.created_at DESC")
         : await pool.query("SELECT * FROM tickets WHERE user_id=? ORDER BY created_at DESC", [req.user.id]);
-      res.json((rows as any[])[0]);
+      res.json(rows);
     } catch (err: any) { res.status(500).json({ error: err.message }); }
   });
 
