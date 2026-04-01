@@ -10,8 +10,9 @@ import { PlansManager } from './PlansManager';
 import FileUpload from './FileUpload';
 import { EbookFilePicker } from './EbookFilePicker';
 import { Footer } from './Footer';
+import { SupportTickets } from './SupportTickets';
 
-type AdminTab = 'dashboard' | 'products' | 'bonuses' | 'affiliates' | 'social_proof' | 'settings' | 'settings_checkout' | 'settings_support' | 'settings_theme' | 'settings_legal' | 'users' | 'vip_users' | 'visitantes' | 'all_members' | 'withdrawals' | 'plans' | 'library';
+type AdminTab = 'dashboard' | 'products' | 'bonuses' | 'affiliates' | 'social_proof' | 'settings' | 'settings_checkout' | 'settings_support' | 'settings_theme' | 'settings_legal' | 'users' | 'vip_users' | 'visitantes' | 'all_members' | 'withdrawals' | 'plans' | 'library' | 'tickets';
 
 const InactiveEbooks: React.FC<{ categoryId: string; onDelete: (id: string) => void; onReactivated: () => void }> = ({ categoryId, onDelete, onReactivated }) => {
   const [inactive, setInactive] = React.useState<any[]>([]);
@@ -2978,6 +2979,7 @@ export const AdminDashboard: React.FC = () => {
             {activeTab === 'withdrawals' && renderWithdrawals()}
             {activeTab === 'affiliates' && renderAffiliates()}
             {activeTab === 'plans' && <PlansManager />}
+            {activeTab === 'tickets' && <SupportTickets isAdmin={true} />}
             {activeTab === 'products' && (
               <>
                 {isEditingProduct && !!editingProduct.id && renderProductEditor()}
