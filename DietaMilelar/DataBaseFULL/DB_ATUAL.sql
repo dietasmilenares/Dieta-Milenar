@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 01/04/2026 às 02:23
+-- Tempo de geração: 01/04/2026 às 03:41
 -- Versão do servidor: 8.0.45-0ubuntu0.24.04.1
 -- Versão do PHP: 8.3.6
 
@@ -156,8 +156,8 @@ INSERT INTO `categories` (`id`, `name`, `description`, `cover_image`, `sort_orde
 ('cat-musculo', 'Construção Muscular', 'Ganhe massa magra, força e músculos definidos usando apenas alimentos naturais.', '/e-books/file_0000000084e8720ea46f7ebfda0c35e3.png.pdf', 4, 0, 0, 1),
 ('cat-equilibrio', 'Equilíbrio Interno', 'Hormônios e intestino: os dois fatores internos que mais impactam emagrecimento e definição.', '/e-books/file_00000000e3c0720e85b050f86952566c.png.pdf', 5, 0, 0, 1),
 ('cat-bonus', 'Bônus Complementares', 'Materiais extras que complementam sua jornada: beleza natural, longevidade e mais.', NULL, 6, 0, 0, 1),
-('83419602-e17e-4133-82de-af74306e699e', 'EMAGRECIMENTO SOBERANO', 'Sistema de emagrecimento soberano', NULL, 7, 0, 0, 1),
-('a9d57858-c46e-4db3-9ebf-b28faa4c9b67', 'Valentim', 'Sou lindo.', NULL, 1, 1, 0, 1);
+('83419602-e17e-4133-82de-af74306e699e', 'EMAGRECIMENTO SOBERANO', 'Sistema de emagrecimento soberano', NULL, 7, 0, 0, 0),
+('a9d57858-c46e-4db3-9ebf-b28faa4c9b67', 'Valentim', 'Sou lindo.', NULL, 1, 1, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -532,25 +532,24 @@ INSERT INTO `subcategories` (`id`, `category_id`, `name`, `description`, `cover_
 --
 
 CREATE TABLE `tickets` (
-  `id` varchar(36) NOT NULL,
-  `user_id` varchar(36) NOT NULL,
-  `subject` varchar(200) NOT NULL,
-  `category` varchar(50) DEFAULT 'outro',
-  `priority` varchar(20) DEFAULT 'media',
-  `status` varchar(20) DEFAULT 'open',
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `subject` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'outro',
+  `priority` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'media',
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'aberto',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `tickets`
 --
 
 INSERT INTO `tickets` (`id`, `user_id`, `subject`, `category`, `priority`, `status`, `created_at`, `updated_at`) VALUES
-('65d9685b-e1b1-4e9a-892a-4f41965624f8', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Teste', 'conteudo', 'media', 'aberto', '2026-04-01 01:36:45', '2026-04-01 01:36:45'),
-('904d4063-7392-40a1-acca-b26fdebd4dd6', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Bnn', 'outro', 'media', 'aberto', '2026-04-01 01:26:01', '2026-04-01 01:26:01'),
-('9d2a9100-306f-47cf-9e46-39ec9b110d60', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Hxjxbx', 'outro', 'media', 'aberto', '2026-04-01 02:07:14', '2026-04-01 02:07:14'),
-('f5aa5d79-8f8b-4bdc-85d8-014b514c3753', 'admin-default-001', 'Gghh', 'outro', 'media', 'aberto', '2026-04-01 01:48:17', '2026-04-01 01:48:17');
+('404872e0-e7df-4cf3-bdf6-25333c52d892', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Fala Zé', 'pagamento', 'media', 'fechado', '2026-04-01 03:16:22', '2026-04-01 03:20:19'),
+('c3e83e6c-f6a2-4560-a3a0-9c29b5e8e59a', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Olá tudo bem', 'acesso', 'baixa', 'fechado', '2026-04-01 03:15:56', '2026-04-01 03:20:07'),
+('fa998502-d3cb-47a3-a4ab-cd81b5d1fdf4', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Boa', 'conteudo', 'alta', 'fechado', '2026-04-01 03:16:39', '2026-04-01 03:20:13');
 
 -- --------------------------------------------------------
 
@@ -559,23 +558,25 @@ INSERT INTO `tickets` (`id`, `user_id`, `subject`, `category`, `priority`, `stat
 --
 
 CREATE TABLE `ticket_messages` (
-  `id` varchar(36) NOT NULL,
-  `ticket_id` varchar(36) NOT NULL,
-  `user_id` varchar(36) NOT NULL,
-  `message` text NOT NULL,
-  `is_admin` tinyint(1) DEFAULT '0',
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ticket_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_admin` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Despejando dados para a tabela `ticket_messages`
 --
 
 INSERT INTO `ticket_messages` (`id`, `ticket_id`, `user_id`, `message`, `is_admin`, `created_at`) VALUES
-('1183b79f-e414-4fde-ad12-94c8472a05d1', 'f5aa5d79-8f8b-4bdc-85d8-014b514c3753', 'admin-default-001', 'Ghh', 0, '2026-04-01 01:48:17'),
-('17125bc9-591d-4085-ba8b-310c5ccb042c', '904d4063-7392-40a1-acca-b26fdebd4dd6', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Hhhhh', 0, '2026-04-01 01:26:01'),
-('77d5edf1-e5d5-4b1b-8832-1f4fbc988a86', '9d2a9100-306f-47cf-9e46-39ec9b110d60', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Bcncnx', 0, '2026-04-01 02:07:14'),
-('eb20b0ab-4b8b-4cb7-9899-54cd8ab58a57', '65d9685b-e1b1-4e9a-892a-4f41965624f8', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Trsteee', 0, '2026-04-01 01:36:45');
+('24cf9820-439e-482b-906f-ac6e45cb98f0', '404872e0-e7df-4cf3-bdf6-25333c52d892', 'admin-default-001', 'Sim... Mestre dos magos', 1, '2026-04-01 03:17:50'),
+('484752b8-0a3b-49a9-b109-fe3d8a8313aa', 'fa998502-d3cb-47a3-a4ab-cd81b5d1fdf4', 'admin-default-001', 'Dubai', 1, '2026-04-01 03:17:28'),
+('6565c90b-8c6a-470a-9431-8b7ad9c0065b', '404872e0-e7df-4cf3-bdf6-25333c52d892', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Tu sumiu', 0, '2026-04-01 03:16:22'),
+('836bc067-4c30-419e-8d63-f50cff64cacb', 'c3e83e6c-f6a2-4560-a3a0-9c29b5e8e59a', 'admin-default-001', 'Fala jao', 1, '2026-04-01 03:17:18'),
+('adb11822-a256-4873-9818-445333ee2aab', 'fa998502-d3cb-47a3-a4ab-cd81b5d1fdf4', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Cadê vc', 0, '2026-04-01 03:16:39'),
+('ec377823-3675-4258-89c8-c9dc6d000aaf', 'c3e83e6c-f6a2-4560-a3a0-9c29b5e8e59a', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Fala comigo', 0, '2026-04-01 03:15:56');
 
 -- --------------------------------------------------------
 
@@ -680,7 +681,8 @@ INSERT INTO `user_profiles` (`id`, `user_id`, `phone`, `gender`, `age`, `weight`
 ('671dd714-2721-11f1-9b6b-bbcfdce0cc5e', '47de8866-a1d5-4185-8aaa-35251be5ad5a', NULL, 'masculino', 36, 120.00, 186, NULL, NULL, NULL, '2026-03-24 01:33:04', '2026-03-24 01:33:04'),
 ('968cf9a4-2987-11f1-ad7c-0a314055eec3', 'd5102e09-4041-4dce-b0b7-9594946b39eb', NULL, 'feminino', 25, 800.00, 199, 'sedentario', 'perda', 'Arroz', '2026-03-27 02:49:34', '2026-03-27 02:49:34'),
 ('aa5b8198-2987-11f1-ad7c-0a314055eec3', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', '31995341547', 'masculino', 32, 86.00, 176, NULL, 'ganho', NULL, '2026-03-27 02:50:08', '2026-03-27 02:50:08'),
-('c46fc205-2b27-11f1-9028-0a65a6f9c6a5', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', '32985648965', NULL, 38, 60.00, 178, 'sedentario', 'perda', 'Taioba, cobe pipoca ', '2026-03-29 04:28:42', '2026-03-29 04:28:42');
+('c46fc205-2b27-11f1-9028-0a65a6f9c6a5', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', '32985648965', NULL, 38, 60.00, 178, 'sedentario', 'perda', 'Taioba, cobe pipoca ', '2026-03-29 04:28:42', '2026-03-29 04:28:42'),
+('e2046f1d-2d7a-11f1-8c5e-0a76c9448ef9', '904c0d9f-6961-4975-bf73-a115f6b43605', '3278890', 'masculino', 35, 50.00, 180, NULL, 'perda', 'Verdura', '2026-04-01 03:28:42', '2026-04-01 03:28:42');
 
 -- --------------------------------------------------------
 
@@ -832,15 +834,16 @@ ALTER TABLE `subcategories`
 --
 ALTER TABLE `tickets`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_tickets_user` (`user_id`),
-  ADD KEY `idx_tickets_status` (`status`);
+  ADD KEY `idx_tickets_user_id` (`user_id`),
+  ADD KEY `idx_tickets_status` (`status`),
+  ADD KEY `idx_tickets_updated_at` (`updated_at`);
 
 --
 -- Índices de tabela `ticket_messages`
 --
 ALTER TABLE `ticket_messages`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_ticket_messages_ticket` (`ticket_id`);
+  ADD KEY `idx_tm_ticket_id` (`ticket_id`);
 
 --
 -- Índices de tabela `timelines`
