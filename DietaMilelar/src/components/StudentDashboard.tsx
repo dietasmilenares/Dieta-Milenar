@@ -175,18 +175,25 @@ const MemberProfile: React.FC<MemberProfileProps> = ({ onBack, currentUser }) =>
                 </div>
               ))}
 
-              {/* Card de quilos a perder — ocupa as 2 colunas */}
-              {imc && imc > 25 && saved.weight && saved.height && (() => {
+              {/* Card de peso ideal — ocupa as 2 colunas */}
+              {imc && saved.weight && saved.height && (() => {
                 const pesoIdeal = 22 * Math.pow(parseFloat(saved.height) / 100, 2);
-                const perder = (parseFloat(saved.weight) - pesoIdeal).toFixed(1);
+                const diff = parseFloat((parseFloat(saved.weight) - pesoIdeal).toFixed(1));
+                const abs = Math.abs(diff);
+                let msg: React.ReactNode;
+                if (diff > 0.5) {
+                  msg = <>Você precisa perder <span className="text-[#D4AF37] font-black text-sm">{abs} kg</span> para atingir o peso ideal ({pesoIdeal.toFixed(1)} kg).</>;
+                } else if (diff < -0.5) {
+                  msg = <>Você precisa ganhar <span className="text-[#D4AF37] font-black text-sm">{abs} kg</span> para atingir o peso ideal ({pesoIdeal.toFixed(1)} kg).</>;
+                } else {
+                  msg = <>🎯 Parabéns! Você está no <span className="text-[#D4AF37] font-black text-sm">peso ideal</span> ({pesoIdeal.toFixed(1)} kg).</>;
+                }
                 return (
                   <div className="col-span-2 relative rounded-2xl overflow-hidden p-[2px]">
                     <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] conic-glow" />
                     <div className="relative bg-[#0a0800] rounded-[14px] px-5 py-4 text-center">
                       <p className="text-gray-400 text-xs font-medium leading-relaxed">
-                        De acordo com sua altura, idade e peso, você precisa perder{' '}
-                        <span className="text-[#D4AF37] font-black text-sm">{perder} kg</span>
-                        {' '}para atingir o peso ideal.
+                        De acordo com sua altura e peso, {msg}
                       </p>
                     </div>
                   </div>

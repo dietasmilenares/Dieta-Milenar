@@ -867,6 +867,80 @@ Seja bem-vindo ao seu novo capítulo. 🌟`;
     }
   });
 
+  // TICKETS
+  app.get("/api/tickets", auth, async (req: any, res) => {
+    try {
+      const isAdmin = req.user.role === 'ADMIN';
+      const rows = isAdmin
+        ? await pool.query("SELECT t.*, u.name as user_name, u.email as user_email FROM tickets t LEFT JOIN users u ON u.id = t.user_id ORDER BY t.created_at DESC")
+        : await pool.query("SELECT * FROM tickets WHERE user_id=? ORDER BY created_at DESC", [req.user.id]);
+      res.json((rows as any[])[0]);
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/tickets", auth, async (req: any, res) => {
+    try {
+      const { subject, category, priority, message } = req.body;
+      if (!subject?.trim() || !message?.trim()) return res.status(400).json({ error: "Assunto e mensagem são obrigatórios" });
+      const id = randomUUID();
+      await pool.query(
+        "INSERT INTO tickets (id, user_id, subject, category, priority, status, created_at, updated_at) VALUES (?,?,?,?,?,'open',NOW(),NOW())",
+        [id, req.user.id, subject.trim(), category || 'outro', priority || 'media']
+      );
+      const msgId = randomUUID();
+      await pool.query(
+        "INSERT INTO ticket_messages (id, ticket_id, user_id, message, is_admin, created_at) VALUES (?,?,?,?,0,NOW())",
+        [msgId, id, req.user.id, message.trim()]
+      );
+      res.status(201).json({ id, subject, status: 'open' });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.get("/api/tickets/:id/messages", auth, async (req: any, res) => {
+    try {
+      const [ticket]: any = await pool.query("SELECT * FROM tickets WHERE id=?", [req.params.id]);
+      if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
+      if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
+      const [msgs]: any = await pool.query(
+        "SELECT m.*, u.name as user_name FROM ticket_messages m LEFT JOIN users u ON u.id = m.user_id WHERE m.ticket_id=? ORDER BY m.created_at ASC",
+        [req.params.id]
+      );
+      res.json(msgs);
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.post("/api/tickets/:id/messages", auth, async (req: any, res) => {
+    try {
+      const { message } = req.body;
+      if (!message?.trim()) return res.status(400).json({ error: "Mensagem vazia" });
+      const [ticket]: any = await pool.query("SELECT * FROM tickets WHERE id=?", [req.params.id]);
+      if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
+      if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
+      const isAdmin = req.user.role === 'ADMIN' ? 1 : 0;
+      await pool.query(
+        "INSERT INTO ticket_messages (id, ticket_id, user_id, message, is_admin, created_at) VALUES (?,?,?,?,?,NOW())",
+        [randomUUID(), req.params.id, req.user.id, message.trim(), isAdmin]
+      );
+      await pool.query("UPDATE tickets SET updated_at=NOW(), status=? WHERE id=?",
+        [isAdmin ? 'answered' : 'open', req.params.id]
+      );
+      res.json({ ok: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
+  app.patch("/api/tickets/:id/status", auth, async (req: any, res) => {
+    try {
+      const { status } = req.body;
+      const allowed = ['open', 'answered', 'closed'];
+      if (!allowed.includes(status)) return res.status(400).json({ error: "Status inválido" });
+      const [ticket]: any = await pool.query("SELECT * FROM tickets WHERE id=?", [req.params.id]);
+      if (!ticket[0]) return res.status(404).json({ error: "Ticket não encontrado" });
+      if (req.user.role !== 'ADMIN' && ticket[0].user_id !== req.user.id) return res.status(403).json({ error: "Acesso negado" });
+      await pool.query("UPDATE tickets SET status=?, updated_at=NOW() WHERE id=?", [status, req.params.id]);
+      res.json({ ok: true });
+    } catch (err: any) { res.status(500).json({ error: err.message }); }
+  });
+
   // TRACK CLICK
   app.post("/api/track-click", async (req, res) => {
     await pool.query("INSERT INTO affiliate_clicks (id,affiliate_id,ip,user_agent,landing_page) VALUES (?,?,?,?,?)",

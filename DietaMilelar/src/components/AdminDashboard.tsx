@@ -1719,7 +1719,7 @@ export const AdminDashboard: React.FC = () => {
                 <div>
                   <label className="block text-xs text-gray-500 uppercase mb-1">Subcategoria</label>
                   <select
-                    value={editingEbook.subcategoryId || subcategories.filter(s => s.categoryId === (editingEbook.categoryId || categories[0]?.id) && s.active)[0]?.id || ''}
+                    value={editingEbook.subcategoryId || ''}
                     onChange={e => {
                       const sub = subcategories.find(s => s.id === e.target.value);
                       setEditingEbook({ ...editingEbook, subcategoryId: e.target.value, categoryId: sub?.categoryId ?? editingEbook.categoryId });
@@ -1729,8 +1729,8 @@ export const AdminDashboard: React.FC = () => {
                   >
                     <option value="">Selecione...</option>
                     {subcategories
-                      .filter(s => s.categoryId === (editingEbook.categoryId || categories[0]?.id) && s.active)
-                      .map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      .filter(s => s.categoryId === (editingEbook.categoryId || categories[0]?.id))
+                      .map(s => <option key={s.id} value={s.id}>{s.name}{!s.active ? ' (inativa)' : ''}</option>)}
                   </select>
                 </div>
               </div>
