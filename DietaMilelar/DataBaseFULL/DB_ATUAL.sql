@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Tempo de geração: 01/04/2026 às 03:41
+-- Tempo de geração: 02/04/2026 às 15:24
 -- Versão do servidor: 8.0.45-0ubuntu0.24.04.1
 -- Versão do PHP: 8.3.6
 
@@ -548,6 +548,7 @@ CREATE TABLE `tickets` (
 
 INSERT INTO `tickets` (`id`, `user_id`, `subject`, `category`, `priority`, `status`, `created_at`, `updated_at`) VALUES
 ('404872e0-e7df-4cf3-bdf6-25333c52d892', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Fala Zé', 'pagamento', 'media', 'fechado', '2026-04-01 03:16:22', '2026-04-01 03:20:19'),
+('8276a071-3b53-447d-aff2-4a334cc34cd5', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Hhhb', 'outro', 'media', 'aberto', '2026-04-02 15:22:43', '2026-04-02 15:22:43'),
 ('c3e83e6c-f6a2-4560-a3a0-9c29b5e8e59a', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Olá tudo bem', 'acesso', 'baixa', 'fechado', '2026-04-01 03:15:56', '2026-04-01 03:20:07'),
 ('fa998502-d3cb-47a3-a4ab-cd81b5d1fdf4', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Boa', 'conteudo', 'alta', 'fechado', '2026-04-01 03:16:39', '2026-04-01 03:20:13');
 
@@ -574,6 +575,7 @@ INSERT INTO `ticket_messages` (`id`, `ticket_id`, `user_id`, `message`, `is_admi
 ('24cf9820-439e-482b-906f-ac6e45cb98f0', '404872e0-e7df-4cf3-bdf6-25333c52d892', 'admin-default-001', 'Sim... Mestre dos magos', 1, '2026-04-01 03:17:50'),
 ('484752b8-0a3b-49a9-b109-fe3d8a8313aa', 'fa998502-d3cb-47a3-a4ab-cd81b5d1fdf4', 'admin-default-001', 'Dubai', 1, '2026-04-01 03:17:28'),
 ('6565c90b-8c6a-470a-9431-8b7ad9c0065b', '404872e0-e7df-4cf3-bdf6-25333c52d892', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Tu sumiu', 0, '2026-04-01 03:16:22'),
+('668c6a4c-ba0e-4e96-8382-9863375f468d', '8276a071-3b53-447d-aff2-4a334cc34cd5', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Hhjn', 0, '2026-04-02 15:22:43'),
 ('836bc067-4c30-419e-8d63-f50cff64cacb', 'c3e83e6c-f6a2-4560-a3a0-9c29b5e8e59a', 'admin-default-001', 'Fala jao', 1, '2026-04-01 03:17:18'),
 ('adb11822-a256-4873-9818-445333ee2aab', 'fa998502-d3cb-47a3-a4ab-cd81b5d1fdf4', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Cadê vc', 0, '2026-04-01 03:16:39'),
 ('ec377823-3675-4258-89c8-c9dc6d000aaf', 'c3e83e6c-f6a2-4560-a3a0-9c29b5e8e59a', '904c0d9f-6961-4975-bf73-a115f6b43605', 'Fala comigo', 0, '2026-04-01 03:15:56');
@@ -646,7 +648,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `role`, `status`, `
 ('d7a13929-427d-4be2-a8c8-f864e34bbfff', 'Membro VIP - Sistema', 'membrovip@admin.com', '123456', 'VIP', 'active', NULL, NULL, 0.00, NULL, NULL, '2026-03-16 13:02:48'),
 ('280f726b-f8e4-41ff-875b-1a3275fe1fc4', 'Revenda - Sistema', 'revenda@admin.com', '123456', 'REVENDA', 'active', NULL, NULL, 0.00, NULL, NULL, '2026-03-16 13:04:12'),
 ('d5102e09-4041-4dce-b0b7-9594946b39eb', ' conta membro de teste', 'Membroteste@admin.com', '123456', 'MEMBRO', 'active', NULL, NULL, 0.00, NULL, NULL, '2026-03-27 02:49:34'),
-('95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Gustavo Oliveira Valentim ', 'gustavo.valentim.500@gmail.com', 'Tipocolombia890@', 'ADMIN', 'active', NULL, NULL, 0.00, NULL, NULL, '2026-03-27 02:50:08');
+('95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', 'Gustavo Oliveira Valentim ', 'gustavo.valentim.500@gmail.com', 'Tipocolombia890@', 'ADMIN', 'active', NULL, NULL, 0.00, NULL, NULL, '2026-03-27 02:50:08'),
+('53ace4ac-f1f2-4eb3-9a51-fa7e20266538', 'Jhonatan Souza', 'novo@admin.com', '123456', 'VISITANTE', 'active', NULL, NULL, 0.00, NULL, NULL, '2026-04-01 11:56:35');
 
 -- --------------------------------------------------------
 
@@ -682,7 +685,8 @@ INSERT INTO `user_profiles` (`id`, `user_id`, `phone`, `gender`, `age`, `weight`
 ('968cf9a4-2987-11f1-ad7c-0a314055eec3', 'd5102e09-4041-4dce-b0b7-9594946b39eb', NULL, 'feminino', 25, 800.00, 199, 'sedentario', 'perda', 'Arroz', '2026-03-27 02:49:34', '2026-03-27 02:49:34'),
 ('aa5b8198-2987-11f1-ad7c-0a314055eec3', '95f0e7e6-ec8d-4cf5-a557-1de51d0ef134', '31995341547', 'masculino', 32, 86.00, 176, NULL, 'ganho', NULL, '2026-03-27 02:50:08', '2026-03-27 02:50:08'),
 ('c46fc205-2b27-11f1-9028-0a65a6f9c6a5', '2c9fd63b-c14a-48f0-bfaa-0380daf26be8', '32985648965', NULL, 38, 60.00, 178, 'sedentario', 'perda', 'Taioba, cobe pipoca ', '2026-03-29 04:28:42', '2026-03-29 04:28:42'),
-('e2046f1d-2d7a-11f1-8c5e-0a76c9448ef9', '904c0d9f-6961-4975-bf73-a115f6b43605', '3278890', 'masculino', 35, 50.00, 180, NULL, 'perda', 'Verdura', '2026-04-01 03:28:42', '2026-04-01 03:28:42');
+('e2046f1d-2d7a-11f1-8c5e-0a76c9448ef9', '904c0d9f-6961-4975-bf73-a115f6b43605', '3278890', 'masculino', 35, 50.00, 180, NULL, 'perda', 'Verdura', '2026-04-01 03:28:42', '2026-04-01 03:28:42'),
+('d5042711-2dc1-11f1-8c5e-0a76c9448ef9', '53ace4ac-f1f2-4eb3-9a51-fa7e20266538', '(33) 98418-3847', 'masculino', 100, 100.00, 100, 'moderado', 'ganho', 'aaaaqaqqqal', '2026-04-01 11:56:35', '2026-04-01 11:56:35');
 
 -- --------------------------------------------------------
 
