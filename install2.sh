@@ -34,7 +34,7 @@ read -rp "  Escolha uma opção [1/2]: " MENU_OPTION
 
 if [[ "$MENU_OPTION" == "2" ]]; then
   # ===========================================================================
-  #  MODO ATUALIZAÇÃO — move arquivos + build
+  #  MODO ATUALIZAÇÃO — copia apenas arquivos diferentes + build
   # ===========================================================================
   header "MODO ATUALIZAÇÃO DE ARQUIVOS"
 
@@ -50,42 +50,91 @@ if [[ "$MENU_OPTION" == "2" ]]; then
   read -rp "  Diretório de instalação [padrão: $INSTALL_DIR]: " CUSTOM_INSTALL_DIR
   [[ -n "$CUSTOM_INSTALL_DIR" ]] && INSTALL_DIR="$CUSTOM_INSTALL_DIR"
 
-  # ── Mover arquivos do projeto principal ──────────────────────────────────────
-  log "Copiando DietaMilelar → $INSTALL_DIR ..."
   mkdir -p "$INSTALL_DIR"
-  rsync -a \
+
+  # ── Detectar arquivos diferentes no projeto principal ────────────────────────
+  log "Verificando diferenças em DietaMilelar → $INSTALL_DIR ..."
+
+  CHANGED_FILES=$(rsync -a --checksum --dry-run \
     --exclude='node_modules' \
     --exclude='.git' \
     --exclude='dist' \
     --exclude='.env' \
-    "$PROJECT_SRC/" "$INSTALL_DIR/"
-  log "Arquivos copiados"
+    --itemize-changes \
+    "$PROJECT_SRC/" "$INSTALL_DIR/" \
+    | grep -E '^[<>c]' | awk '{print $2}')
 
-  # ── Mover SocialProof se existir ─────────────────────────────────────────────
+  CHANGED_COUNT=$(echo "$CHANGED_FILES" | grep -c . 2>/dev/null || true)
+
+  if [[ -z "$CHANGED_FILES" || "$CHANGED_COUNT" -eq 0 ]]; then
+    warn "Nenhuma diferença encontrada em DietaMilelar. Arquivos já estão atualizados."
+    NEEDS_BUILD=false
+  else
+    echo ""
+    echo -e "  ${BOLD}${YELLOW}Arquivos diferentes detectados (${CHANGED_COUNT}):${NC}"
+    echo "$CHANGED_FILES" | while IFS= read -r f; do
+      echo -e "    ${CYAN}→ $f${NC}"
+    done
+    echo ""
+
+    # ── Copiar apenas os arquivos diferentes ──────────────────────────────────
+    log "Copiando $CHANGED_COUNT arquivo(s) atualizado(s)..."
+    rsync -a --checksum \
+      --exclude='node_modules' \
+      --exclude='.git' \
+      --exclude='dist' \
+      --exclude='.env' \
+      "$PROJECT_SRC/" "$INSTALL_DIR/"
+    log "$CHANGED_COUNT arquivo(s) copiado(s) com sucesso"
+    NEEDS_BUILD=true
+  fi
+
+  # ── SocialProof: mesma lógica de diff ────────────────────────────────────────
   if [[ -d "$SOCIALPROOF_SRC" ]]; then
-    log "Copiando SocialProof → $SOCIALPROOF_DIR ..."
     mkdir -p "$SOCIALPROOF_DIR"
-    rsync -a --exclude='.git' --exclude='DataBaseFULL' "$SOCIALPROOF_SRC/" "$SOCIALPROOF_DIR/"
-    chown -R www-data:www-data "$SOCIALPROOF_DIR"
-    log "SocialProof copiado"
+
+    SP_CHANGED=$(rsync -a --checksum --dry-run \
+      --exclude='.git' \
+      --exclude='DataBaseFULL' \
+      --itemize-changes \
+      "$SOCIALPROOF_SRC/" "$SOCIALPROOF_DIR/" \
+      | grep -E '^[<>c]' | awk '{print $2}')
+
+    SP_COUNT=$(echo "$SP_CHANGED" | grep -c . 2>/dev/null || true)
+
+    if [[ -z "$SP_CHANGED" || "$SP_COUNT" -eq 0 ]]; then
+      warn "SocialProof já está atualizado — nenhum arquivo copiado."
+    else
+      log "Copiando $SP_COUNT arquivo(s) atualizado(s) no SocialProof..."
+      rsync -a --checksum \
+        --exclude='.git' \
+        --exclude='DataBaseFULL' \
+        "$SOCIALPROOF_SRC/" "$SOCIALPROOF_DIR/"
+      chown -R www-data:www-data "$SOCIALPROOF_DIR"
+      log "SocialProof: $SP_COUNT arquivo(s) atualizado(s)"
+    fi
   else
     warn "Pasta SocialProof não encontrada — pulando."
   fi
 
-  # ── Build do frontend ─────────────────────────────────────────────────────────
-  log "Instalando dependências npm..."
-  cd "$INSTALL_DIR"
-  npm install --silent
+  # ── Build do frontend (somente se houve mudanças) ────────────────────────────
+  if [[ "$NEEDS_BUILD" == true ]]; then
+    log "Instalando dependências npm..."
+    cd "$INSTALL_DIR"
+    npm install --silent
 
-  log "Gerando build de produção (Vite)..."
-  npm run build
+    log "Gerando build de produção (Vite)..."
+    npm run build
 
-  if [[ ! -f "$INSTALL_DIR/dist/index.html" ]]; then
-    error "Build falhou — dist/index.html não encontrado. Verifique os erros acima."
+    if [[ ! -f "$INSTALL_DIR/dist/index.html" ]]; then
+      error "Build falhou — dist/index.html não encontrado. Verifique os erros acima."
+    fi
+    log "Build gerado com sucesso: $INSTALL_DIR/dist/"
+
+    npm prune --omit=dev --silent
+  else
+    warn "Build ignorado — nenhum arquivo foi atualizado."
   fi
-  log "Build gerado com sucesso: $INSTALL_DIR/dist/"
-
-  npm prune --omit=dev --silent
 
   # ── Ajustar permissões ────────────────────────────────────────────────────────
   chown -R root:www-data "$INSTALL_DIR"
@@ -97,12 +146,14 @@ if [[ "$MENU_OPTION" == "2" ]]; then
   chown -R www-data:www-data "$INSTALL_DIR/socialmembers"
 
   # ── Reiniciar PM2 ─────────────────────────────────────────────────────────────
-  if command -v pm2 &>/dev/null; then
-    log "Reiniciando aplicação no PM2..."
-    pm2 restart dieta-milenar 2>/dev/null || pm2 start "$INSTALL_DIR/ecosystem.config.cjs" --env production
-    pm2 save
-  else
-    warn "PM2 não encontrado. Inicie a aplicação manualmente."
+  if [[ "$NEEDS_BUILD" == true ]]; then
+    if command -v pm2 &>/dev/null; then
+      log "Reiniciando aplicação no PM2..."
+      pm2 restart dieta-milenar 2>/dev/null || pm2 start "$INSTALL_DIR/ecosystem.config.cjs" --env production
+      pm2 save
+    else
+      warn "PM2 não encontrado. Inicie a aplicação manualmente."
+    fi
   fi
 
   echo ""
@@ -111,8 +162,9 @@ if [[ "$MENU_OPTION" == "2" ]]; then
   echo "  │         Atualização concluída com sucesso!           │"
   echo "  └──────────────────────────────────────────────────────┘"
   echo -e "${NC}"
-  echo -e "  ${BOLD}App dir:${NC}  $INSTALL_DIR"
-  echo -e "  ${BOLD}Build:${NC}    $INSTALL_DIR/dist/"
+  echo -e "  ${BOLD}App dir:${NC}         $INSTALL_DIR"
+  echo -e "  ${BOLD}Arquivos trocados:${NC} ${CHANGED_COUNT:-0} arquivo(s)"
+  [[ "$NEEDS_BUILD" == true ]] && echo -e "  ${BOLD}Build:${NC}           $INSTALL_DIR/dist/"
   echo ""
   echo -e "  ${CYAN}pm2 logs dieta-milenar${NC}  → Ver logs em tempo real"
   echo ""
