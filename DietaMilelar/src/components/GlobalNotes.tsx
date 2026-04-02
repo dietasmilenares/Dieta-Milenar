@@ -393,9 +393,30 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
       report += `DEVICE: ${note.deviceType.toUpperCase()}\n`;
       if (index < notes.length - 1) report += `\n---\n\n`;
     });
-    await navigator.clipboard.writeText(report);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(report);
+      } else {
+        // Fallback para HTTP ou contextos sem permissão de clipboard
+        const textarea = document.createElement('textarea');
+        textarea.value = report;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity  = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (!success) throw new Error('execCommand falhou');
+      }
+      setCopied(true);
+      toast.success('Relatório copiado!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('Não foi possível copiar. Verifique as permissões do navegador.');
+      console.error('[GlobalNotes] handleCopyNotes error:', err);
+    }
   };
 
   const handleImportNotes = () => {
