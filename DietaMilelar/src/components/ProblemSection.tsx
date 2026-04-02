@@ -20,8 +20,8 @@ export const ProblemSection: React.FC = () => {
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-heading mb-4">
-            <span className="text-white">Sistema moderno</span><br />
-            <span className="text-red-600">Falhou com você</span>
+            <span className="text-white">O sistema moderno</span><br />
+            <span className="text-red-600">falhou com você</span>
           </h2>
           <p className="text-sm md:text-base text-white max-w-2xl mx-auto">
             A indústria da saúde nunca foi estruturada para saude, ela não quer que você morra, mas ela também não quer te ver curado! Medicamento gera renda, gente curada não!

@@ -93,7 +93,7 @@ export const TestimonialsPage: React.FC<TestimonialsPageProps> = ({
       age: 35,
       lost: "24kg",
       time: "2 meses",
-      videoThumbnail: "https://i.ibb.co/gFw8Fg14/file-000000005554720eabf5c2b4482e00d2.png",
+      videoThumbnail: "https://i.ibb.co/20FYh56r/file-000000005f5071f581571c6c3c54db24.png",
       rating: 5,
       quote: "Eu quebrei foi a cara com essa dieta... rsrs, acontece que alguns anos atrás eu doei todas as minhas roupas de quando eu era magro para o meu primo, então eu quebrei a cara pois tive que voltar no meu primo e pedir todas as roupas de volta... Como diz a música... Tá ruim mas tá baum... Tô muito feliz"
     },
@@ -103,7 +103,7 @@ export const TestimonialsPage: React.FC<TestimonialsPageProps> = ({
       age: 26,
       lost: "12kg",
       time: "2 meses",
-      videoThumbnail: "https://i.ibb.co/4RbnPspv/file-00000000632471f5881d87c470e88f53.png",
+      videoThumbnail: "https://i.ibb.co/bMrKjLrL/file-000000001ecc720eaac14125b3747894.png",
       rating: 5,
       quote: "Meu relacionamento já estava acabado, meu namorado era gordinho e ficou fitness fazendo musculação e academia... E como eu odeio academia eu nunca quis ir. Há pouco tempo eu conheci o sistema de dieta milenar e meu relacionamento foi restaurado."
     }

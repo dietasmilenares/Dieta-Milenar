@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Testimonial } from '../types';
@@ -19,11 +19,11 @@ export const Testimonials: React.FC = () => {
     },
     {
       id: '2',
-      name: "Carla Mendes",
+      name: "Carlos Mendes",
       age: 42,
       rating: 5,
-      text: "Incrível como a gente complica a alimentação. Voltar ao básico e entender a combinação dos alimentos mudou meu corpo. Minhas roupas voltaram a servir!",
-      avatar: "https://randomuser.me/api/portraits/women/68.jpg"
+      text: "Sempre achei que precisava de suplementos caros para ter resultado. O método me mostrou que a alimentação certa faz todo o trabalho. Perdi 11kg e ganhei disposição que não tinha há anos.",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg"
     },
     {
       id: '3',
@@ -35,6 +35,14 @@ export const Testimonials: React.FC = () => {
     },
     {
       id: '4',
+      name: "Ricardo Alves",
+      age: 38,
+      rating: 5,
+      text: "Comecei a Dieta Milenar sem muita expectativa. Em 3 semanas minha barriga já estava visivelmente menor. Em 2 meses, perdi 9kg e minha pressão normalizou. Meu médico ficou surpreso.",
+      avatar: "https://randomuser.me/api/portraits/men/54.jpg"
+    },
+    {
+      id: '5',
       name: "Juliana Rocha",
       age: 38,
       rating: 5,
@@ -42,7 +50,15 @@ export const Testimonials: React.FC = () => {
       avatar: "https://randomuser.me/api/portraits/women/57.jpg"
     },
     {
-      id: '5',
+      id: '6',
+      name: "Marcos Ferreira",
+      age: 45,
+      rating: 5,
+      text: "Tentei academia por anos sem resultado consistente. Com o protocolo ancestral entendi que o problema estava na alimentação. Hoje tenho mais músculo e menos gordura, sem academia.",
+      avatar: "https://randomuser.me/api/portraits/men/68.jpg"
+    },
+    {
+      id: '7',
       name: "Beatriz Lima",
       age: 45,
       rating: 5,
@@ -51,20 +67,30 @@ export const Testimonials: React.FC = () => {
     }
   ];
 
-  const next = () => {
-    setDirection(1);
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
+  // Ordem aleatória a cada montagem do componente
+  const [shuffled] = useState(() => {
+    const arr = [...testimonials];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  });
 
-  const prev = () => {
+  const next = useCallback(() => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % shuffled.length);
+  }, [shuffled.length]);
+
+  const prev = useCallback(() => {
     setDirection(-1);
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
+    setCurrentIndex((prev) => (prev - 1 + shuffled.length) % shuffled.length);
+  }, [shuffled.length]);
 
   useEffect(() => {
     const timer = setInterval(next, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [next]);
 
   const variants = {
     enter: (direction: number) => ({
@@ -91,7 +117,7 @@ export const Testimonials: React.FC = () => {
         <div className="text-center mb-12">
           <span className="text-golden-gradient font-bold tracking-[0.3em] uppercase text-xs md:text-sm">Vozes da Transformação</span>
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold font-display text-white mt-2 mb-4">
-            O que nossas <span className="italic text-golden-gradient">alunas dizem</span>
+            O que nossos <span className="italic text-golden-gradient">membros dizem</span>
           </h2>
         </div>
         
@@ -113,8 +139,8 @@ export const Testimonials: React.FC = () => {
               <div className="bg-gray-900/40 backdrop-blur-md p-6 rounded-2xl border border-[#D4AF37]/10 shadow-2xl flex flex-col md:flex-row items-center gap-6 md:gap-8 relative overflow-hidden max-w-3xl mx-auto">
                 <div className="relative shrink-0">
                   <img 
-                    src={testimonials[currentIndex].avatar} 
-                    alt={testimonials[currentIndex].name} 
+                    src={shuffled[currentIndex].avatar} 
+                    alt={shuffled[currentIndex].name} 
                     className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#D4AF37] relative z-10" 
                   />
                   <div className="absolute -bottom-1 -right-1 bg-[#D4AF37] text-black p-1 rounded-full z-20">
@@ -124,19 +150,19 @@ export const Testimonials: React.FC = () => {
                 
                 <div className="flex-1 text-center md:text-left">
                   <div className="flex justify-center md:justify-start text-[#FFD700] mb-2 gap-0.5">
-                    {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
+                    {[...Array(shuffled[currentIndex].rating)].map((_, i) => (
                       <Star key={i} size={14} fill="currentColor" />
                     ))}
                   </div>
                   <p className="text-sm md:text-base text-white italic mb-4 leading-relaxed">
-                    "{testimonials[currentIndex].text}"
+                    "{shuffled[currentIndex].text}"
                   </p>
                   <div>
                     <h4 className="text-base font-bold text-white font-heading">
-                      {testimonials[currentIndex].name}
+                      {shuffled[currentIndex].name}
                     </h4>
                     <p className="text-golden-gradient text-xs font-medium uppercase tracking-wider">
-                      {testimonials[currentIndex].age} anos • Aluna Verificada
+                      Membro Verificado
                     </p>
                   </div>
                 </div>
@@ -161,7 +187,7 @@ export const Testimonials: React.FC = () => {
 
         {/* Dots */}
         <div className="flex justify-center gap-3 mt-8">
-          {testimonials.map((_, index) => (
+          {shuffled.map((_, index) => (
             <button
               key={index}
               onClick={() => {
