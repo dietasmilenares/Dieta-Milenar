@@ -22,6 +22,7 @@ interface NoteItem {
   elementPreview?: string;
   destinationSelector?: string; 
   destinationPreview?: string;
+  originFile?: string;          // arquivo .tsx onde o elemento de origem foi encontrado
 }
 
 interface GlobalNotesProps {
@@ -115,6 +116,36 @@ const buildLayerTree = (clicked: HTMLElement): LayerNode[] => {
   return layers;
 };
 
+// ── Detecta o arquivo .tsx de origem via React fiber internals ───────────────
+const KNOWN_HTML_TAGS = new Set([
+  'div','span','button','p','h1','h2','h3','h4','h5','h6',
+  'section','article','main','header','footer','nav','ul','ol','li',
+  'a','img','input','form','label','select','textarea','table',
+  'tbody','thead','tr','td','th','svg','path','g','i','strong','em',
+]);
+
+const getReactComponentFile = (el: HTMLElement): string | null => {
+  // Encontra a chave do React fiber no elemento
+  const fiberKey = Object.keys(el).find(k => k.startsWith('__reactFiber') || k.startsWith('__reactInternalInstance'));
+  if (!fiberKey) return null;
+  let fiber = (el as any)[fiberKey];
+  const seen = new Set<string>();
+  // Sobe pela árvore de fibras até encontrar um componente React nomeado
+  while (fiber) {
+    const typeName: string | undefined =
+      fiber.type?.displayName ||
+      fiber.type?.name ||
+      (typeof fiber.type === 'string' ? fiber.type : undefined);
+    if (typeName && !KNOWN_HTML_TAGS.has(typeName.toLowerCase()) && !seen.has(typeName)) {
+      seen.add(typeName);
+      // Retorna como caminho de arquivo relativo ao projeto
+      return `src/components/${typeName}.tsx`;
+    }
+    fiber = fiber.return;
+  }
+  return null;
+};
+
 // Renderiza clone real do elemento no modal
 const LayerPreview: React.FC<{ layer: LayerNode }> = ({ layer }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -167,6 +198,7 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
     destSelector?: string;
     destPreview?: string;
     device?: DeviceType;
+    originFile?: string;
   }>({ active: false, id: null, text: '' });
 
   const [triggerPos, setTriggerPos] = useState(() => {
@@ -329,7 +361,8 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
     if (!layer) return;
     const device = getCurrentDevice();
     if (layerModal.mode === 'source') {
-      setFocusMode(prev => ({ ...prev, selector: layer.selector, preview: layer.preview, device }));
+      const originFile = getReactComponentFile(layer.el) ?? undefined;
+      setFocusMode(prev => ({ ...prev, selector: layer.selector, preview: layer.preview, device, originFile }));
     } else {
       setFocusMode(prev => ({ ...prev, destSelector: layer.selector, destPreview: layer.preview, device }));
     }
@@ -342,9 +375,9 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
     const device = focusMode.device || getCurrentDevice();
     if (!text && !focusMode.id) { setFocusMode({ active: false, id: null, text: '' }); return; }
     if (focusMode.id) {
-      setNotes(prev => prev.map(n => n.id === focusMode.id ? { ...n, text, deviceType: device, domSelector: focusMode.selector, elementPreview: focusMode.preview, destinationSelector: focusMode.destSelector, destinationPreview: focusMode.destPreview } : n));
+      setNotes(prev => prev.map(n => n.id === focusMode.id ? { ...n, text, deviceType: device, domSelector: focusMode.selector, elementPreview: focusMode.preview, destinationSelector: focusMode.destSelector, destinationPreview: focusMode.destPreview, originFile: focusMode.originFile } : n));
     } else {
-      setNotes(prev => [{ id: Date.now().toString(), text, context: currentContext, deviceType: device, timestamp: Date.now(), isCompleted: false, domSelector: focusMode.selector, elementPreview: focusMode.preview, destinationSelector: focusMode.destSelector, destinationPreview: focusMode.destPreview }, ...prev]);
+      setNotes(prev => [{ id: Date.now().toString(), text, context: currentContext, deviceType: device, timestamp: Date.now(), isCompleted: false, domSelector: focusMode.selector, elementPreview: focusMode.preview, destinationSelector: focusMode.destSelector, destinationPreview: focusMode.destPreview, originFile: focusMode.originFile }, ...prev]);
     }
     setFocusMode({ active: false, id: null, text: '' });
   };
@@ -354,7 +387,8 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
     notes.forEach((note, index) => {
       const status = note.isCompleted ? 'x' : ' ';
       report += `- [${status}] ${note.text}\n`;
-      if (note.domSelector)       report += `TARGET: ${note.domSelector}\n`;
+      if (note.originFile)          report += `FILE: ${note.originFile}\n`;
+      if (note.domSelector)         report += `TARGET: ${note.domSelector}\n`;
       if (note.destinationSelector) report += `DESTINATION: ${note.destinationSelector}\n`;
       report += `DEVICE: ${note.deviceType.toUpperCase()}\n`;
       if (index < notes.length - 1) report += `\n---\n\n`;
@@ -382,7 +416,7 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
   };
 
   const startEditingNote = (note: NoteItem) => {
-    setFocusMode({ active: true, id: note.id, text: note.text, device: note.deviceType, selector: note.domSelector, preview: note.elementPreview, destSelector: note.destinationSelector, destPreview: note.destinationPreview });
+    setFocusMode({ active: true, id: note.id, text: note.text, device: note.deviceType, selector: note.domSelector, preview: note.elementPreview, destSelector: note.destinationSelector, destPreview: note.destinationPreview, originFile: note.originFile });
     setIsOpen(true);
   };
 
@@ -591,7 +625,12 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
                   {focusMode.selector && (
                     <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 px-3 py-1 rounded-lg flex items-center gap-2">
                       <span className="text-[10px] text-[#E5C158] font-mono font-bold truncate max-w-[120px]">S: {focusMode.preview}</span>
-                      <button onClick={() => setFocusMode(p => ({ ...p, selector: undefined, preview: undefined }))} className="text-red-400 hover:text-red-300"><X size={12} /></button>
+                      <button onClick={() => setFocusMode(p => ({ ...p, selector: undefined, preview: undefined, originFile: undefined }))} className="text-red-400 hover:text-red-300"><X size={12} /></button>
+                    </div>
+                  )}
+                  {focusMode.originFile && (
+                    <div className="bg-purple-500/10 border border-purple-500/30 px-3 py-1 rounded-lg flex items-center gap-2">
+                      <span className="text-[10px] text-purple-300 font-mono font-bold truncate max-w-[160px]">📄 {focusMode.originFile}</span>
                     </div>
                   )}
                   {focusMode.destSelector && (
@@ -672,6 +711,11 @@ export const GlobalNotes: React.FC<GlobalNotesProps> = ({ forcedContext, storage
                             <div className="flex items-center gap-1 text-[8px] font-mono text-gray-400 bg-black/20 px-1.5 py-0.5 rounded border border-white/5">
                               <DeviceIcon type={note.deviceType} size={8} /> {note.deviceType.toUpperCase()}
                             </div>
+                            {note.originFile && (
+                              <div className="flex items-center gap-1 text-[8px] font-mono text-purple-300 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20" title={note.originFile}>
+                                <span>📄</span> {note.originFile.split('/').pop()}
+                              </div>
+                            )}
                             {note.domSelector && (
                               <button onClick={e => { e.stopPropagation(); jumpToElement(note.domSelector!, 'source'); setIsOpen(false); }} className="flex items-center gap-1 text-[8px] font-mono text-[#E5C158] bg-[#D4AF37]/5 px-1.5 py-0.5 rounded border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-colors">
                                 <Target size={8} /> {note.elementPreview}
