@@ -40,9 +40,6 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
   const lensContentOffsetRef = useRef({ x: 0, y: 0 });
   const lensZoomRef          = useRef(0.3);
   const fitZoomRef           = useRef(0.3);
-  // docPos: document-coordinate point the lens is centred on (for HTML transform mode)
-  const [docPos,             setDocPos]             = useState({ x: 0, y: 0 });
-  const docPosRef            = useRef({ x: 0, y: 0 });
 
   const [pdfDoc,            setPdfDoc]            = useState<any>(null);
   const [currentPage,       setCurrentPage]       = useState(1);
@@ -64,7 +61,6 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
   useEffect(() => { lensZoomRef.current          = lensZoom;           }, [lensZoom]);
   useEffect(() => { fitZoomRef.current           = fitZoom;            }, [fitZoom]);
   useEffect(() => { lensContentOffsetRef.current = lensContentOffset;  }, [lensContentOffset]);
-  useEffect(() => { docPosRef.current            = docPos;             }, [docPos]);
 
   // Calcula fitZoom para PDF (canvas já renderizado)
   const computeFitZoomFromCanvas = useCallback(() => {
@@ -98,13 +94,9 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
   }, []);
 
   const changeLensZoom = useCallback((delta: number) => {
-    setLensZoom(prevZoom => {
-      const next    = Math.round((prevZoom + delta) * 100) / 100;
-      const clamped = Math.max(fitZoomRef.current, Math.min(MAG_MAX, next));
-      // Keep visual centre fixed: scale the pan offset proportionally
-      const ratio = clamped / prevZoom;
-      setLensContentOffset(prev => ({ x: prev.x * ratio, y: prev.y * ratio }));
-      return clamped;
+    setLensZoom(z => {
+      const next = Math.round((z + delta) * 100) / 100;
+      return Math.max(fitZoomRef.current, Math.min(MAG_MAX, next));
     });
   }, []);
 
@@ -132,7 +124,7 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
     setLoading(true); setError(''); setPdfDoc(null);
     setCurrentPage(1); setTotalPages(0);
     import('pdfjs-dist').then((lib) => {
-      lib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).href;
+      lib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
       lib.getDocument(ebook.downloadUrl!).promise
         .then((doc: any) => { setPdfDoc(doc); setTotalPages(doc.numPages); setLoading(false); })
         .catch(() => { setError('Não foi possível carregar o PDF.'); setLoading(false); });
@@ -260,24 +252,6 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
     } catch (_) {}
   }, [showLens, lensReady, syncLensIframe]);
 
-  // ── Compute docPos from lens position over main iframe ─────────────────────
-  const updateDocPos = useCallback(() => {
-    const mi = mainIframeRef.current;
-    if (!mi) return;
-    let scrollX = 0, scrollY = 0;
-    try { scrollX = mi.contentWindow?.scrollX ?? 0; scrollY = mi.contentWindow?.scrollY ?? 0; } catch (_) {}
-    const ir = mi.getBoundingClientRect();
-    const lp = lensPosRef.current;
-    const dx = (lp.x + LENS_W / 2) - ir.left + scrollX;
-    const dy = (lp.y + LENS_BAR + LH / 2) - ir.top  + scrollY;
-    setDocPos({ x: dx, y: dy });
-    docPosRef.current = { x: dx, y: dy };
-  }, []);
-
-  useEffect(() => {
-    if (showLens) updateDocPos();
-  }, [lensPos, showLens, updateDocPos]);
-
   // ── Place lens outside the PDF viewer when opened ────────────────────────
   // Centraliza a lupa no viewport ao abrir + calcula fitZoom
   useEffect(() => {
@@ -365,38 +339,6 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
     border:          'none',
     pointerEvents:   'none',
     display:         'block',
-  };
-
-  // HTML lens: usa zoom CSS (re-renderiza vetores/fontes) + translate para posicionamento
-  // Assim o texto fica nítido em qualquer nível de ampliação
-  const htmlDocWidth  = (() => {
-    try { return mainIframeRef.current?.contentDocument?.documentElement?.scrollWidth || 900; } catch { return 900; }
-  })();
-  const htmlDocHeight = (() => {
-    try { return mainIframeRef.current?.contentDocument?.documentElement?.scrollHeight || 1200; } catch { return 1200; }
-  })();
-  // Com zoom CSS, o iframe já ocupa lensZoom * docWidth pixels.
-  // Precisamos transladar para que docPos (em doc space) apareça no centro do vidro + pan.
-  const htmlTx = (LENS_W / 2) - docPos.x * lensZoom + lensContentOffset.x;
-  const htmlTy = (LH / 2)     - docPos.y * lensZoom + lensContentOffset.y;
-  const htmlLensWrapStyle: React.CSSProperties = {
-    position:      'absolute',
-    top:           0,
-    left:          0,
-    transform:     `translate(${htmlTx}px, ${htmlTy}px)`,
-    pointerEvents: 'none',
-  };
-  // O iframe recebe zoom CSS — o navegador recalcula tipografia e vetores (não rasteriza)
-  const htmlLensIframeStyle: React.CSSProperties = {
-    width:         `${htmlDocWidth}px`,
-    height:        `${htmlDocHeight}px`,
-    border:        'none',
-    pointerEvents: 'none',
-    display:       'block',
-    zoom:          lensZoom,
-    // Garante nitidez máxima de texto
-    WebkitFontSmoothing: 'antialiased' as any,
-    textRendering:       'optimizeLegibility' as any,
   };
 
   return (<>
@@ -631,27 +573,22 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
           onPointerCancel={onGlassPointerUp}
         >
           {isHtml && ebook.downloadUrl && (
-            <div style={htmlLensWrapStyle}>
-              <iframe
-                ref={lensIframeRef}
-                src={ebook.downloadUrl}
-                onLoad={() => {
-                  setLensReady(true);
-                  updateDocPos();
-                  // compute fitZoom from actual document dimensions
-                  try {
-                    const doc = lensIframeRef.current!.contentDocument!;
-                    const w = doc.documentElement.scrollWidth || htmlDocWidth;
-                    const h = doc.documentElement.scrollHeight || htmlDocHeight;
-                    const fz = Math.min(LENS_W / w, LH / h);
-                    setFitZoom(fz); setLensZoom(fz);
-                    fitZoomRef.current = fz; lensZoomRef.current = fz;
-                  } catch (_) {}
-                }}
-                style={htmlLensIframeStyle}
-                title="lupa"
-              />
-            </div>
+            <iframe
+              ref={lensIframeRef}
+              src={ebook.downloadUrl}
+              onLoad={() => {
+                try {
+                  const doc = lensIframeRef.current!.contentDocument!;
+                  const s = doc.createElement('style');
+                  s.textContent = '::-webkit-scrollbar{display:none!important}html,body{scrollbar-width:none!important;overflow:scroll!important}';
+                  doc.head.appendChild(s);
+                } catch (_) {}
+                setLensReady(true);
+                setTimeout(syncLensIframe, 80);
+              }}
+              style={iframeLensStyle}
+              title="lupa"
+            />
           )}
           {isGoogleDrive && ebook.downloadUrl && (
             <iframe
@@ -667,15 +604,12 @@ export const EbookModal: React.FC<EbookModalProps> = ({ isOpen, onClose, ebook, 
           {!ebook.downloadUrl && ebook.content && (
             <div
               style={{
-                width:         `${LENS_W}px`,
-                height:        `${LENS_H - LENS_BAR}px`,
-                overflow:      'hidden',
-                pointerEvents: 'none',
-                padding:       8,
-                color:         '#fff',
-                zoom:          lensZoom,
-                WebkitFontSmoothing: 'antialiased' as any,
-                textRendering:       'optimizeLegibility' as any,
+                width: `${LENS_W / lensZoom}px`,
+                height: `${(LENS_H - LENS_BAR) / lensZoom}px`,
+                transform: `scale(${lensZoom})`,
+                transformOrigin: 'top left',
+                overflow: 'hidden', pointerEvents: 'none',
+                padding: 8, color: '#fff', fontSize: 8,
               }}
               dangerouslySetInnerHTML={{ __html: ebook.content }}
             />

@@ -300,12 +300,12 @@ export const TestimonialsPage: React.FC<TestimonialsPageProps> = ({
             </div>
           </section>
           
-          <div className="bg-gradient-to-b from-[#D4AF37]/10 to-transparent p-8 rounded-2xl border border-[#D4AF37]/10 relative overflow-hidden mt-8 text-center">
-            <h3 className="text-[#D4AF37] font-bold text-lg md:text-xl mb-3 flex items-center justify-center gap-3 font-heading tracking-wide">
-              <Clock className="animate-pulse" size={24} /> 
-              ATENÇÃO, OPORTUNIDADE ÚNICA
+          <div className="bg-gradient-to-b from-[#D4AF37]/10 to-transparent p-4 sm:p-8 rounded-2xl border border-[#D4AF37]/10 relative overflow-hidden mt-8 text-center mx-2 sm:mx-0">
+            <h3 className="text-[#D4AF37] font-bold text-base sm:text-lg md:text-xl mb-3 flex items-center justify-center gap-2 sm:gap-3 font-heading tracking-wide flex-wrap">
+              <Clock className="animate-pulse shrink-0" size={20} /> 
+              <span>ATENÇÃO, OPORTUNIDADE ÚNICA</span>
             </h3>
-            <p className="text-sm md:text-base text-white relative z-10 leading-relaxed">
+            <p className="text-sm md:text-base text-white relative z-10 leading-relaxed px-1">
               As vagas para a nossa comunidade exclusiva estão se esgotando rapidamente. Não podemos garantir que esta oferta e este método estarão disponíveis amanhã. O momento de agir é agora.
             </p>
           </div>

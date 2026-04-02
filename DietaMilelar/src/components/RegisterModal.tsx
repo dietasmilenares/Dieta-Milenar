@@ -45,6 +45,24 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
         return;
       }
     }
+    if (step === 2) {
+      if (!formData.gender) {
+        toast.error('Selecione seu sexo.');
+        return;
+      }
+      if (!formData.age || parseInt(formData.age) < 1) {
+        toast.error('Informe sua idade.');
+        return;
+      }
+      if (!formData.height || parseInt(formData.height) < 1) {
+        toast.error('Informe sua altura.');
+        return;
+      }
+      if (!formData.weight || parseInt(formData.weight) < 1) {
+        toast.error('Informe seu peso.');
+        return;
+      }
+    }
     if (step < totalSteps) setStep(step + 1);
   };
 
@@ -54,6 +72,14 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.goal) {
+      toast.error('Selecione seu objetivo principal.');
+      return;
+    }
+    if (!formData.activityLevel) {
+      toast.error('Selecione seu nível de atividade física.');
+      return;
+    }
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -119,7 +145,7 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
           >
             <div className="text-center mb-6">
               <h3 className="text-xl font-heading font-bold text-white uppercase tracking-widest">Identificação</h3>
-              <p className="text-xs text-gray-500">Comece sua jornada criando sua identidade digital</p>
+              <p className="text-xs text-gray-500">Comece sua jornada criando<br />sua identidade digital</p>
             </div>
             
             <div className="space-y-3">
@@ -200,34 +226,47 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                   Feminino
                 </button>
               </div>
-              
+
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]/50" size={18} />
                 <input
                   type="number"
-                  placeholder="Idade"
+                  placeholder="Idade *"
                   value={formData.age}
-                  onChange={(e) => updateFormData('age', e.target.value)}
+                  onChange={(e) => updateFormData('age', e.target.value.replace(/\D/g, '').slice(0, 3))}
+                  maxLength={3}
+                  min={1}
+                  max={999}
                   className="w-full bg-black/50 border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
               <div className="relative">
                 <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]/50" size={18} />
                 <input
-                  type="number"
-                  placeholder="Altura (cm)"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Altura cm *"
                   value={formData.height}
-                  onChange={(e) => updateFormData('height', e.target.value)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 3);
+                    updateFormData('height', digits);
+                  }}
+                  maxLength={3}
                   className="w-full bg-black/50 border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
               <div className="relative col-span-2">
                 <Weight className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4AF37]/50" size={18} />
                 <input
-                  type="number"
-                  placeholder="Peso Atual (kg)"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Peso Atual kg *"
                   value={formData.weight}
-                  onChange={(e) => updateFormData('weight', e.target.value)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 3);
+                    updateFormData('weight', digits);
+                  }}
+                  maxLength={3}
                   className="w-full bg-black/50 border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
@@ -255,11 +294,12 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                   onChange={(e) => updateFormData('goal', e.target.value)}
                   className="w-full bg-black/50 border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-[#D4AF37] appearance-none"
                 >
-                  <option value="">Qual seu objetivo principal?</option>
+                  <option value="" disabled>Qual seu objetivo principal? *</option>
                   <option value="perda">Perda de Peso</option>
                   <option value="ganho">Ganho de Massa</option>
                   <option value="saude">Saúde e Longevidade</option>
                   <option value="energia">Mais Energia</option>
+                  <option value="outros">Outros</option>
                 </select>
               </div>
 
@@ -270,11 +310,12 @@ export const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, o
                   onChange={(e) => updateFormData('activityLevel', e.target.value)}
                   className="w-full bg-black/50 border border-[#D4AF37]/20 rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-[#D4AF37] appearance-none"
                 >
-                  <option value="">Nível de Atividade Física</option>
+                  <option value="" disabled>Nível de Atividade Física *</option>
                   <option value="sedentario">Sedentário</option>
                   <option value="leve">Leve (1-2x semana)</option>
                   <option value="moderado">Moderado (3-4x semana)</option>
                   <option value="intenso">Intenso (5x+ semana)</option>
+                  <option value="outros">Outros</option>
                 </select>
               </div>
 
