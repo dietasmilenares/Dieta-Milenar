@@ -10,7 +10,7 @@ IFS=$'\n\t'
 umask 027
 
 # --- Cores e Layout ---
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BOLD='\033[1m'; NC='\033[0m'
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 log_status() { echo -e "  ${GREEN}[✔]${NC} $1"; }
 log_warn()   { echo -e "  ${YELLOW}[⚠]${NC} $1"; }
 log_error()  { echo -e "  ${RED}[✘]${NC} $1"; exit 1; }

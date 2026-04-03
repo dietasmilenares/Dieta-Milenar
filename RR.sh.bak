@@ -1,0 +1,85 @@
+#!/bin/bash
+set -euo pipefail
+
+# --- 1. Parar e desabilitar serviços ---
+echo "Parando e desabilitando serviços..."
+systemctl stop nginx php*-fpm mysql pm2 || true
+systemctl disable nginx php*-fpm mysql pm2 || true
+systemctl reset-failed || true # Limpa estados de falha
+
+# --- 2. Remover pacotes instalados pelo script ---
+echo "Removendo pacotes instalados..."
+apt-get purge -y --autoremove \
+  nginx mysql-server openssl build-essential \
+  php php-fpm php-mysql php-mbstring php-zip php-gd php-curl \
+  nodejs npm pm2 certbot python3-certbot-nginx \
+  ca-certificates gnupg curl git unzip rsync || true
+
+# --- 3. Remover repositórios e chaves GPG do NodeSource ---
+echo "Removendo repositórios e chaves do NodeSource..."
+rm -f /etc/apt/sources.list.d/nodesource.list
+rm -f /etc/apt/keyrings/nodesource.gpg
+apt-get update -qq || true # Tenta atualizar após remover o repositório problemático
+
+# --- 4. Remover diretórios de aplicação e logs ---
+echo "Removendo diretórios de aplicação e logs..."
+rm -rf /var/www/dieta-milenar
+rm -rf /var/www/socialproof
+rm -rf /var/www/phpmyadmin
+rm -rf /var/log/dieta-milenar
+rm -rf /var/lib/dieta # Diretório home do usuário 'dieta'
+rm -rf /etc/nginx/sites-available/dieta-milenar
+rm -f /etc/nginx/sites-enabled/dieta-milenar
+rm -f /etc/nginx/sites-enabled/default # Restaura o default se ele foi removido
+
+# --- 5. Remover usuários e grupos criados ---
+echo "Removendo usuário e grupo da aplicação..."
+deluser --remove-home dieta || true
+delgroup dieta || true
+
+# --- 6. Limpar dados do MySQL (CUIDADO: DESTRUTIVO) ---
+echo "Limpando dados do MySQL (se o servidor ainda estiver presente)..."
+# Se o mysql-server foi removido, este passo pode falhar, o que é esperado.
+# Se o mysql-server não foi completamente removido, tenta limpar os bancos.
+if command -v mysql &>/dev/null; then
+  # Tenta conectar como root sem senha (padrão em muitas instalações novas)
+  # ou com a senha que você usou se ela foi definida.
+  # Este é um ponto crítico, pois a senha root pode ser um problema.
+  # Se o MySQL ainda estiver rodando, tente parar para garantir a remoção de dados.
+  systemctl stop mysql || true
+  
+  # Remove o diretório de dados do MySQL. Isso é um hard reset para o MySQL.
+  # CUIDADO: Isso apaga TODOS os bancos de dados.
+  rm -rf /var/lib/mysql
+  rm -rf /etc/mysql
+  
+  # Reinstala o mysql-server para ter uma instalação limpa, se desejar.
+  # apt-get install -y mysql-server || true
+fi
+
+# --- 7. Limpar arquivos de configuração do PM2 ---
+echo "Limpando configurações do PM2..."
+# PM2 armazena configurações no diretório home do usuário que o executa.
+# Se o usuário 'dieta' foi removido, seu home já foi limpo.
+# Para garantir, se PM2 ainda estiver instalado globalmente:
+if command -v pm2 &>/dev/null; then
+  pm2 kill || true # Mata todos os processos PM2
+  pm2 unstartup systemd || true # Remove o script de inicialização do PM2
+  # Limpa o diretório de configuração do PM2 para o usuário root, se houver.
+  rm -rf ~/.pm2
+fi
+
+# --- 8. Limpeza final do APT e reinicialização (opcional) ---
+echo "Realizando limpeza final do APT..."
+apt-get autoremove -y || true
+apt-get clean || true
+
+echo "Hard reset concluído. Recomenda-se uma reinicialização do sistema."
+echo "Para reiniciar, execute: sudo reboot"
+
+# Verifica se um reboot é necessário pelo sistema (pós-remoção de pacotes)
+if [ -f /var/run/reboot-required ]; then
+  echo -e "\n${YELLOW}[!]${NC} O sistema ainda indica que um reboot é necessário após a limpeza."
+  echo "Conteúdo de /var/run/reboot-required.pkgs:"
+  cat /var/run/reboot-required.pkgs || true
+fi
