@@ -274,7 +274,7 @@ if $need_node; then
 
   codename="$(. /etc/os-release; echo "${VERSION_CODENAME}")"
   cat >/etc/apt/sources.list.d/nodesource.list <<EOF
-deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x ${codename} main
+deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node/v20.x/deb/ nodistro main
 EOF
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
