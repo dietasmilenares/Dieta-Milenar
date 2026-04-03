@@ -243,6 +243,7 @@ read -r -p ""
 # =============================================================================
 clear
 
+# --- ETAPA 1 ---
 header "ETAPA 1 — DEPENDÊNCIAS E LIBERANDO PORTA 80"
 
 if systemctl is-active --quiet apache2 2>/dev/null; then
@@ -265,48 +266,38 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 if $need_node; then
-  log_status "Configurando repositório assinado do Node.js 20..."
+  log_status "Instalando Node.js 20 (NodeSource - método atualizado)..."
+
+  # Remove repo antigo quebrado (jammy)
+  rm -f /etc/apt/sources.list.d/nodesource.list
+
+  # Keyring padrão moderno
   install -d -m 0755 /etc/apt/keyrings
-  curl -fsS --proto '=https' --tlsv1.2 https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-    | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-  chmod 0644 /etc/apt/keyrings/nodesource.gpg
-
-  # Detecta codename com fallback seguro
-  DISTRO="$(. /etc/os-release && echo "$VERSION_CODENAME")"
-
-  # Valida codename suportado
-  case "$DISTRO" in
-    jammy|focal|bionic|xenial)
-      log_status "Codename detectado: $DISTRO"
-      ;;
-    *)
-      echo "Erro: O codename $DISTRO não é suportado. Use Ubuntu 16.04 (xenial), 18.04 (bionic), 20.04 (focal) ou 22.04 (jammy)."
-      exit 1
-      ;;
-  esac
-
-  # Garante keyring no padrão correto
-  mkdir -p /etc/apt/keyrings
 
   curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
     | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 
-  # Repo correto (sem nodistro)
-  cat >/etc/apt/sources.list.d/nodesource.list <<EOF
-deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x $DISTRO main
-EOF
+  chmod 0644 /etc/apt/keyrings/nodesource.gpg
+
+  # Repo correto (NodeSource atual usa nodistro)
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] \
+https://deb.nodesource.com/node_20.x nodistro main" \
+  > /etc/apt/sources.list.d/nodesource.list
 
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
-
 fi
 
+# Garante usuário da aplicação
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir /var/lib/"$APP_USER" --create-home \
     --shell /usr/sbin/nologin --user-group "$APP_USER"
 fi
 
-command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
+# PM2 global
+if command -v npm >/dev/null 2>&1; then
+  command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
+fi
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
 
