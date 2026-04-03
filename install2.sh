@@ -28,7 +28,7 @@ center_print() {
     local text="$1"; local color="$2"
     local pad=$(( (TERM_WIDTH - ${#text}) / 2 ))
     [[ $pad -lt 0 ]] && pad=0
-    printf "%*s%b%s%b\n" $pad "" "$color" "$text" "$NC"
+    printf "%*s%b%s%b\n" "$pad" "" "$color" "$text" "$NC"
 }
 
 header() {
@@ -83,7 +83,6 @@ SOCIALPROOF_DIR="/var/www/socialproof"
 APP_PORT=3000
 APP_USER="dieta"
 APP_GROUP="dieta"
-
 export DEBIAN_FRONTEND=noninteractive
 
 # =============================================================================
@@ -96,16 +95,26 @@ center_print "DIETA MILENAR — INSTALAÇÃO v1.2.0" "$GOLD"
 draw_line "═" "$GOLD"
 echo -e "${NC}"
 
+require_cmd curl
+require_cmd openssl
+
 echo -e "  ${DIM}Detectando IP público...${NC}"
 PUBLIC_IP=""
 
-# tenta 3 serviços; ipify foi o que retornou 34.139.67.109 no teste recente<sources>[1]</sources>for svc in "https://api.ipify.org" "https://ipecho.net/plain" "https://checkip.amazonaws.com"; do
+for svc in \
+  "https://api.ipify.org" \
+  "https://ipecho.net/plain" \
+  "https://checkip.amazonaws.com"
+do
   PUBLIC_IP="$(curl_ip "$svc")"
-  is_valid_ipv4 "$PUBLIC_IP" && break
+  if is_valid_ipv4 "$PUBLIC_IP"; then
+    break
+  fi
   PUBLIC_IP=""
 done
 
 if [[ -z "$PUBLIC_IP" ]]; then
+  log_warn "Falha ao detectar IP público. Usando IP local (fallback)."
   PUBLIC_IP="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
   is_valid_ipv4 "$PUBLIC_IP" || log_error "Não foi possível detectar IP público nem IP local."
 fi
@@ -201,7 +210,6 @@ clear
 # --- ETAPA 1 ---
 header "ETAPA 1 — DEPENDÊNCIAS E LIBERANDO PORTA 80"
 
-# Não faz purge: só para e desabilita (menos destrutivo)
 if systemctl is-active --quiet apache2 2>/dev/null; then
     log_warn "Apache2 ativo — parando e desabilitando (sem purge)..."
     systemctl stop apache2 >/dev/null 2>&1 || true
@@ -215,7 +223,6 @@ apt-get install -y -qq --no-install-recommends \
   nginx mysql-server openssl build-essential \
   php php-fpm php-mysql php-mbstring php-zip php-gd php-curl >/dev/null
 
-# Node.js 20 (sem curl|bash)
 need_node=true
 if command -v node >/dev/null 2>&1; then
   node_major="$(node -v | sed -E 's/^v([0-9]+).*/\1/')"
@@ -237,13 +244,11 @@ EOF
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
 fi
 
-# Usuário da aplicação (não-root)
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir /var/lib/"$APP_USER" --create-home \
     --shell /usr/sbin/nologin --user-group "$APP_USER"
 fi
 
-# PM2 global (execução via usuário APP)
 command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
@@ -346,7 +351,6 @@ EOF
     chmod -R o-rwx "$SOCIALPROOF_DIR"
 fi
 
-# diretórios de upload
 install -d -m 0770 -o www-data -g "$APP_GROUP" \
   "$INSTALL_DIR/public/e-books" \
   "$INSTALL_DIR/public/proofs" \
@@ -381,39 +385,34 @@ log_status "Arquivo .env configurado (0640, dono ${APP_USER})."
 header "ETAPA 6 — BUILD FRONTEND"
 cd "$INSTALL_DIR"
 
-# Injeção controlada (somente se arquivo existir)
 CHATW="src/components/ChatWidget.tsx"
 if [[ -f "$CHATW" ]]; then
-  # troca o endpoint fixo por URL local do widget (escape de sed)
   NEW_URL="http://${DOMAIN}/socialproof/widget/index.php?room=dieta-faraonica"
   esc_from='https://socialproof-production\.up\.railway\.app/widget/index\.php\?room=dieta-faraonica'
   esc_to="$(printf '%s' "$NEW_URL" | sed -e 's/[\/&]/\\&/g')"
   sed -i -E "s#${esc_from}#${esc_to}#g" "$CHATW"
 fi
 
-# npm como usuário de app (evita node_modules root-owned)
 if [[ -f package-lock.json ]]; then
   sudo -u "$APP_USER" -g "$APP_GROUP" npm ci --silent
 else
   sudo -u "$APP_USER" -g "$APP_GROUP" npm install --silent
 fi
-
 sudo -u "$APP_USER" -g "$APP_GROUP" npm run build --silent
 
 [[ -f "$INSTALL_DIR/dist/index.html" ]] || log_error "Build falhou: dist/index.html ausente."
 
 sudo -u "$APP_USER" -g "$APP_GROUP" npm prune --omit=dev --silent || true
-
 log_status "Compilação concluída."
 
 # --- ETAPA 7 ---
 header "ETAPA 7 — IMPORTANDO SQL (FALHA ABORTA)"
 mysql_app=( mysql --protocol=tcp -h 127.0.0.1 -u "$DB_USER" --password="$DB_PASS" )
 
-SQL_FILE=$(find "$INSTALL_DIR" -maxdepth 3 -name "*.sql" -print -quit 2>/dev/null || true)
+SQL_FILE="$(find "$INSTALL_DIR" -maxdepth 3 -name "*.sql" -print -quit 2>/dev/null || true)"
 if [[ -n "${SQL_FILE:-}" ]]; then
   "${mysql_app[@]}" "$DB_NAME" < "$SQL_FILE"
-  log_status "Banco de dados importado: $SQL_FILE"
+  log_status "Banco importado: $SQL_FILE"
 else
   log_warn "Nenhum .sql encontrado para importar."
 fi
@@ -499,7 +498,6 @@ nginx -t >/dev/null
 systemctl enable nginx >/dev/null 2>&1 || true
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-# PM2 via usuário de app (não-root)
 cat > "$INSTALL_DIR/ecosystem.config.cjs" <<EOF
 module.exports = {
   apps: [{
@@ -520,7 +518,6 @@ module.exports = {
   }]
 };
 EOF
-
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
 sudo -u "$APP_USER" -g "$APP_GROUP" pm2 stop dieta-milenar >/dev/null 2>&1 || true
@@ -539,7 +536,7 @@ if [[ "$USE_SSL" == true ]]; then
     read -rp "  E-mail p/ Let's Encrypt (obrigatório): " LE_EMAIL
     [[ "$LE_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || log_error "E-mail inválido."
     certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "$LE_EMAIL" \
-      || log_warn "Falha no SSL (domínio precisa apontar corretamente; 'Coming Soon' quebra validação)."
+      || log_warn "Falha no SSL (DNS/validação pendente)."
 fi
 
 # =============================================================================
@@ -570,5 +567,5 @@ draw_line "─" "$GOLD"
 center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO!" "$GOLD"
 draw_line "─" "$GOLD"
 
-# Segurança operacional: NÃO remove REPO_DIR automaticamente
+# Segurança: não remove REPO_DIR automaticamente
 log_status "Diretório de origem preservado: $REPO_DIR"
