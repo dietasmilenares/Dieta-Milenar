@@ -289,6 +289,8 @@ EOF
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends nodejs >/dev/null
 
+fi
+
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir /var/lib/"$APP_USER" --create-home \
     --shell /usr/sbin/nologin --user-group "$APP_USER"
