@@ -266,25 +266,30 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 if $need_node; then
-  log_status "Configurando repositório assinado do Node.js 20 usando script oficial..."
+  log_status "Instalando Node.js 20 (NodeSource - método oficial e atualizado)..."
+
   # Remove configurações antigas do NodeSource para evitar conflitos
   rm -f /etc/apt/sources.list.d/nodesource.list
   rm -f /etc/apt/keyrings/nodesource.gpg
   
-  # Adiciona o repositório Node.js 20.x usando o script oficial do NodeSource
-  # Este script detecta a distribuição e configura o repositório e a chave GPG corretamente.
+  # Adiciona o repositório Node.js 20.x usando o script oficial do NodeSource.
+  # Este script detecta a distribuição (jammy) e configura o repositório e a chave GPG corretamente.
   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
 fi
 
+# Garante usuário da aplicação
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir /var/lib/"$APP_USER" --create-home \
     --shell /usr/sbin/nologin --user-group "$APP_USER"
 fi
 
-command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
+# PM2 global
+if command -v npm >/dev/null 2>&1; then
+  command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
+fi
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
 
@@ -592,31 +597,4 @@ fi
 
 # =============================================================================
 #  RESUMO FINAL
-# =============================================================================
-clear
-echo -e "${GREEN}${BOLD}"
-draw_line "═" "$GREEN"
-center_print "SaaS DIETA MILENAR — INSTALADO!" "$GREEN"
-draw_line "═" "$GREEN"
-echo -e "${NC}"
-
-echo -e "  ${BOLD}URL App:${NC}         ${CYAN}http://${DOMAIN}${NC}"
-echo -e "  ${BOLD}Social Proof:${NC}    ${CYAN}http://${DOMAIN}/socialproof${NC}"
-if [[ "$INSTALL_PMA" =~ ^[sS]$ ]]; then
-  echo -e "  ${BOLD}phpMyAdmin:${NC}      ${CYAN}http://${DOMAIN}/phpmyadmin${NC} ${DIM}(restrito por IP)${NC}"
-fi
-
-echo -e "\n  ${BOLD}${YELLOW}━━━ LOGIN DO SISTEMA ━━━${NC}"
-echo -e "  ${BOLD}E-mail:${NC} admin@dietasmilenares.com"
-echo -e "  ${BOLD}Senha:${NC}  admin123"
-
-echo -e "\n  ${BOLD}Comandos:${NC}"
-echo -e "  ${CYAN}sudo -u ${APP_USER} pm2 status${NC}"
-echo -e "  ${CYAN}sudo -u ${APP_USER} pm2 logs dieta-milenar${NC}"
-echo ""
-draw_line "─" "$GOLD"
-center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO!" "$GOLD"
-draw_line "─" "$GOLD"
-
-# Segurança: não remove REPO_DIR automaticamente
-log_status "Diretório de origem preservado: $REPO_DIR"
+# =============================================================

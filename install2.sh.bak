@@ -266,38 +266,25 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 if $need_node; then
-  log_status "Instalando Node.js 20 (NodeSource - método atualizado)..."
-
-  # Remove repo antigo quebrado (jammy)
+  log_status "Configurando repositório assinado do Node.js 20 usando script oficial..."
+  # Remove configurações antigas do NodeSource para evitar conflitos
   rm -f /etc/apt/sources.list.d/nodesource.list
-
-  # Keyring padrão moderno
-  install -d -m 0755 /etc/apt/keyrings
-
-  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-    | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
-
-  chmod 0644 /etc/apt/keyrings/nodesource.gpg
-
-  # Repo correto (NodeSource atual usa nodistro)
-  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] \
-https://deb.nodesource.com/node_20.x nodistro main" \
-  > /etc/apt/sources.list.d/nodesource.list
+  rm -f /etc/apt/keyrings/nodesource.gpg
+  
+  # Adiciona o repositório Node.js 20.x usando o script oficial do NodeSource
+  # Este script detecta a distribuição e configura o repositório e a chave GPG corretamente.
+  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
 fi
 
-# Garante usuário da aplicação
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir /var/lib/"$APP_USER" --create-home \
     --shell /usr/sbin/nologin --user-group "$APP_USER"
 fi
 
-# PM2 global
-if command -v npm >/dev/null 2>&1; then
-  command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
-fi
+command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
 
