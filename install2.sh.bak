@@ -272,7 +272,7 @@ if $need_node; then
     | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
   chmod 0644 /etc/apt/keyrings/nodesource.gpg
 
-  codename="$(. /etc/os-release; echo "${VERSION_CODENAME}")"
+  #codename removido
   cat >/etc/apt/sources.list.d/nodesource.list <<EOF
 deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node/v20.x/deb/ nodistro main
 EOF
