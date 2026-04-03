@@ -18,8 +18,8 @@ TERM_WIDTH=$(tput cols 2>/dev/null || echo 80)
 
 # --- 3. FUNÇÕES DE LAYOUT ---
 draw_line() {
-    local char=$1; local color=$2
-    echo -ne "${color}${BOLD}  "
+    local char=$1; local color=$2; local bg=${3:-}
+    echo -ne "${bg}${color}${BOLD}  "
     for ((i=1; i<=$((TERM_WIDTH - 4)); i++)); do echo -n "$char"; done
     echo -e "${NC}"
 }
@@ -90,9 +90,9 @@ export DEBIAN_FRONTEND=noninteractive
 # =============================================================================
 clear
 echo -e "${BGDARK}${GOLD}${BOLD}"
-draw_line "═" "$GOLD"
-center_print "DIETA MILENAR — INSTALAÇÃO v1.2.0" "$GOLD"
-draw_line "═" "$GOLD"
+draw_line "═" "$GOLD" "$BGDARK"
+center_print "DIETA MILENAR — INSTALAÇÃO v1.2.0" "${BGDARK}${GOLD}"
+draw_line "═" "$GOLD" "$BGDARK"
 echo -e "${NC}"
 
 require_cmd curl
@@ -121,12 +121,46 @@ fi
 
 echo -e "  ${GREEN}[✔]${NC} IP: ${CYAN}${BOLD}${PUBLIC_IP}${NC}\n"
 
-echo -e "${GOLD}${BOLD}  ── 🔍 AMBIENTE ${NC}"
+echo -e "${GOLD}${BOLD}  ── 🔍 DEPENDÊNCIAS ${NC}"
 draw_line "─" "$GOLD"
 
-chk_cmd() { command -v "$1" &>/dev/null && echo -ne "${GREEN}[✔]${NC}" || echo -ne "${RED}[✘]${NC}"; }
-printf "  $(chk_cmd curl) curl       $(chk_cmd git) git        $(chk_cmd nginx) nginx\n"
-printf "  $(chk_cmd mysql) mysql      $(chk_cmd php) php        $(chk_cmd node) node\n"
+chk() {
+  case $1 in
+    cmd)  command -v "$2" &>/dev/null ;;
+    mod)  php -m 2>/dev/null | grep -qi "^$2$" ;;
+    node) command -v node &>/dev/null && [[ $(node -v | grep -oP '\d+' | head -1) -ge 20 ]] ;;
+  esac
+}
+
+DEPS=(
+  "curl|cmd|curl"        "git|cmd|git"            "unzip|cmd|unzip"
+  "nginx|cmd|nginx"      "mysql|cmd|mysql"         "openssl|cmd|openssl"
+  "build-essential|cmd|gcc" "php|cmd|php"          "php-fpm|cmd|php-fpm"
+  "php-mbstring|mod|mbstring" "php-zip|mod|zip"    "php-gd|mod|gd"
+  "php-curl|mod|curl"    "php-mysql|mod|mysqli"    "node>=20|node|node"
+  "pm2|cmd|pm2"
+)
+
+MISS=0; COLS=3; COL=0
+for D in "${DEPS[@]}"; do
+  IFS='|' read -r NAME TYPE VAL <<< "$D"
+  chk "$TYPE" "$VAL" && OK=true || OK=false
+  if $OK; then
+    ITEM="${GREEN}[✔]${NC} $(printf '%-16s' "$NAME")"
+  else
+    ITEM="${RED}[✘]${NC} ${BOLD}$(printf '%-16s' "$NAME")${NC}"
+    MISS=$((MISS+1))
+  fi
+  printf "  ${ITEM}"; COL=$((COL+1))
+  [[ $COL -ge $COLS ]] && echo "" && COL=0
+done
+[[ $COL -ne 0 ]] && echo ""
+echo ""
+if [[ $MISS -eq 0 ]]; then
+  echo -e "  ${GREEN}${BOLD}Todas as dependências satisfeitas.${NC}"
+else
+  echo -e "  ${YELLOW}[⚠]${NC} ${BOLD}$MISS dependência(s) ausente(s)${NC} — serão instaladas automaticamente."
+fi
 
 echo ""
 draw_line "─" "$GOLD"
@@ -150,6 +184,8 @@ if [[ "${USE_DOMAIN:-}" =~ ^[sS]$ ]]; then
     is_valid_domain "$DOMAIN_RAW" || log_error "Domínio inválido: '$DOMAIN_RAW'"
     DOMAIN="$DOMAIN_RAW"
     USE_SSL=true
+    read -rp "  E-mail para SSL/Let's Encrypt: " LE_EMAIL
+    [[ "$LE_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || log_error "E-mail inválido."
 fi
 
 echo -e "\n  ${BOLD}🗄️  BANCO DE DADOS${NC}"
@@ -368,7 +404,7 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}
-DB_PASS=${DB_PASS}
+DB_PASS=${DB_PASS_ESC}
 
 JWT_SECRET=${JWT_SECRET}
 STRIPE_SECRET_KEY=${STRIPE_KEY}
@@ -394,9 +430,9 @@ if [[ -f "$CHATW" ]]; then
 fi
 
 if [[ -f package-lock.json ]]; then
-  sudo -u "$APP_USER" -g "$APP_GROUP" npm ci --silent
+  sudo -u "$APP_USER" -g "$APP_GROUP" npm ci --silent --cache /var/lib/"$APP_USER"/.npm
 else
-  sudo -u "$APP_USER" -g "$APP_GROUP" npm install --silent
+  sudo -u "$APP_USER" -g "$APP_GROUP" npm install --silent --cache /var/lib/"$APP_USER"/.npm
 fi
 sudo -u "$APP_USER" -g "$APP_GROUP" npm run build --silent
 
@@ -409,7 +445,7 @@ log_status "Compilação concluída."
 header "ETAPA 7 — IMPORTANDO SQL (FALHA ABORTA)"
 mysql_app=( mysql --protocol=tcp -h 127.0.0.1 -u "$DB_USER" --password="$DB_PASS" )
 
-SQL_FILE="$(find "$INSTALL_DIR" -maxdepth 3 -name "*.sql" -print -quit 2>/dev/null || true)"
+SQL_FILE="$(find "$INSTALL_DIR" -maxdepth 3 -type f -name "*.sql" -print -quit 2>/dev/null || true)"
 if [[ -n "${SQL_FILE:-}" ]]; then
   "${mysql_app[@]}" "$DB_NAME" < "$SQL_FILE"
   log_status "Banco importado: $SQL_FILE"
@@ -417,8 +453,55 @@ else
   log_warn "Nenhum .sql encontrado para importar."
 fi
 
+# --- ETAPA 8 ---
+header "ETAPA 8 — PERMISSÕES"
+
+chown -R "$APP_USER":"$APP_GROUP" "$INSTALL_DIR"
+chmod -R o-rwx "$INSTALL_DIR"
+chown -R www-data:www-data "$INSTALL_DIR/public"
+chown -R www-data:www-data "$INSTALL_DIR/socialmembers"
+chmod -R 0775 "$INSTALL_DIR/public"
+chmod -R 0775 "$INSTALL_DIR/socialmembers"
+chown -R www-data:www-data /var/log/dieta-milenar
+
+log_status "Permissões configuradas."
+
+# --- ETAPA 9 ---
+header "ETAPA 9 — CONFIGURANDO PM2"
+
+cat > "$INSTALL_DIR/ecosystem.config.cjs" <<EOF
+module.exports = {
+  apps: [{
+    name: 'dieta-milenar',
+    script: 'server.ts',
+    interpreter: 'node',
+    interpreter_args: '--import tsx/esm',
+    cwd: '${INSTALL_DIR}',
+    exec_mode: 'fork',
+    instances: 1,
+    env: { NODE_ENV: 'production' },
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '512M',
+    error_file: '/var/log/dieta-milenar/error.log',
+    out_file:   '/var/log/dieta-milenar/out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss'
+  }]
+};
+EOF
+chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
+
+sudo -u "$APP_USER" -g "$APP_GROUP" pm2 stop dieta-milenar >/dev/null 2>&1 || true
+sudo -u "$APP_USER" -g "$APP_GROUP" pm2 delete dieta-milenar >/dev/null 2>&1 || true
+sudo -u "$APP_USER" -g "$APP_GROUP" pm2 start "$INSTALL_DIR/ecosystem.config.cjs" --env production
+sudo -u "$APP_USER" -g "$APP_GROUP" pm2 save --silent
+
+pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
+
+log_status "Aplicação iniciada via PM2 (sem root)."
+
 # --- ETAPA 10 ---
-header "ETAPA 10 — CONFIGURANDO NGINX CENTRALIZADO"
+header "ETAPA 10 — CONFIGURANDO NGINX"
 
 ADMIN_IP="127.0.0.1"
 if [[ -n "${SSH_CONNECTION:-}" ]]; then
@@ -498,43 +581,12 @@ nginx -t >/dev/null
 systemctl enable nginx >/dev/null 2>&1 || true
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-cat > "$INSTALL_DIR/ecosystem.config.cjs" <<EOF
-module.exports = {
-  apps: [{
-    name: 'dieta-milenar',
-    script: 'server.ts',
-    interpreter: 'node',
-    interpreter_args: '--import tsx/esm',
-    cwd: '${INSTALL_DIR}',
-    exec_mode: 'fork',
-    instances: 1,
-    env: { NODE_ENV: 'production' },
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '512M',
-    error_file: '/var/log/dieta-milenar/error.log',
-    out_file:   '/var/log/dieta-milenar/out.log',
-    log_date_format: 'YYYY-MM-DD HH:mm:ss'
-  }]
-};
-EOF
-chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
-
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 stop dieta-milenar >/dev/null 2>&1 || true
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 delete dieta-milenar >/dev/null 2>&1 || true
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 start "$INSTALL_DIR/ecosystem.config.cjs" --env production
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 save --silent
-
-pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
-
-log_status "Nginx + PM2 configurados (PM2 sem root)."
+log_status "Nginx configurado (porta 80)."
 
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
     header "ETAPA 11 — SSL CERTBOT"
     apt-get install -y -qq --no-install-recommends certbot python3-certbot-nginx >/dev/null
-    read -rp "  E-mail p/ Let's Encrypt (obrigatório): " LE_EMAIL
-    [[ "$LE_EMAIL" =~ ^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$ ]] || log_error "E-mail inválido."
     certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "$LE_EMAIL" \
       || log_warn "Falha no SSL (DNS/validação pendente)."
 fi
