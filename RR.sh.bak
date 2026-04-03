@@ -533,4 +533,116 @@ GENERIC_PHP_PKGS=(
 # Lista completa de pacotes que o instalador adiciona e que devem ser purgados
 ALL_INSTALLED_PKGS=(
     nodejs
-    nginx nginx-common nginx-core nginx-ful
+    nginx nginx-common nginx-core nginx-full # Nginx pode ter variantes
+    mysql-server mysql-client mysql-common mysql-server-8.0 mysql-server-core-8.0 # MySQL pode ter variantes
+    openssl # Instalador adiciona, mas é base. Purge se dedicado.
+    build-essential gcc make
+    curl git unzip rsync
+    certbot python3-certbot-nginx
+    "${PHP_PKGS[@]}"
+    "${GENERIC_PHP_PKGS[@]}" # Fallback para PHP
+)
+
+# Filtra pacotes que realmente existem antes de tentar remover
+PKGS_TO_PURGE=()
+for pkg in "${ALL_INSTALLED_PKGS[@]}"; do
+    if dpkg -s "$pkg" >/dev/null 2>&1; then
+        PKGS_TO_PURGE+=("$pkg")
+    fi
+done
+
+if [[ ${#PKGS_TO_PURGE[@]} -gt 0 ]]; then
+    run_silent "Removendo e purgando pacotes instalados pelo script" \
+        bash -c "apt-get remove -y --purge ${PKGS_TO_PURGE[*]} 2>/dev/null || true"
+else
+    log_warn "Nenhum pacote específico da aplicação encontrado para purgar."
+fi
+
+run_silent "Removendo repositório NodeSource" \
+    bash -c "
+        rm -f /etc/apt/sources.list.d/nodesource.list
+        rm -f /etc/apt/keyrings/nodesource.gpg
+        rm -f /etc/apt/sources.list.d/nodesource.list.save
+    "
+
+run_silent "apt-get autoremove + autoclean" \
+    bash -c "
+        apt-get autoremove -y --purge 2>/dev/null || true
+        apt-get autoclean 2>/dev/null || true
+        apt-get clean 2>/dev/null || true
+    "
+
+log_status "Pacotes removidos."
+
+# =============================================================================
+#  ETAPA 8 — LIMPEZA DE ARQUIVOS TEMPORÁRIOS E DE ORIGEM
+# =============================================================================
+header "ETAPA 8 — LIMPEZA FINAL DE ARQUIVOS RESIDUAIS"
+
+run_silent "Removendo npm cache do root" \
+    bash -c "rm -rf /root/.npm 2>/dev/null || true"
+
+run_silent "Removendo arquivos temporários da instalação" \
+    bash -c "
+        rm -rf /tmp/pma.zip /tmp/pma_ext
+        rm -rf /tmp/dieta-*
+    "
+
+run_silent "Removendo arquivo install.sh (se em /home/ubuntu)" \
+    bash -c "rm -f /home/ubuntu/install.sh 2>/dev/null || true"
+
+run_silent "Removendo diretório do projeto (se em /home/ubuntu)" \
+    bash -c "
+        for d in /home/ubuntu/Dieta-Milenar /home/ubuntu/dieta-milenar \
+                 /home/ubuntu/DietaMilelar; do
+            [[ -d \"\$d\" ]] && rm -rf \"\$d\" && echo \"Removido: \$d\" || true
+        done
+    "
+
+run_silent "Recarregando systemd após remoções" \
+    bash -c "systemctl daemon-reload 2>/dev/null || true"
+
+log_status "Limpeza final concluída."
+
+# =============================================================================
+#  AUTO-REMOÇÃO DO SCRIPT RR
+# =============================================================================
+SELF_PATH="$(readlink -f "$0" 2>/dev/null || echo "$0")"
+if [[ "$SELF_PATH" == "/usr/local/bin/RR" ]] || [[ "$SELF_PATH" == */RR ]]; then
+    log_info "Auto-removendo script RR: $SELF_PATH"
+    # Usa subshell com sleep para se auto-deletar após sair
+    (sleep 1 && rm -f "$SELF_PATH") &
+    log_status "Script RR agendado para auto-remoção."
+fi
+
+# =============================================================================
+#  RESUMO FINAL
+# =============================================================================
+clear
+echo -e "${GREEN}${BOLD}"
+draw_line "═" "$GREEN"
+center_print "✅  DESINSTALAÇÃO CONCLUÍDA  ✅" "$GREEN"
+draw_line "═" "$GREEN"
+echo -e "${NC}"
+
+elapsed=$(( $(date +%s) - _UNINSTALL_EPOCH ))
+
+echo -e "  ${GREEN}[✔]${NC} PM2 e processos Node.js:       removidos"
+echo -e "  ${GREEN}[✔]${NC} Nginx + configurações + SSL:    removidos"
+echo -e "  ${GREEN}[✔]${NC} MySQL + bancos + usuário:       removidos"
+echo -e "  ${GREEN}[✔]${NC} PHP-FPM ${PHP_VER:-(*)}:                 removido"
+echo -e "  ${GREEN}[✔]${NC} Node.js + NodeSource repo:      removidos"
+echo -e "  ${GREEN}[✔]${NC} build-essential, git, unzip:    removidos"
+echo -e "  ${GREEN}[✔]${NC} Certbot:                        removido"
+echo -e "  ${GREEN}[✔]${NC} Diretórios da aplicação:        removidos"
+echo -e "  ${GREEN}[✔]${NC} Usuário '$APP_USER':             removido"
+echo -e "  ${GREEN}[✔]${NC} Duração:                        ${elapsed}s"
+echo -e "  ${DIM}Log salvo em: $LOG_FILE${NC}\n"
+
+draw_line "─" "$YELLOW"
+echo -e "  ${YELLOW}Para remover o histórico deste comando:${NC}"
+echo -e "  ${CYAN}history -c && history -w${NC}"
+draw_line "─" "$YELLOW"
+
+{ echo "STATUS: OK | Duração: ${elapsed}s"; } >> "$LOG_FILE"
+log_info "Desinstalador finalizado com sucesso."

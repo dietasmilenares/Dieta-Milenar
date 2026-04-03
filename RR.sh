@@ -501,78 +501,65 @@ else
 fi
 
 # =============================================================================
-#  ETAPA 7 — REMOVER PACOTES
+#  ETAPA 7 — REMOVER PACOTES (VERSÃO CORRIGIDA)
 # =============================================================================
 header "ETAPA 7 — REMOVENDO PACOTES INSTALADOS"
 
-# Monta lista de pacotes PHP com nome correto incluindo versão
-PHP_PKGS=()
-if command -v php >/dev/null 2>&1; then # Verifica novamente se php ainda existe
-    PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
-    if [[ -n "$PHP_VER" ]]; then
-        PHP_PKGS=(
-            "php${PHP_VER}"
-            "php${PHP_VER}-fpm"
-            "php${PHP_VER}-mysql"
-            "php${PHP_VER}-mbstring"
-            "php${PHP_VER}-zip"
-            "php${PHP_VER}-gd"
-            "php${PHP_VER}-curl"
-            "php${PHP_VER}-cli"
-            "php${PHP_VER}-common"
-        )
-    fi
-fi
-
-# Pacotes genéricos (nomes sem versão — garantia adicional)
-GENERIC_PHP_PKGS=(
-    php php-fpm php-mysql php-mbstring
-    php-zip php-gd php-curl php-cli php-common
-)
-
-# Lista completa de pacotes que o instalador adiciona e que devem ser purgados
-ALL_INSTALLED_PKGS=(
-    nodejs
-    nginx nginx-common nginx-core nginx-full # Nginx pode ter variantes
-    mysql-server mysql-client mysql-common mysql-server-8.0 mysql-server-core-8.0 # MySQL pode ter variantes
-    openssl # Instalador adiciona, mas é base. Purge se dedicado.
-    build-essential gcc make
-    curl git unzip rsync
-    certbot python3-certbot-nginx
-    "${PHP_PKGS[@]}"
-    "${GENERIC_PHP_PKGS[@]}" # Fallback para PHP
-)
-
-# Filtra pacotes que realmente existem antes de tentar remover
-PKGS_TO_PURGE=()
-for pkg in "${ALL_INSTALLED_PKGS[@]}"; do
-    if dpkg -s "$pkg" >/dev/null 2>&1; then
-        PKGS_TO_PURGE+=("$pkg")
-    fi
-done
-
-if [[ ${#PKGS_TO_PURGE[@]} -gt 0 ]]; then
-    run_silent "Removendo e purgando pacotes instalados pelo script" \
-        bash -c "apt-get remove -y --purge ${PKGS_TO_PURGE[*]} 2>/dev/null || true"
-else
-    log_warn "Nenhum pacote específico da aplicação encontrado para purgar."
-fi
-
-run_silent "Removendo repositório NodeSource" \
+# Remove locks do APT antes de começar (prevenção extra)
+run_silent "Removendo locks residuais do APT" \
     bash -c "
-        rm -f /etc/apt/sources.list.d/nodesource.list
-        rm -f /etc/apt/keyrings/nodesource.gpg
-        rm -f /etc/apt/sources.list.d/nodesource.list.save
+        rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
+        rm -f /var/lib/dpkg/lock 2>/dev/null || true
+        dpkg --configure -a 2>/dev/null || true
     "
 
-run_silent "apt-get autoremove + autoclean" \
+# REMOÇÃO POR CATEGORIA (com timeouts) - MUITO MAIS RÁPIDO E SEGURO
+
+# 1. Node.js e repositório NodeSource
+run_silent "Removendo Node.js e repositório NodeSource (timeout 30s)" \
     bash -c "
-        apt-get autoremove -y --purge 2>/dev/null || true
-        apt-get autoclean 2>/dev/null || true
-        apt-get clean 2>/dev/null || true
+        timeout 30 apt-get remove -y --purge nodejs npm 2>/dev/null || true
+        rm -f /etc/apt/sources.list.d/nodesource.list* 2>/dev/null || true
+        rm -f /etc/apt/keyrings/nodesource.gpg 2>/dev/null || true
     "
 
-log_status "Pacotes removidos."
+# 2. Nginx (todas as variantes)
+run_silent "Removendo Nginx (timeout 30s)" \
+    bash -c "timeout 30 apt-get remove -y --purge 'nginx*' 2>/dev/null || true"
+
+# 3. MySQL (todas as variantes)
+run_silent "Removendo MySQL (timeout 30s)" \
+    bash -c "timeout 30 apt-get remove -y --purge 'mysql*' 'mariadb*' 2>/dev/null || true"
+
+# 4. PHP (versão específica ou todas)
+run_silent "Removendo PHP e extensões (timeout 30s)" \
+    bash -c "
+        if [[ -n \"$PHP_VER\" ]]; then
+            timeout 30 apt-get remove -y --purge \"php${PHP_VER}*\" 2>/dev/null || true
+        else
+            timeout 30 apt-get remove -y --purge 'php*' 2>/dev/null || true
+        fi
+    "
+
+# 5. Outros pacotes específicos
+run_silent "Removendo outros pacotes (timeout 30s)" \
+    bash -c "
+        timeout 30 apt-get remove -y --purge \
+            certbot python3-certbot-nginx \
+            build-essential gcc make \
+            curl git unzip rsync \
+            openssl 2>/dev/null || true
+    "
+
+# 6. Limpeza final do APT
+run_silent "Limpando dependências não utilizadas (timeout 30s)" \
+    bash -c "
+        timeout 30 apt-get autoremove -y --purge 2>/dev/null || true
+        timeout 30 apt-get autoclean 2>/dev/null || true
+        timeout 30 apt-get clean 2>/dev/null || true
+    "
+
+log_status "Pacotes removidos com sucesso."
 
 # =============================================================================
 #  ETAPA 8 — LIMPEZA DE ARQUIVOS TEMPORÁRIOS E DE ORIGEM
