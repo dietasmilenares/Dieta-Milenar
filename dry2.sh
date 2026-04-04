@@ -294,9 +294,11 @@ if ! id -u "$APP_USER" >/dev/null 2>&1; then
     --shell /bin/bash --user-group "$APP_USER"
 fi
 
-# PM2 global
+# PM2 e TSX globais (Correção da Auditoria)
 if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
+  # CORREÇÃO: Instalando o tsx globalmente para evitar crash no PM2 ao não localizar o pacote
+  command -v tsx >/dev/null 2>&1 || npm install -g tsx --silent
 fi
 
 PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
@@ -454,7 +456,7 @@ runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm run build --silent"
 
 runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm prune --omit=dev --silent" || true
 
-# FIX DO ERRO 502: Garante o tsx para rodar o server.ts
+# FIX DO ERRO 502: Garante o tsx para rodar o server.ts (Mantido como segurança extra local)
 runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm install tsx --save --silent"
 
 log_status "Compilação concluída."
@@ -487,13 +489,14 @@ log_status "Permissões configuradas."
 # --- ETAPA 9 ---
 header "ETAPA 9 — CONFIGURANDO PM2"
 
+# CORREÇÃO DA AUDITORIA: Alterado interpreter_args de '--import tsx/esm' para '--import tsx'
 cat > "$INSTALL_DIR/ecosystem.config.cjs" <<EOF
 module.exports = {
   apps: [{
     name: 'dieta-milenar',
     script: 'server.ts',
     interpreter: 'node',
-    interpreter_args: '--import tsx/esm',
+    interpreter_args: '--import tsx', 
     cwd: '${INSTALL_DIR}',
     exec_mode: 'fork',
     instances: 1,
