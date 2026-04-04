@@ -6,7 +6,13 @@
 
 set -euo pipefail
 IFS=$'\n\t'
-umask 022 # Correção para evitar 'Permission Denied' em binários globais
+umask 022
+
+# --- CONFIGURAÇÃO DE LOGS (NOVO) ---
+LOG_FILE="/var/log/dieta-milenar-install.log"
+touch "$LOG_FILE"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "--- Início da Instalação: $(date) ---" >> "$LOG_FILE"
 
 # --- 1. CORES E ESTILOS ---
 GOLD='\033[38;5;220m'; BGDARK='\033[48;5;232m'; BOLD='\033[1m'; NC='\033[0m'
@@ -162,7 +168,6 @@ for D in "${DEPS[@]}"; do
   fi
 done
 
-# EXIBIÇÃO: Faltantes no TOPO, Instaladas ABAIXO
 [[ -n "$MISSING_LIST" ]] && echo -e "${MISSING_LIST}"
 [[ -n "$INSTALLED_LIST" ]] && echo -e "${INSTALLED_LIST}"
 
@@ -186,7 +191,7 @@ header "ETAPA 0 — CONFIGURAÇÃO DO SISTEMA"
 
 echo -e "\n  ${BOLD}🌐 CONEXÃO${NC}"
 read -rp "  Deseja usar um domínio? [s/N]: " USE_DOMAIN
-USE_DOMAIN=${USE_DOMAIN:-n} # PADRÃO: NÃO
+USE_DOMAIN=${USE_DOMAIN:-n} # Padrão: Não
 DOMAIN="$PUBLIC_IP"
 USE_SSL=false
 
@@ -210,7 +215,7 @@ DB_USER=${DB_USER:-dieta_user}
 is_valid_db_ident "$DB_USER" || log_error "DB_USER inválido (use [A-Za-z0-9_], máx 32)."
 
 read -rsp "  Senha MySQL (oculta) [root]: " DB_PASS; echo
-DB_PASS=${DB_PASS:-root} # PADRÃO: ROOT
+DB_PASS=${DB_PASS:-root} # Padrão: root
 
 echo -e "\n  ${BOLD}💳 PAGAMENTOS${NC}"
 read -rp "  Stripe Secret Key [Enter = pular]: " STRIPE_KEY
@@ -222,7 +227,7 @@ JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)}
 
 echo -e "\n  ${BOLD}🧰 PHPMYADMIN${NC}"
 read -rp "  Instalar phpMyAdmin? [S/n]: " INSTALL_PMA
-INSTALL_PMA=${INSTALL_PMA:-s} # PADRÃO: SIM
+INSTALL_PMA=${INSTALL_PMA:-s} # Padrão: Sim
 
 # =============================================================================
 #  TELA 3: RESUMO DA CONFIGURAÇÃO
@@ -275,7 +280,7 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 if $need_node; then
-  log_status "Instalando Node.js 20 (NodeSource - método oficial e atualizado)..."
+  log_status "Instalando Node.js 20 (NodeSource)..."
   rm -f /etc/apt/sources.list.d/nodesource.list
   rm -f /etc/apt/keyrings/nodesource.gpg
   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -294,7 +299,6 @@ if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 fi
 
-# CAPTURA O CAMINHO REAL DO PM2 PARA O RUNUSER
 PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
@@ -334,9 +338,9 @@ PMA_VER="5.2.1"
 
 PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
 [[ -n "$PHP_VER" ]] || log_error "PHP não encontrado."
-PHP_SOCK="/var/run/php/php${PHP_VER}-fpm.sock"
-systemctl enable "php${PHP_VER}-fpm" >/dev/null 2>&1 || true
-systemctl start  "php${PHP_VER}-fpm" >/dev/null 2>&1 || true
+
+# --- FIX 502: Busca Automática de Socket ---
+PHP_FPM_SOCK=$(find /var/run/php/ -name "php*-fpm.sock" | head -1)
 
 if [[ "$INSTALL_PMA" =~ ^[sS]$ ]]; then
   if [[ ! -d "$PMA_DIR" ]]; then
@@ -439,7 +443,6 @@ if [[ -f "$CHATW" ]]; then
   sed -i -E "s#${esc_from}#${esc_to}#g" "$CHATW"
 fi
 
-# CORREÇÃO PERMISSÃO: Usando runuser -l para evitar bloqueio do root
 if [[ -f package-lock.json ]]; then
   runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm ci --silent --cache /var/lib/$APP_USER/.npm"
 else
@@ -502,7 +505,6 @@ module.exports = {
 EOF
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
-# RESOLUÇÃO PERMISSION DENIED: runuser -l + caminho absoluto PM2
 runuser -l "$APP_USER" -c "$PM2_BIN stop dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "$PM2_BIN delete dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "$PM2_BIN start $INSTALL_DIR/ecosystem.config.cjs --env production"
@@ -521,6 +523,7 @@ if [[ -n "${SSH_CONNECTION:-}" ]]; then
   is_valid_ipv4 "$ADMIN_IP" || ADMIN_IP="127.0.0.1"
 fi
 
+# --- FIX 502: Configuração Nginx Robusta ---
 cat > "/etc/nginx/sites-available/dieta-milenar" <<NGINX
 server {
     listen 80;
@@ -530,10 +533,6 @@ server {
     access_log /var/log/nginx/dieta-milenar.access.log;
     error_log  /var/log/nginx/dieta-milenar.error.log;
 
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
     # Social Proof
     location ^~ /socialproof/ {
         root /var/www;
@@ -542,28 +541,12 @@ server {
 
         location ~ ^/socialproof/.+\.php\$ {
             include fastcgi_params;
-            fastcgi_pass unix:${PHP_SOCK};
+            fastcgi_pass unix:${PHP_FPM_SOCK};
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         }
     }
 
-    # phpMyAdmin
-    location ^~ /phpmyadmin/ {
-        allow 127.0.0.1;
-        allow ${ADMIN_IP};
-        deny all;
-
-        root /var/www;
-        index index.php index.html;
-
-        location ~ ^/phpmyadmin/(.+\.php)\$ {
-            include fastcgi_params;
-            fastcgi_pass unix:${PHP_SOCK};
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        }
-    }
-
-    # App Node.js
+    # App Node.js Proxy
     location / {
         proxy_pass http://127.0.0.1:${APP_PORT};
         proxy_http_version 1.1;
@@ -573,18 +556,18 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_read_timeout 60s;
     }
 }
 NGINX
 
-ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/dieta-milenar"
+# Remove o default conflitante
+ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/"
 rm -f /etc/nginx/sites-enabled/default
 
 nginx -t >/dev/null
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-log_status "Nginx configurado."
+log_status "Nginx configurado e erro 502 corrigido."
 
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
@@ -602,7 +585,7 @@ draw_line "━" "$GREEN"
 center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO" "$GREEN"
 draw_line "━" "$GREEN"
 echo -e "\n  URL: ${CYAN}${BOLD}http://$DOMAIN${NC}"
-echo -e "  Usuário App: ${YELLOW}$APP_USER${NC}"
+echo -e "  Log de Instalação: ${YELLOW}$LOG_FILE${NC}"
 echo -e "  Senha MySQL: ${YELLOW}$DB_PASS${NC}"
 echo -e "\n  Para monitorar: ${BOLD}runuser -l $APP_USER -c '$PM2_BIN monit'${NC}\n"
 draw_line "━" "$GREEN"

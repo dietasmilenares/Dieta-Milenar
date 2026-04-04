@@ -8,7 +8,7 @@ set -euo pipefail
 IFS=$'\n\t'
 umask 022
 
-# --- CONFIGURAÇÃO DE LOGS (NOVO) ---
+# --- CONFIGURAÇÃO DE LOGS ---
 LOG_FILE="/var/log/dieta-milenar-install.log"
 touch "$LOG_FILE"
 exec > >(tee -a "$LOG_FILE") 2>&1
@@ -556,11 +556,12 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 300s;
     }
 }
 NGINX
 
-# Remove o default conflitante
+# Remove o default conflitante para eliminar o erro 502
 ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/"
 rm -f /etc/nginx/sites-enabled/default
 
@@ -572,7 +573,7 @@ log_status "Nginx configurado e erro 502 corrigido."
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
     header "ETAPA 11 — SSL CERTBOT"
-    apt-get install -y -qq certbot python3-certbot-nginx >/dev/null
+    apt-get install -y -qq --no-install-recommends certbot python3-certbot-nginx >/dev/null
     certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "$LE_EMAIL" \
       || log_warn "Falha no SSL (DNS/validação pendente)."
 fi

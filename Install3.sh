@@ -6,7 +6,13 @@
 
 set -euo pipefail
 IFS=$'\n\t'
-umask 027
+umask 022
+
+# --- CONFIGURAÇÃO DE LOGS (NOVO) ---
+LOG_FILE="/var/log/dieta-milenar-install.log"
+touch "$LOG_FILE"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "--- Início da Instalação: $(date) ---" >> "$LOG_FILE"
 
 # --- 1. CORES E ESTILOS ---
 GOLD='\033[38;5;220m'; BGDARK='\033[48;5;232m'; BOLD='\033[1m'; NC='\033[0m'
@@ -141,20 +147,30 @@ DEPS=(
   "pm2|cmd|pm2"
 )
 
-MISS=0; COLS=3; COL=0
+MISS=0; COLS=3
+MISSING_LIST=""
+INSTALLED_LIST=""
+COL_M=0; COL_I=0
+
 for D in "${DEPS[@]}"; do
   IFS='|' read -r NAME TYPE VAL <<< "$D"
-  chk "$TYPE" "$VAL" && OK=true || OK=false
-  if $OK; then
+  if chk "$TYPE" "$VAL"; then
     ITEM="${GREEN}[✔]${NC} $(printf '%-16s' "$NAME")"
+    INSTALLED_LIST+="  ${ITEM}"
+    COL_I=$((COL_I+1))
+    [[ $((COL_I % COLS)) -eq 0 ]] && INSTALLED_LIST+="\n"
   else
     ITEM="${RED}[✘]${NC} ${BOLD}$(printf '%-16s' "$NAME")${NC}"
+    MISSING_LIST+="  ${ITEM}"
     MISS=$((MISS+1))
+    COL_M=$((COL_M+1))
+    [[ $((COL_M % COLS)) -eq 0 ]] && MISSING_LIST+="\n"
   fi
-  printf "  ${ITEM}"; COL=$((COL+1))
-  [[ $COL -ge $COLS ]] && echo "" && COL=0
 done
-[[ $COL -ne 0 ]] && echo ""
+
+[[ -n "$MISSING_LIST" ]] && echo -e "${MISSING_LIST}"
+[[ -n "$INSTALLED_LIST" ]] && echo -e "${INSTALLED_LIST}"
+
 echo ""
 if [[ $MISS -eq 0 ]]; then
   echo -e "  ${GREEN}${BOLD}Todas as dependências satisfeitas.${NC}"
@@ -175,10 +191,11 @@ header "ETAPA 0 — CONFIGURAÇÃO DO SISTEMA"
 
 echo -e "\n  ${BOLD}🌐 CONEXÃO${NC}"
 read -rp "  Deseja usar um domínio? [s/N]: " USE_DOMAIN
+USE_DOMAIN=${USE_DOMAIN:-n} # Padrão: Não
 DOMAIN="$PUBLIC_IP"
 USE_SSL=false
 
-if [[ "${USE_DOMAIN:-}" =~ ^[sS]$ ]]; then
+if [[ "$USE_DOMAIN" =~ ^[sS]$ ]]; then
     read -rp "  Digite o domínio (ex: meusite.com): " DOMAIN_RAW
     DOMAIN_RAW="$(echo "$DOMAIN_RAW" | tr -d '[:space:]' | sed -E 's#^https?://##; s#/.*$##')"
     is_valid_domain "$DOMAIN_RAW" || log_error "Domínio inválido: '$DOMAIN_RAW'"
@@ -197,11 +214,8 @@ read -rp "  Usuário MySQL [dieta_user]: " DB_USER
 DB_USER=${DB_USER:-dieta_user}
 is_valid_db_ident "$DB_USER" || log_error "DB_USER inválido (use [A-Za-z0-9_], máx 32)."
 
-while true; do
-  read -rsp "  Senha MySQL (oculta): " DB_PASS; echo
-  [[ -n "$DB_PASS" ]] && break
-  log_warn "A senha não pode ser vazia."
-done
+read -rsp "  Senha MySQL (oculta) [root]: " DB_PASS; echo
+DB_PASS=${DB_PASS:-root} # Padrão: root
 
 echo -e "\n  ${BOLD}💳 PAGAMENTOS${NC}"
 read -rp "  Stripe Secret Key [Enter = pular]: " STRIPE_KEY
@@ -212,8 +226,8 @@ read -rp "  JWT Secret [Enter = gerar automaticamente]: " JWT_SECRET
 JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)}
 
 echo -e "\n  ${BOLD}🧰 PHPMYADMIN${NC}"
-read -rp "  Instalar phpMyAdmin? (N recomendado em produção) [s/N]: " INSTALL_PMA
-INSTALL_PMA=${INSTALL_PMA:-N}
+read -rp "  Instalar phpMyAdmin? [S/n]: " INSTALL_PMA
+INSTALL_PMA=${INSTALL_PMA:-s} # Padrão: Sim
 
 # =============================================================================
 #  TELA 3: RESUMO DA CONFIGURAÇÃO
@@ -266,16 +280,10 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 if $need_node; then
-  log_status "Instalando Node.js 20 (NodeSource - método oficial e atualizado)..."
-
-  # Remove configurações antigas do NodeSource para evitar conflitos
+  log_status "Instalando Node.js 20 (NodeSource)..."
   rm -f /etc/apt/sources.list.d/nodesource.list
   rm -f /etc/apt/keyrings/nodesource.gpg
-  
-  # Adiciona o repositório Node.js 20.x usando o script oficial do NodeSource.
-  # Este script detecta a distribuição (jammy) e configura o repositório e a chave GPG corretamente.
   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
 fi
@@ -283,13 +291,15 @@ fi
 # Garante usuário da aplicação
 if ! id -u "$APP_USER" >/dev/null 2>&1; then
   useradd --system --home-dir /var/lib/"$APP_USER" --create-home \
-    --shell /usr/sbin/nologin --user-group "$APP_USER"
+    --shell /bin/bash --user-group "$APP_USER"
 fi
 
 # PM2 global
 if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 fi
+
+PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
 
@@ -319,7 +329,7 @@ GRANT ALL PRIVILEGES ON \`socialproof\`.* TO '${DB_USER}'@'127.0.0.1';
 
 FLUSH PRIVILEGES;
 SQL
-log_status "Bancos e permissões criados (idempotente, senha atualiza)."
+log_status "Bancos e permissões criados."
 
 # --- ETAPA 3 ---
 header "ETAPA 3 — PHPMYADMIN (OPCIONAL, RESTRITO)"
@@ -360,7 +370,7 @@ EOF
   chmod -R o-rwx "$PMA_DIR"
   chmod 0750 "$PMA_DIR/tmp"
 
-  log_status "phpMyAdmin instalado (será restrito por IP no Nginx)."
+  log_status "phpMyAdmin instalado."
 else
   log_status "phpMyAdmin ignorado."
 fi
@@ -399,7 +409,7 @@ install -d -m 0770 -o www-data -g "$APP_GROUP" \
 
 install -d -m 0750 -o "$APP_USER" -g "$APP_GROUP" /var/log/dieta-milenar
 
-log_status "Arquivos e Social Proof movidos."
+log_status "Arquivos movidos."
 
 # --- ETAPA 5 ---
 header "ETAPA 5 — GERANDO .ENV"
@@ -419,7 +429,7 @@ ENV
 
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/.env"
 chmod 0640 "$INSTALL_DIR/.env"
-log_status "Arquivo .env configurado (0640, dono ${APP_USER})."
+log_status "Arquivo .env configurado."
 
 # --- ETAPA 6 ---
 header "ETAPA 6 — BUILD FRONTEND"
@@ -434,15 +444,15 @@ if [[ -f "$CHATW" ]]; then
 fi
 
 if [[ -f package-lock.json ]]; then
-  sudo -u "$APP_USER" -g "$APP_GROUP" npm ci --silent --cache /var/lib/"$APP_USER"/.npm
+  runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm ci --silent --cache /var/lib/$APP_USER/.npm"
 else
-  sudo -u "$APP_USER" -g "$APP_GROUP" npm install --silent --cache /var/lib/"$APP_USER"/.npm
+  runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm install --silent --cache /var/lib/$APP_USER/.npm"
 fi
-sudo -u "$APP_USER" -g "$APP_GROUP" npm run build --silent
+runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm run build --silent"
 
 [[ -f "$INSTALL_DIR/dist/index.html" ]] || log_error "Build falhou: dist/index.html ausente."
 
-sudo -u "$APP_USER" -g "$APP_GROUP" npm prune --omit=dev --silent || true
+runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm prune --omit=dev --silent" || true
 log_status "Compilação concluída."
 
 # --- ETAPA 7 ---
@@ -466,7 +476,7 @@ chown -R www-data:www-data "$INSTALL_DIR/public"
 chown -R www-data:www-data "$INSTALL_DIR/socialmembers"
 chmod -R 0775 "$INSTALL_DIR/public"
 chmod -R 0775 "$INSTALL_DIR/socialmembers"
-chown -R www-data:www-data /var/log/dieta-milenar
+chown -R www-data:www-data /var/log/dieta-milenar 2>/dev/null || true
 
 log_status "Permissões configuradas."
 
@@ -495,14 +505,14 @@ module.exports = {
 EOF
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 stop dieta-milenar >/dev/null 2>&1 || true
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 delete dieta-milenar >/dev/null 2>&1 || true
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 start "$INSTALL_DIR/ecosystem.config.cjs" --env production
-sudo -u "$APP_USER" -g "$APP_GROUP" pm2 save --silent
+runuser -l "$APP_USER" -c "$PM2_BIN stop dieta-milenar >/dev/null 2>&1 || true"
+runuser -l "$APP_USER" -c "$PM2_BIN delete dieta-milenar >/dev/null 2>&1 || true"
+runuser -l "$APP_USER" -c "$PM2_BIN start $INSTALL_DIR/ecosystem.config.cjs --env production"
+runuser -l "$APP_USER" -c "$PM2_BIN save --silent"
 
 pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
 
-log_status "Aplicação iniciada via PM2 (sem root)."
+log_status "Aplicação iniciada via PM2."
 
 # --- ETAPA 10 ---
 header "ETAPA 10 — CONFIGURANDO NGINX"
@@ -538,12 +548,8 @@ server {
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         }
     }
-NGINX
 
-if [[ "$INSTALL_PMA" =~ ^[sS]$ ]]; then
-cat >> "/etc/nginx/sites-available/dieta-milenar" <<NGINX
-
-    # phpMyAdmin (RESTRITO)
+    # phpMyAdmin
     location ^~ /phpmyadmin/ {
         allow 127.0.0.1;
         allow ${ADMIN_IP};
@@ -558,10 +564,6 @@ cat >> "/etc/nginx/sites-available/dieta-milenar" <<NGINX
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         }
     }
-NGINX
-fi
-
-cat >> "/etc/nginx/sites-available/dieta-milenar" <<NGINX
 
     # App Node.js
     location / {
@@ -582,19 +584,27 @@ ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/diet
 rm -f /etc/nginx/sites-enabled/default
 
 nginx -t >/dev/null
-systemctl enable nginx >/dev/null 2>&1 || true
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-log_status "Nginx configurado (porta 80)."
+log_status "Nginx configurado."
 
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
     header "ETAPA 11 — SSL CERTBOT"
-    apt-get install -y -qq --no-install-recommends certbot python3-certbot-nginx >/dev/null
+    apt-get install -y -qq certbot python3-certbot-nginx >/dev/null
     certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "$LE_EMAIL" \
       || log_warn "Falha no SSL (DNS/validação pendente)."
 fi
 
 # =============================================================================
 #  RESUMO FINAL
-# =============================================================
+# =============================================================================
+clear
+draw_line "━" "$GREEN"
+center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO" "$GREEN"
+draw_line "━" "$GREEN"
+echo -e "\n  URL: ${CYAN}${BOLD}http://$DOMAIN${NC}"
+echo -e "  Log de Instalação: ${YELLOW}$LOG_FILE${NC}"
+echo -e "  Senha MySQL: ${YELLOW}$DB_PASS${NC}"
+echo -e "\n  Para monitorar: ${BOLD}runuser -l $APP_USER -c '$PM2_BIN monit'${NC}\n"
+draw_line "━" "$GREEN"
