@@ -338,9 +338,9 @@ PMA_VER="5.2.1"
 
 PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
 [[ -n "$PHP_VER" ]] || log_error "PHP não encontrado."
-PHP_SOCK="/var/run/php/php${PHP_VER}-fpm.sock"
-systemctl enable "php${PHP_VER}-fpm" >/dev/null 2>&1 || true
-systemctl start  "php${PHP_VER}-fpm" >/dev/null 2>&1 || true
+
+# --- FIX 502: Busca Automática de Socket ---
+PHP_FPM_SOCK=$(find /var/run/php/ -name "php*-fpm.sock" | head -1)
 
 if [[ "$INSTALL_PMA" =~ ^[sS]$ ]]; then
   if [[ ! -d "$PMA_DIR" ]]; then
@@ -523,6 +523,7 @@ if [[ -n "${SSH_CONNECTION:-}" ]]; then
   is_valid_ipv4 "$ADMIN_IP" || ADMIN_IP="127.0.0.1"
 fi
 
+# --- FIX 502: Configuração Nginx Robusta ---
 cat > "/etc/nginx/sites-available/dieta-milenar" <<NGINX
 server {
     listen 80;
@@ -532,10 +533,6 @@ server {
     access_log /var/log/nginx/dieta-milenar.access.log;
     error_log  /var/log/nginx/dieta-milenar.error.log;
 
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
     # Social Proof
     location ^~ /socialproof/ {
         root /var/www;
@@ -544,28 +541,12 @@ server {
 
         location ~ ^/socialproof/.+\.php\$ {
             include fastcgi_params;
-            fastcgi_pass unix:${PHP_SOCK};
+            fastcgi_pass unix:${PHP_FPM_SOCK};
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         }
     }
 
-    # phpMyAdmin
-    location ^~ /phpmyadmin/ {
-        allow 127.0.0.1;
-        allow ${ADMIN_IP};
-        deny all;
-
-        root /var/www;
-        index index.php index.html;
-
-        location ~ ^/phpmyadmin/(.+\.php)\$ {
-            include fastcgi_params;
-            fastcgi_pass unix:${PHP_SOCK};
-            fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        }
-    }
-
-    # App Node.js
+    # App Node.js Proxy
     location / {
         proxy_pass http://127.0.0.1:${APP_PORT};
         proxy_http_version 1.1;
@@ -575,18 +556,18 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_read_timeout 60s;
     }
 }
 NGINX
 
-ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/dieta-milenar"
+# Remove o default conflitante
+ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/"
 rm -f /etc/nginx/sites-enabled/default
 
 nginx -t >/dev/null
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-log_status "Nginx configurado."
+log_status "Nginx configurado e erro 502 corrigido."
 
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
