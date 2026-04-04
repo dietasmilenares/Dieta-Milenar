@@ -141,36 +141,20 @@ DEPS=(
   "pm2|cmd|pm2"
 )
 
-MISS=0; COLS=3
-MISSING_LIST=""
-INSTALLED_LIST=""
-COL_M=0; COL_I=0
-
+MISS=0; COLS=3; COL=0
 for D in "${DEPS[@]}"; do
   IFS='|' read -r NAME TYPE VAL <<< "$D"
-  if chk "$TYPE" "$VAL"; then
+  chk "$TYPE" "$VAL" && OK=true || OK=false
+  if $OK; then
     ITEM="${GREEN}[✔]${NC} $(printf '%-16s' "$NAME")"
-    INSTALLED_LIST+="  ${ITEM}"
-    COL_I=$((COL_I+1))
-    [[ $((COL_I % COLS)) -eq 0 ]] && INSTALLED_LIST+="\n"
   else
     ITEM="${RED}[✘]${NC} ${BOLD}$(printf '%-16s' "$NAME")${NC}"
-    MISSING_LIST+="  ${ITEM}"
     MISS=$((MISS+1))
-    COL_M=$((COL_M+1))
-    [[ $((COL_M % COLS)) -eq 0 ]] && MISSING_LIST+="\n"
   fi
+  printf "  ${ITEM}"; COL=$((COL+1))
+  [[ $COL -ge $COLS ]] && echo "" && COL=0
 done
-
-# Exibe primeiro as que faltam
-if [[ -n "$MISSING_LIST" ]]; then
-    echo -e "${MISSING_LIST}"
-fi
-# Exibe depois as que já existem
-if [[ -n "$INSTALLED_LIST" ]]; then
-    echo -e "${INSTALLED_LIST}"
-fi
-
+[[ $COL -ne 0 ]] && echo ""
 echo ""
 if [[ $MISS -eq 0 ]]; then
   echo -e "  ${GREEN}${BOLD}Todas as dependências satisfeitas.${NC}"
@@ -191,7 +175,7 @@ header "ETAPA 0 — CONFIGURAÇÃO DO SISTEMA"
 
 echo -e "\n  ${BOLD}🌐 CONEXÃO${NC}"
 read -rp "  Deseja usar um domínio? [s/N]: " USE_DOMAIN
-USE_DOMAIN=${USE_DOMAIN:-n} 
+USE_DOMAIN=${USE_DOMAIN:-n} # Padrão: Não
 DOMAIN="$PUBLIC_IP"
 USE_SSL=false
 
@@ -215,7 +199,7 @@ DB_USER=${DB_USER:-dieta_user}
 is_valid_db_ident "$DB_USER" || log_error "DB_USER inválido (use [A-Za-z0-9_], máx 32)."
 
 read -rsp "  Senha MySQL (oculta) [root]: " DB_PASS; echo
-DB_PASS=${DB_PASS:-root} 
+DB_PASS=${DB_PASS:-root} # Padrão: root
 
 echo -e "\n  ${BOLD}💳 PAGAMENTOS${NC}"
 read -rp "  Stripe Secret Key [Enter = pular]: " STRIPE_KEY
@@ -227,7 +211,7 @@ JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)}
 
 echo -e "\n  ${BOLD}🧰 PHPMYADMIN${NC}"
 read -rp "  Instalar phpMyAdmin? [S/n]: " INSTALL_PMA
-INSTALL_PMA=${INSTALL_PMA:-s} 
+INSTALL_PMA=${INSTALL_PMA:-s} # Padrão: Sim
 
 # =============================================================================
 #  TELA 3: RESUMO DA CONFIGURAÇÃO
@@ -299,9 +283,8 @@ if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 fi
 
-# CAPTURA O CAMINHO REAL DO PM2 E FORÇA PERMISSÃO
+# CAPTURA O CAMINHO REAL DO PM2
 PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
-chmod +x "$PM2_BIN" 2>/dev/null || true
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
 
@@ -331,7 +314,7 @@ GRANT ALL PRIVILEGES ON \`socialproof\`.* TO '${DB_USER}'@'127.0.0.1';
 
 FLUSH PRIVILEGES;
 SQL
-log_status "Bancos e permissões criados."
+log_status "Bancos e permissões criados (idempotente, senha atualiza)."
 
 # --- ETAPA 3 ---
 header "ETAPA 3 — PHPMYADMIN (OPCIONAL, RESTRITO)"
@@ -372,7 +355,7 @@ EOF
   chmod -R o-rwx "$PMA_DIR"
   chmod 0750 "$PMA_DIR/tmp"
 
-  log_status "phpMyAdmin instalado."
+  log_status "phpMyAdmin instalado (será restrito por IP no Nginx)."
 else
   log_status "phpMyAdmin ignorado."
 fi
@@ -411,7 +394,7 @@ install -d -m 0770 -o www-data -g "$APP_GROUP" \
 
 install -d -m 0750 -o "$APP_USER" -g "$APP_GROUP" /var/log/dieta-milenar
 
-log_status "Arquivos movidos."
+log_status "Arquivos e Social Proof movidos."
 
 # --- ETAPA 5 ---
 header "ETAPA 5 — GERANDO .ENV"
@@ -431,7 +414,7 @@ ENV
 
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/.env"
 chmod 0640 "$INSTALL_DIR/.env"
-log_status "Arquivo .env configurado."
+log_status "Arquivo .env configurado (0640, dono ${APP_USER})."
 
 # --- ETAPA 6 ---
 header "ETAPA 6 — BUILD FRONTEND"
@@ -445,6 +428,7 @@ if [[ -f "$CHATW" ]]; then
   sed -i -E "s#${esc_from}#${esc_to}#g" "$CHATW"
 fi
 
+# CORREÇÃO: Usando runuser para fixar permissão do root
 if [[ -f package-lock.json ]]; then
   runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm ci --silent --cache /var/lib/$APP_USER/.npm"
 else
@@ -507,7 +491,7 @@ module.exports = {
 EOF
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
-# RESOLUÇÃO DO ERRO PERMISSION DENIED: Forçando caminho absoluto com runuser corrigido
+# CORREÇÃO: Usando runuser e caminho absoluto para PM2
 runuser -l "$APP_USER" -c "$PM2_BIN stop dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "$PM2_BIN delete dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "$PM2_BIN start $INSTALL_DIR/ecosystem.config.cjs --env production"
@@ -515,7 +499,7 @@ runuser -l "$APP_USER" -c "$PM2_BIN save --silent"
 
 pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
 
-log_status "Aplicação iniciada via PM2."
+log_status "Aplicação iniciada via PM2 (sem root)."
 
 # --- ETAPA 10 ---
 header "ETAPA 10 — CONFIGURANDO NGINX"
@@ -551,8 +535,12 @@ server {
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         }
     }
+NGINX
 
-    # phpMyAdmin
+if [[ "$INSTALL_PMA" =~ ^[sS]$ ]]; then
+cat >> "/etc/nginx/sites-available/dieta-milenar" <<NGINX
+
+    # phpMyAdmin (RESTRITO)
     location ^~ /phpmyadmin/ {
         allow 127.0.0.1;
         allow ${ADMIN_IP};
@@ -567,6 +555,10 @@ server {
             fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         }
     }
+NGINX
+fi
+
+cat >> "/etc/nginx/sites-available/dieta-milenar" <<NGINX
 
     # App Node.js
     location / {
@@ -587,14 +579,15 @@ ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/diet
 rm -f /etc/nginx/sites-enabled/default
 
 nginx -t >/dev/null
+systemctl enable nginx >/dev/null 2>&1 || true
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-log_status "Nginx configurado."
+log_status "Nginx configurado (porta 80)."
 
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
     header "ETAPA 11 — SSL CERTBOT"
-    apt-get install -y -qq certbot python3-certbot-nginx >/dev/null
+    apt-get install -y -qq --no-install-recommends certbot python3-certbot-nginx >/dev/null
     certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email "$LE_EMAIL" \
       || log_warn "Falha no SSL (DNS/validação pendente)."
 fi
