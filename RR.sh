@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
-#  SaaS DIETA MILENAR — MENU DE DESINSTALAÇÃO RR v3.0
-#  GERENCIE OU REMOVA COMPLETAMENTE OS COMPONENTES DO SISTEMA.
+#  SaaS DIETA MILENAR — DESINSTALADOR TOTAL RR v5.0 (NUCLEARE)
+#  REVERTE TUDO SEGUINDO A ORDEM ORIGINAL COM PURGE TOTAL.
 # =============================================================================
 
 set -uo pipefail
@@ -14,7 +14,7 @@ log_status() { echo -e "  ${GREEN}[✔]${NC} $1"; }
 log_warn()   { echo -e "  ${YELLOW}[⚠]${NC} $1"; }
 log_error()  { echo -e "  ${RED}[✘]${NC} $1"; }
 
-# --- Variáveis de Configuração ---
+# --- Variáveis (Espelhando o original) ---
 INSTALL_DIR="/var/www/dieta-milenar"
 SOCIALPROOF_DIR="/var/www/socialproof"
 APP_USER="dieta"
@@ -22,142 +22,127 @@ APP_GROUP="dieta"
 DB_NAME="dieta_milenar"
 DB_USER="dieta_user"
 PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
-PMA_DIR="/var/www/phpmyadmin"
 
-# --- Verificações Iniciais ---
-[[ ${EUID:-999} -eq 0 ]] || { echo -e "${RED}Execute como root: sudo ./nome_do_script.sh${NC}"; exit 1; }
+# --- Verificações ---
+[[ ${EUID:-999} -eq 0 ]] || { echo -e "${RED}Execute como root!${NC}"; exit 1; }
 
-# --- Funções de Desinstalação ---
-
-parar_servicos() {
-    echo -e "\n${CYAN}--- PARANDO SERVIÇOS ---${NC}"
+# --- ETAPA 1: Parar serviços e remover configs ---
+etapa_1() {
+    echo -e "\n${CYAN}${BOLD}--- ETAPA 1: PARANDO SERVIÇOS E REMOVENDO CONFIGS ---${NC}"
     
+    log_status "Limpando processos PM2..."
     if id -u "$APP_USER" >/dev/null 2>&1; then
-        log_status "Parando PM2..."
-        sudo -u "$APP_USER" -g "$APP_GROUP" pm2 stop dieta-milenar >/dev/null 2>&1 || true
-        sudo -u "$APP_USER" -g "$APP_GROUP" pm2 delete dieta-milenar >/dev/null 2>&1 || true
-        sudo -u "$APP_USER" -g "$APP_GROUP" pm2 save --force >/dev/null 2>&1 || true
+        sudo -u "$APP_USER" pm2 kill >/dev/null 2>&1 || true
     fi
+    killall -9 pm2 2>/dev/null || true
 
-    log_status "Limpando Nginx..."
-    rm -f /etc/nginx/sites-enabled/dieta-milenar /etc/nginx/sites-available/dieta-milenar >/dev/null 2>&1 || true
-    systemctl reload nginx >/dev/null 2>&1 || true
+    log_status "Parando e desabilitando Nginx, MySQL e PHP..."
+    systemctl stop nginx mysql "php${PHP_VER:-*}-fpm" >/dev/null 2>&1 || true
+    systemctl disable nginx mysql >/dev/null 2>&1 || true
     
-    log_status "Parando MySQL e PHP..."
-    systemctl stop mysql >/dev/null 2>&1 || true
-    [[ -n "$PHP_VER" ]] && systemctl stop "php${PHP_VER}-fpm" >/dev/null 2>&1 || true
+    log_status "Removendo vhosts do Nginx..."
+    rm -f /etc/nginx/sites-enabled/dieta-milenar /etc/nginx/sites-available/dieta-milenar >/dev/null 2>&1 || true
 }
 
-remover_arquivos_e_dbs() {
-    echo -e "\n${CYAN}--- REMOVENDO ARQUIVOS E BANCOS ---${NC}"
+# --- ETAPA 2: Remover dados e usuários ---
+etapa_2() {
+    echo -e "\n${CYAN}${BOLD}--- ETAPA 2: REMOVENDO DADOS E USUÁRIOS ---${NC}"
     
-    # Bancos de Dados
-    if command -v mysql >/dev/null 2>&1; then
-        mysql -u root -e "DROP DATABASE IF EXISTS \`${DB_NAME}\`; DROP DATABASE IF EXISTS \`socialproof\`; DROP USER IF EXISTS '${DB_USER}'@'localhost';" >/dev/null 2>&1 || log_warn "Falha ao remover DBs via MySQL."
-    fi
+    log_status "Removendo bancos de dados (se MySQL ativo)..."
+    mysql -u root -e "DROP DATABASE IF EXISTS \`${DB_NAME}\`; DROP DATABASE IF EXISTS \`socialproof\`; DROP USER IF EXISTS '${DB_USER}'@'localhost';" >/dev/null 2>&1 || true
+    
+    log_status "Removendo diretórios da aplicação..."
+    rm -rf "$INSTALL_DIR" "$SOCIALPROOF_DIR" /var/www/phpmyadmin /var/log/dieta-milenar >/dev/null 2>&1 || true
 
-    # Pastas
-    log_status "Removendo $INSTALL_DIR e $SOCIALPROOF_DIR"
-    rm -rf "$INSTALL_DIR" "$SOCIALPROOF_DIR" "$PMA_DIR" /var/log/dieta-milenar >/dev/null 2>&1 || true
-
-    # Usuário de Sistema
+    log_status "Removendo usuário de sistema '$APP_USER'..."
     if id -u "$APP_USER" >/dev/null 2>&1; then
-        log_status "Removendo usuário $APP_USER"
         userdel -r "$APP_USER" >/dev/null 2>&1 || true
     fi
 }
 
-purge_mysql_total() {
-    echo -e "\n${RED}${BOLD}--- PURGE TOTAL DO MYSQL (DESTRUTIVO) ---${NC}"
-    systemctl stop mysql >/dev/null 2>&1 || true
-    MYSQL_PKGS=$(dpkg -l 'mysql-*' 2>/dev/null | awk '/^ii/{print $2}' | grep -v '^libmysqlclient' || true)
-    if [[ -n "$MYSQL_PKGS" ]]; then
-        apt-get remove --purge -y $MYSQL_PKGS >/dev/null 2>&1 || true
-    fi
-    rm -rf /etc/mysql /var/lib/mysql /var/log/mysql >/dev/null 2>&1 || true
-    apt-get autoremove -y >/dev/null 2>&1 || true
-    log_status "MySQL removido do sistema."
+# --- ETAPA 3: Remoção completa do MySQL (PURGE TOTAL) ---
+etapa_3() {
+    echo -e "\n${RED}${BOLD}--- ETAPA 3: REMOÇÃO COMPLETA DO MYSQL (PURGE TOTAL) ---${NC}"
+    
+    log_status "Expurgando pacotes MySQL e MariaDB..."
+    apt-get purge -y mysql-server mysql-client mysql-common mysql-server-core-* mysql-client-core-* mariadb-* >/dev/null 2>&1 || true
+    
+    log_status "Limpando resíduos físicos do MySQL..."
+    rm -rf /etc/mysql /var/lib/mysql /var/log/mysql /var/run/mysqld /etc/apparmor.d/usr.sbin.mysqld >/dev/null 2>&1 || true
+    apt-get autoremove -y --purge >/dev/null 2>&1 || true
 }
 
-remover_pacotes() {
-    echo -e "\n${CYAN}--- REMOVENDO PACOTES (PHP, NODE, CERTBOT) ---${NC}"
-    apt-get remove -y --purge nodejs php-mysql php-mbstring php-zip php-gd php-curl python3-certbot-nginx certbot >/dev/null 2>&1 || true
-    apt-get autoremove -y >/dev/null 2>&1 || true
-    log_status "Pacotes removidos."
+# --- ETAPA 4: Remover pacotes (Nginx, PHP, Node, PM2) ---
+etapa_4() {
+    echo -e "\n${RED}${BOLD}--- ETAPA 4: REMOÇÃO TOTAL DE PACOTES (NGINX, PHP, NODE, PM2) ---${NC}"
+    
+    log_status "Expurgando Nginx..."
+    apt-get purge -y nginx nginx-common nginx-full >/dev/null 2>&1 || true
+    rm -rf /etc/nginx /var/log/nginx /var/www/html >/dev/null 2>&1 || true
+
+    log_status "Expurgando PHP e extensões..."
+    apt-get purge -y "php${PHP_VER:-*}-*" php-common >/dev/null 2>&1 || true
+    rm -rf /etc/php /var/log/php >/dev/null 2>&1 || true
+
+    log_status "Expurgando Node.js e Certbot..."
+    apt-get purge -y nodejs certbot python3-certbot-nginx >/dev/null 2>&1 || true
+    rm -f /etc/apt/sources.list.d/nodesource.list >/dev/null 2>&1 || true
+
+    log_status "Removendo PM2 Global..."
+    npm uninstall -g pm2 >/dev/null 2>&1 || true
+    rm -f $(which pm2) /usr/local/bin/pm2 /usr/bin/pm2 >/dev/null 2>&1 || true
+    
+    apt-get autoremove -y --purge >/dev/null 2>&1 || true
 }
 
-limpeza_final() {
-    echo -e "\n${CYAN}--- LIMPANDO LOGS E INSTALADORES ---${NC}"
-    rm -rf /root/.pm2 /home/ubuntu/install.sh /home/ubuntu/Dieta-Milenar >/dev/null 2>&1 || true
-    log_status "Limpeza de arquivos residuais concluída."
+# --- ETAPA 5: Limpeza de arquivos de origem e temporários ---
+etapa_5() {
+    echo -e "\n${CYAN}${BOLD}--- ETAPA 5: LIMPEZA DE ARQUIVOS DE ORIGEM E TEMPORÁRIOS ---${NC}"
+    log_status "Limpando caches e instaladores..."
+    rm -rf /root/.pm2 /home/ubuntu/.pm2 /home/ubuntu/install.sh /home/ubuntu/Dieta-Milenar >/dev/null 2>&1 || true
+    apt-get clean >/dev/null 2>&1 || true
 }
 
-# --- Menu Principal ---
-exibir_menu() {
+# --- Menu ---
+while true; do
     clear
     echo -e "${RED}${BOLD}====================================================="
-    echo -e "      DESINSTALADOR DIETA MILENAR - MENU RR"
+    echo -e "      MENU DE DESINSTALAÇÃO - DIETA MILENAR"
     echo -e "=====================================================${NC}"
-    echo -e "1) ${YELLOW}Parar Serviços${NC} (PM2, Nginx, MySQL, PHP)"
-    echo -e "2) ${YELLOW}Remover Arquivos e Bancos${NC} (App, DBs, Usuários)"
-    echo -e "3) ${YELLOW}Remover Pacotes${NC} (NodeJS, PHP, Certbot)"
-    echo -e "4) ${RED}Purge TOTAL MySQL${NC} (Remove o motor MySQL e todos os dados)"
-    echo -e "5) ${RED}${BOLD}DESINSTALAÇÃO COMPLETA (TUDO)${NC}"
+    echo -e "1) Executar Etapa 1 (Parar Serviços e Configs)"
+    echo -e "2) Executar Etapa 2 (Remover Dados e Usuários)"
+    echo -e "3) Executar Etapa 3 (${RED}Purge Total MySQL${NC})"
+    echo -e "4) Executar Etapa 4 (${RED}Purge Total Nginx, PHP, Node, PM2${NC})"
+    echo -e "5) Executar Etapa 5 (Limpeza de Temporários)"
+    echo -e "-----------------------------------------------------"
+    echo -e "6) ${RED}${BOLD}DESINSTALAÇÃO COMPLETA (ETAPAS 1 A 5)${NC}"
     echo -e "0) Sair"
     echo -e "====================================================="
     echo -n "Escolha uma opção: "
-}
-
-while true; do
-    exibir_menu
     read -r OPCAO
+
     case $OPCAO in
-        1)
-            parar_servicos
-            echo -e "\n${GREEN}Serviços interrompidos.${NC}"
-            read -p "Pressione Enter para voltar..."
-            ;;
-        2)
-            echo -e "${RED}Isso apagará todos os dados da aplicação.${NC}"
-            read -p "Tem certeza? (s/n): " CONF
-            if [[ $CONF == "s" ]]; then
-                remover_arquivos_e_dbs
-                log_status "Dados removidos."
-            fi
-            read -p "Pressione Enter para voltar..."
-            ;;
-        3)
-            remover_pacotes
-            read -p "Pressione Enter para voltar..."
-            ;;
-        4)
-            echo -e "${RED}${BOLD}ALERTA: Isso desinstala o MySQL do servidor!${NC}"
-            read -p "Confirmar Purge Total? (DIGITE 'SIM'): " CONF
-            if [[ $CONF == "SIM" ]]; then
-                purge_mysql_total
-            fi
-            read -p "Pressione Enter para voltar..."
-            ;;
-        5)
-            echo -e "${RED}${BOLD}PERIGO: Esta opção reverte tudo e limpa a máquina!${NC}"
-            read -p "Confirmar Desinstalação TOTAL? (DIGITE 'LIMPEZA-TOTAL'): " CONF
-            if [[ $CONF == "LIMPEZA-TOTAL" ]]; then
-                parar_servicos
-                remover_arquivos_e_dbs
-                purge_mysql_total
-                remover_pacotes
-                limpeza_final
-                echo -e "\n${GREEN}${BOLD}SISTEMA LIMPO COM SUCESSO!${NC}"
+        1) etapa_1; read -p "Enter..." ;;
+        2) etapa_2; read -p "Enter..." ;;
+        3) 
+            echo -e "${RED}Isso apagará o MySQL por completo!${NC}"
+            read -p "Confirmar? (s/n): " c; [[ $c == "s" ]] && etapa_3
+            read -p "Enter..." ;;
+        4) 
+            echo -e "${RED}Isso apagará Nginx, PHP e Node do servidor!${NC}"
+            read -p "Confirmar? (s/n): " c; [[ $c == "s" ]] && etapa_4
+            read -p "Enter..." ;;
+        5) etapa_5; read -p "Enter..." ;;
+        6)
+            echo -e "${RED}${BOLD}ALERTA NUCLEAR: O SERVIDOR SERÁ COMPLETAMENTE LIMPO!${NC}"
+            read -p "Digite 'LIMPEZA-TOTAL' para confirmar: " c
+            if [[ $c == "LIMPEZA-TOTAL" ]]; then
+                etapa_1 && etapa_2 && etapa_3 && etapa_4 && etapa_5
+                echo -e "\n${GREEN}${BOLD}✅ TUDO FOI REMOVIDO COM SUCESSO!${NC}"
                 exit 0
             fi
             ;;
-        0)
-            echo "Saindo..."
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Opção inválida!${NC}"
-            sleep 1
-            ;;
+        0) exit 0 ;;
+        *) echo "Opção inválida!"; sleep 1 ;;
     esac
 done
