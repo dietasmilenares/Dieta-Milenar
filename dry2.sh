@@ -339,7 +339,7 @@ PMA_VER="5.2.1"
 PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
 [[ -n "$PHP_VER" ]] || log_error "PHP não encontrado."
 
-# --- FIX 502: Busca Automática de Socket ---
+# FIX 502: Busca Automática de Socket
 PHP_FPM_SOCK=$(find /var/run/php/ -name "php*-fpm.sock" | head -1)
 
 if [[ "$INSTALL_PMA" =~ ^[sS]$ ]]; then
@@ -454,7 +454,7 @@ runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm run build --silent"
 
 runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm prune --omit=dev --silent" || true
 
-# --- FIX DO ERRO 502: O PM2 precisa do pacote 'tsx' (removido no prune) ---
+# FIX DO ERRO 502: Garante o tsx para rodar o server.ts
 runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm install tsx --save --silent"
 
 log_status "Compilação concluída."
@@ -527,7 +527,7 @@ if [[ -n "${SSH_CONNECTION:-}" ]]; then
   is_valid_ipv4 "$ADMIN_IP" || ADMIN_IP="127.0.0.1"
 fi
 
-# --- FIX 502: Configuração Nginx Robusta ---
+# FIX 502: Configuração Nginx Robusta
 cat > "/etc/nginx/sites-available/dieta-milenar" <<NGINX
 server {
     listen 80;
@@ -565,7 +565,7 @@ server {
 }
 NGINX
 
-# Remove o default conflitante para eliminar o erro 502
+# Remove o default conflitante
 ln -sf "/etc/nginx/sites-available/dieta-milenar" "/etc/nginx/sites-enabled/"
 rm -f /etc/nginx/sites-enabled/default
 
