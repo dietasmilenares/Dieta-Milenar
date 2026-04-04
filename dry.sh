@@ -6,7 +6,13 @@
 
 set -euo pipefail
 IFS=$'\n\t'
-umask 022 # Correção para evitar 'Permission Denied' em binários globais
+umask 022
+
+# --- CONFIGURAÇÃO DE LOGS (NOVO) ---
+LOG_FILE="/var/log/dieta-milenar-install.log"
+touch "$LOG_FILE"
+exec > >(tee -a "$LOG_FILE") 2>&1
+echo "--- Início da Instalação: $(date) ---" >> "$LOG_FILE"
 
 # --- 1. CORES E ESTILOS ---
 GOLD='\033[38;5;220m'; BGDARK='\033[48;5;232m'; BOLD='\033[1m'; NC='\033[0m'
@@ -162,7 +168,6 @@ for D in "${DEPS[@]}"; do
   fi
 done
 
-# EXIBIÇÃO: Faltantes no TOPO, Instaladas ABAIXO
 [[ -n "$MISSING_LIST" ]] && echo -e "${MISSING_LIST}"
 [[ -n "$INSTALLED_LIST" ]] && echo -e "${INSTALLED_LIST}"
 
@@ -186,7 +191,7 @@ header "ETAPA 0 — CONFIGURAÇÃO DO SISTEMA"
 
 echo -e "\n  ${BOLD}🌐 CONEXÃO${NC}"
 read -rp "  Deseja usar um domínio? [s/N]: " USE_DOMAIN
-USE_DOMAIN=${USE_DOMAIN:-n} # PADRÃO: NÃO
+USE_DOMAIN=${USE_DOMAIN:-n} # Padrão: Não
 DOMAIN="$PUBLIC_IP"
 USE_SSL=false
 
@@ -210,7 +215,7 @@ DB_USER=${DB_USER:-dieta_user}
 is_valid_db_ident "$DB_USER" || log_error "DB_USER inválido (use [A-Za-z0-9_], máx 32)."
 
 read -rsp "  Senha MySQL (oculta) [root]: " DB_PASS; echo
-DB_PASS=${DB_PASS:-root} # PADRÃO: ROOT
+DB_PASS=${DB_PASS:-root} # Padrão: root
 
 echo -e "\n  ${BOLD}💳 PAGAMENTOS${NC}"
 read -rp "  Stripe Secret Key [Enter = pular]: " STRIPE_KEY
@@ -222,7 +227,7 @@ JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)}
 
 echo -e "\n  ${BOLD}🧰 PHPMYADMIN${NC}"
 read -rp "  Instalar phpMyAdmin? [S/n]: " INSTALL_PMA
-INSTALL_PMA=${INSTALL_PMA:-s} # PADRÃO: SIM
+INSTALL_PMA=${INSTALL_PMA:-s} # Padrão: Sim
 
 # =============================================================================
 #  TELA 3: RESUMO DA CONFIGURAÇÃO
@@ -275,7 +280,7 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 if $need_node; then
-  log_status "Instalando Node.js 20 (NodeSource - método oficial e atualizado)..."
+  log_status "Instalando Node.js 20 (NodeSource)..."
   rm -f /etc/apt/sources.list.d/nodesource.list
   rm -f /etc/apt/keyrings/nodesource.gpg
   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -294,7 +299,6 @@ if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 fi
 
-# CAPTURA O CAMINHO REAL DO PM2 PARA O RUNUSER
 PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
 
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
@@ -439,7 +443,6 @@ if [[ -f "$CHATW" ]]; then
   sed -i -E "s#${esc_from}#${esc_to}#g" "$CHATW"
 fi
 
-# CORREÇÃO PERMISSÃO: Usando runuser -l para evitar bloqueio do root
 if [[ -f package-lock.json ]]; then
   runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm ci --silent --cache /var/lib/$APP_USER/.npm"
 else
@@ -502,7 +505,6 @@ module.exports = {
 EOF
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
-# RESOLUÇÃO PERMISSION DENIED: runuser -l + caminho absoluto PM2
 runuser -l "$APP_USER" -c "$PM2_BIN stop dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "$PM2_BIN delete dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "$PM2_BIN start $INSTALL_DIR/ecosystem.config.cjs --env production"
@@ -602,7 +604,7 @@ draw_line "━" "$GREEN"
 center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO" "$GREEN"
 draw_line "━" "$GREEN"
 echo -e "\n  URL: ${CYAN}${BOLD}http://$DOMAIN${NC}"
-echo -e "  Usuário App: ${YELLOW}$APP_USER${NC}"
+echo -e "  Log de Instalação: ${YELLOW}$LOG_FILE${NC}"
 echo -e "  Senha MySQL: ${YELLOW}$DB_PASS${NC}"
 echo -e "\n  Para monitorar: ${BOLD}runuser -l $APP_USER -c '$PM2_BIN monit'${NC}\n"
 draw_line "━" "$GREEN"
