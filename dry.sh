@@ -49,7 +49,7 @@ trap 'on_err "$LINENO" "$BASH_COMMAND"' ERR
 require_cmd() { command -v "$1" >/dev/null 2>&1 || log_error "Comando ausente: $1"; }
 
 is_valid_db_ident() { [[ "$1" =~ ^[A-Za-z0-9_]{1,32}$ ]]; }
-is_valid_domain()   { [[ "$1" =~ ^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-{2,63}$ ]]; }
+is_valid_domain()   { [[ "$1" =~ ^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$ ]]; }
 is_valid_ipv4()     { [[ "$1" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; }
 
 sql_escape_literal() {
@@ -175,10 +175,11 @@ header "ETAPA 0 — CONFIGURAÇÃO DO SISTEMA"
 
 echo -e "\n  ${BOLD}🌐 CONEXÃO${NC}"
 read -rp "  Deseja usar um domínio? [s/N]: " USE_DOMAIN
+USE_DOMAIN=${USE_DOMAIN:-n} # ALTERAÇÃO: PADRÃO NÃO
 DOMAIN="$PUBLIC_IP"
 USE_SSL=false
 
-if [[ "${USE_DOMAIN:-}" =~ ^[sS]$ ]]; then
+if [[ "$USE_DOMAIN" =~ ^[sS]$ ]]; then
     read -rp "  Digite o domínio (ex: meusite.com): " DOMAIN_RAW
     DOMAIN_RAW="$(echo "$DOMAIN_RAW" | tr -d '[:space:]' | sed -E 's#^https?://##; s#/.*$##')"
     is_valid_domain "$DOMAIN_RAW" || log_error "Domínio inválido: '$DOMAIN_RAW'"
@@ -197,11 +198,8 @@ read -rp "  Usuário MySQL [dieta_user]: " DB_USER
 DB_USER=${DB_USER:-dieta_user}
 is_valid_db_ident "$DB_USER" || log_error "DB_USER inválido (use [A-Za-z0-9_], máx 32)."
 
-while true; do
-  read -rsp "  Senha MySQL (oculta): " DB_PASS; echo
-  [[ -n "$DB_PASS" ]] && break
-  log_warn "A senha não pode ser vazia."
-done
+read -rsp "  Senha MySQL (oculta) [root]: " DB_PASS; echo
+DB_PASS=${DB_PASS:-root} # ALTERAÇÃO: PADRÃO ROOT
 
 echo -e "\n  ${BOLD}💳 PAGAMENTOS${NC}"
 read -rp "  Stripe Secret Key [Enter = pular]: " STRIPE_KEY
@@ -212,8 +210,8 @@ read -rp "  JWT Secret [Enter = gerar automaticamente]: " JWT_SECRET
 JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)}
 
 echo -e "\n  ${BOLD}🧰 PHPMYADMIN${NC}"
-read -rp "  Instalar phpMyAdmin? (N recomendado em produção) [s/N]: " INSTALL_PMA
-INSTALL_PMA=${INSTALL_PMA:-N}
+read -rp "  Instalar phpMyAdmin? [S/n]: " INSTALL_PMA
+INSTALL_PMA=${INSTALL_PMA:-s} # ALTERAÇÃO: PADRÃO SIM
 
 # =============================================================================
 #  TELA 3: RESUMO DA CONFIGURAÇÃO
@@ -267,14 +265,9 @@ fi
 
 if $need_node; then
   log_status "Instalando Node.js 20 (NodeSource - método oficial e atualizado)..."
-
-  # Remove configurações antigas do NodeSource para evitar conflitos
   rm -f /etc/apt/sources.list.d/nodesource.list
   rm -f /etc/apt/keyrings/nodesource.gpg
-  
-  # Adiciona o repositório Node.js 20.x usando o script oficial do NodeSource.
-  curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-
+  curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends nodejs >/dev/null
 fi
@@ -318,7 +311,7 @@ GRANT ALL PRIVILEGES ON \`socialproof\`.* TO '${DB_USER}'@'127.0.0.1';
 
 FLUSH PRIVILEGES;
 SQL
-log_status "Bancos e permissões criados (idempotente, senha atualiza)."
+log_status "Bancos e permissões criados."
 
 # --- ETAPA 3 ---
 header "ETAPA 3 — PHPMYADMIN (OPCIONAL, RESTRITO)"
@@ -359,7 +352,7 @@ EOF
   chmod -R o-rwx "$PMA_DIR"
   chmod 0750 "$PMA_DIR/tmp"
 
-  log_status "phpMyAdmin instalado (será restrito por IP no Nginx)."
+  log_status "phpMyAdmin instalado."
 else
   log_status "phpMyAdmin ignorado."
 fi
@@ -398,7 +391,7 @@ install -d -m 0770 -o www-data -g "$APP_GROUP" \
 
 install -d -m 0750 -o "$APP_USER" -g "$APP_GROUP" /var/log/dieta-milenar
 
-log_status "Arquivos e Social Proof movidos."
+log_status "Arquivos movidos."
 
 # --- ETAPA 5 ---
 header "ETAPA 5 — GERANDO .ENV"
@@ -418,7 +411,7 @@ ENV
 
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/.env"
 chmod 0640 "$INSTALL_DIR/.env"
-log_status "Arquivo .env configurado (0640, dono ${APP_USER})."
+log_status "Arquivo .env configurado."
 
 # --- ETAPA 6 ---
 header "ETAPA 6 — BUILD FRONTEND"
@@ -432,7 +425,7 @@ if [[ -f "$CHATW" ]]; then
   sed -i -E "s#${esc_from}#${esc_to}#g" "$CHATW"
 fi
 
-# Fix: Usando runuser para evitar bloqueio do sudoers ao root
+# CORREÇÃO DE PERMISSÃO: Usando runuser em vez de sudo
 if [[ -f package-lock.json ]]; then
   runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm ci --silent --cache /var/lib/$APP_USER/.npm"
 else
@@ -452,7 +445,7 @@ mysql_app=( mysql --protocol=tcp -h 127.0.0.1 -u "$DB_USER" --password="$DB_PASS
 SQL_FILE="$(find "$INSTALL_DIR" -maxdepth 3 -type f -name "*.sql" -print -quit 2>/dev/null || true)"
 if [[ -n "${SQL_FILE:-}" ]]; then
   "${mysql_app[@]}" "$DB_NAME" < "$SQL_FILE"
-  log_status "Banco importado: $SQL_FILE"
+  log_status "Banco importado."
 else
   log_warn "Nenhum .sql encontrado para importar."
 fi
@@ -495,7 +488,7 @@ module.exports = {
 EOF
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
-# Fix: Usando runuser em vez de sudo para evitar erro "root is not allowed"
+# CORREÇÃO DE PERMISSÃO: Usando runuser para evitar o erro de bloqueio do root
 runuser -l "$APP_USER" -c "pm2 stop dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "pm2 delete dieta-milenar >/dev/null 2>&1 || true"
 runuser -l "$APP_USER" -c "pm2 start $INSTALL_DIR/ecosystem.config.cjs --env production"
@@ -503,7 +496,7 @@ runuser -l "$APP_USER" -c "pm2 save --silent"
 
 pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
 
-log_status "Aplicação iniciada via PM2 (sem root)."
+log_status "Aplicação iniciada via PM2."
 
 # --- ETAPA 10 ---
 header "ETAPA 10 — CONFIGURANDO NGINX"
@@ -604,7 +597,6 @@ draw_line "━" "$GREEN"
 center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO" "$GREEN"
 draw_line "━" "$GREEN"
 echo -e "\n  URL: ${CYAN}${BOLD}http://$DOMAIN${NC}"
-echo -e "  Usuário App: ${YELLOW}$APP_USER${NC}"
-echo -e "  Logs: /var/log/dieta-milenar/"
+echo -e "  Senha MySQL: ${YELLOW}$DB_PASS${NC}"
 echo -e "\n  Para monitorar: ${BOLD}runuser -l $APP_USER -c 'pm2 monit'${NC}\n"
 draw_line "━" "$GREEN"
