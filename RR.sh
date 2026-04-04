@@ -1,635 +1,163 @@
 #!/bin/bash
 # =============================================================================
-#  SaaS DIETA MILENAR — DESINSTALADOR TOTAL RR v4.1 (O MAIS COMPLETO E ROBUSTO)
-#  REVERTE TUDO QUE O INSTALADOR FEZ.
-#  ATENÇÃO: EXTREMAMENTE DESTRUTIVO. USE APENAS EM MÁQUINAS DEDICADAS.
+#  SaaS DIETA MILENAR — MENU DE DESINSTALAÇÃO RR v3.0
+#  GERENCIE OU REMOVA COMPLETAMENTE OS COMPONENTES DO SISTEMA.
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 IFS=$'\n\t'
-umask 027
 
-# --- Cores ---
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
-CYAN='\033[0;36m'; BOLD='\033[1m'; DIM='\033[2m'; NC='\033[0m'
+# --- Cores e Layout ---
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; BOLD='\033[1m'; NC='\033[0m'
 
-# =============================================================================
-#  SISTEMA DE LOG
-# =============================================================================
-LOG_DIR="/tmp/dieta-milenar-uninstall-logs"
-UNINSTALL_START_TS="$(date '+%Y%m%d_%H%M%S')"
-LOG_FILE="${LOG_DIR}/uninstall_${UNINSTALL_START_TS}.log"
-_UNINSTALL_EPOCH=$(date +%s)
+log_status() { echo -e "  ${GREEN}[✔]${NC} $1"; }
+log_warn()   { echo -e "  ${YELLOW}[⚠]${NC} $1"; }
+log_error()  { echo -e "  ${RED}[✘]${NC} $1"; }
 
-mkdir -p "$LOG_DIR"
-chmod 0750 "$LOG_DIR"
-touch "$LOG_FILE"
-chmod 0640 "$LOG_FILE"
-ln -sf "$LOG_FILE" "${LOG_DIR}/uninstall_latest.log"
-
-_log_raw() {
-    local level="$1"; shift
-    local ts; ts="$(date '+%Y-%m-%d %H:%M:%S')"
-    local caller_info=""
-    [[ "${#FUNCNAME[@]}" -gt 2 ]] && caller_info=" [${FUNCNAME[2]:-main}:${BASH_LINENO[1]:-?}]"
-    printf "[%s] [%-7s]%s %s\n" "$ts" "$level" "$caller_info" "$*" \
-        >> "$LOG_FILE" 2>/dev/null || true
-}
-
-log_info()    { _log_raw "INFO"    "$*"; }
-log_success() { _log_raw "SUCCESS" "$*"; }
-log_warn_f()  { _log_raw "WARN"    "$*"; }
-log_err_f()   { _log_raw "ERROR"   "$*"
-    local frame=0
-    _log_raw "ERROR" "--- Stack Trace ---"
-    while caller $frame >> /dev/null 2>&1; do
-        _log_raw "ERROR" "  Frame $frame: $(caller $frame 2>/dev/null || true)"
-        (( frame++ )) || true
-    done
-    _log_raw "ERROR" "--- Fim Stack Trace ---"
-}
-
-log_output() {
-    local label="$1"; shift
-    _log_raw "CMD" "Iniciando: $label — $*"
-    local tmp; tmp="$(mktemp)"
-    local rc=0
-    "$@" > "$tmp" 2>&1 || rc=$?
-    if [[ -s "$tmp" ]]; then
-        _log_raw "OUTPUT" "--- início: $label ---"
-        while IFS= read -r line; do _log_raw "OUTPUT" "  $line"; done < "$tmp"
-        _log_raw "OUTPUT" "--- fim: $label ---"
-    fi
-    rm -f "$tmp"
-    [[ $rc -eq 0 ]] && _log_raw "SUCCESS" "$label OK" || _log_raw "ERROR" "$label falhou (exit $rc)"
-    return $rc
-}
-
-log_section() {
-    { echo ""; echo "=================================================================";
-      echo "  SEÇÃO: $*"; echo "  Timestamp: $(date '+%Y-%m-%d %H:%M:%S')";
-      echo "================================================================="; } \
-      >> "$LOG_FILE" 2>/dev/null || true
-}
-
-{
-    echo "================================================================="
-    echo "  DIETA MILENAR — LOG DE DESINSTALAÇÃO"
-    echo "  Início  : $(date '+%Y-%m-%d %H:%M:%S %Z')"
-    echo "  Host    : $(hostname -f 2>/dev/null || hostname)"
-    echo "  OS      : $(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || echo "?")"
-    echo "  PID     : $$"
-    echo "================================================================="
-} >> "$LOG_FILE"
-
-# =============================================================================
-#  SPINNER
-# =============================================================================
-SPINNER_PID=""
-
-spinner_start() {
-    local label="${1:-Aguarde...}"
-    local frames=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
-    tput civis 2>/dev/null || true
-    (
-        local i=0
-        while true; do
-            printf "\r  ${CYAN}%s${NC}  %s  " "${frames[$((i % ${#frames[@]}))]}" "$label" >&2
-            i=$(( i + 1 ))
-            sleep 0.08
-        done
-    ) &
-    SPINNER_PID=$!
-    log_info "Spinner: $label"
-}
-
-spinner_stop() {
-    [[ -n "$SPINNER_PID" ]] && { kill "$SPINNER_PID" 2>/dev/null || true
-        wait "$SPINNER_PID" 2>/dev/null || true; SPINNER_PID=""; }
-    local tw; tw=$(tput cols 2>/dev/null || echo 80)
-    printf "\r%-${tw}s\r" "" >&2
-    tput cnorm 2>/dev/null || true
-}
-
-run_silent() {
-    local label="$1"; shift
-    spinner_start "$label"
-    local rc=0
-    log_output "$label" "$@" || rc=$?
-    if [[ $rc -eq 0 ]]; then
-        spinner_stop
-        log_success "$label — OK"
-    else
-        spinner_stop
-        log_err_f "$label falhou (exit $rc)"
-        return $rc
-    fi
-}
-
-# =============================================================================
-#  FUNÇÕES DE UI
-# =============================================================================
-TERM_WIDTH=$(tput cols 2>/dev/null || echo 80)
-
-draw_line() {
-    local char=$1 color=$2
-    echo -ne "${color}${BOLD}  "
-    for ((i=1; i<=$((TERM_WIDTH-4)); i++)); do echo -n "$char"; done
-    echo -e "${NC}"
-}
-
-center_print() {
-    local text="$1" color="$2"
-    local pad=$(( (TERM_WIDTH - ${#text}) / 2 ))
-    [[ $pad -lt 0 ]] && pad=0
-    printf "%*s%b%s%b\n" "$pad" "" "$color" "$text" "$NC"
-}
-
-header() {
-    echo ""
-    draw_line "━" "$CYAN"
-    echo -e "  ${BOLD}${CYAN}$1${NC}"
-    draw_line "━" "$CYAN"
-    log_section "$1"
-}
-
-log_status() { echo -e "  ${GREEN}[✔]${NC} $1"; log_success "$1"; }
-log_warn()   { echo -e "  ${YELLOW}[⚠]${NC} $1"; log_warn_f "$1"; }
-log_error()  {
-    spinner_stop
-    echo -e "  ${RED}[✘]${NC} $1"
-    echo -e "  ${DIM}Log: $LOG_FILE${NC}"
-    log_err_f "$1"
-    local elapsed=$(( $(date +%s) - _UNINSTALL_EPOCH ))
-    { echo "STATUS: FALHA | Duração: ${elapsed}s | Detalhe: $1"; } >> "$LOG_FILE"
-    exit 1
-}
-
-on_err() {
-    spinner_stop
-    echo -e "\n  ${RED}[✘]${NC} Erro inesperado — linha ${BOLD}$1${NC} — cmd: $2"
-    echo -e "  ${DIM}Log: $LOG_FILE${NC}"
-    log_err_f "ERR TRAP — linha $1 — cmd: $2"
-    exit 1
-}
-trap 'on_err "$LINENO" "$BASH_COMMAND"' ERR
-
-export DEBIAN_FRONTEND=noninteractive
-
-# =============================================================================
-#  VARIÁVEIS (ESPELHAM O INSTALADOR)
-# =============================================================================
+# --- Variáveis de Configuração ---
 INSTALL_DIR="/var/www/dieta-milenar"
 SOCIALPROOF_DIR="/var/www/socialproof"
-PMA_DIR="/var/www/phpmyadmin"
 APP_USER="dieta"
 APP_GROUP="dieta"
 DB_NAME="dieta_milenar"
 DB_USER="dieta_user"
-APP_PORT=3000
-
-PHP_VER=""
-if command -v php >/dev/null 2>&1; then
-    PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
-fi
-
-log_info "Desinstalador iniciado — v4.1"
-log_info "PHP_VER detectado: ${PHP_VER:-não encontrado}"
-
-# =============================================================================
-#  VERIFICAÇÕES INICIAIS
-# =============================================================================
-[[ ${EUID:-999} -eq 0 ]] || log_error "Execute como root: sudo RR"
-
-install -d -m 0755 /run/lock
-exec 9>/run/lock/dieta-milenar-uninstall.lock
-flock -n 9 || log_error "Desinstalador já está rodando."
-log_info "Lock adquirido."
-
-# =============================================================================
-#  TELA DE CONFIRMAÇÃO
-# =============================================================================
-clear
-echo -e "${RED}${BOLD}"
-draw_line "═" "$RED"
-center_print "🚨  DESINSTALADOR DIETA MILENAR v4.1  🚨" "$RED"
-draw_line "═" "$RED"
-echo -e "${NC}"
-
-echo -e "  ${RED}${BOLD}ISSO IRÁ REMOVER PERMANENTEMENTE TUDO QUE O INSTALADOR ADICIONOU:${NC}\n"
-echo -e "  ${YELLOW}Serviços:${NC}     PM2, Nginx, MySQL, PHP-FPM"
-echo -e "  ${YELLOW}Pacotes:${NC}      curl, git, unzip, nginx, mysql-server, openssl, build-essential,"
-echo -e "                php (base e módulos), nodejs, pm2, certbot."
-echo -e "  ${YELLOW}Diretórios:${NC}   $INSTALL_DIR, $SOCIALPROOF_DIR, $PMA_DIR,"
-echo -e "                /var/log/dieta-milenar, /var/lib/$APP_USER,"
-echo -e "                /etc/nginx, /var/log/nginx, /var/lib/nginx,"
-echo -e "                /etc/mysql, /var/lib/mysql, /var/log/mysql,"
-echo -e "                /etc/php, /var/lib/php, /var/log/php*,"
-echo -e "                /etc/letsencrypt (se SSL foi configurado)."
-echo -e "  ${YELLOW}Bancos:${NC}       $DB_NAME, socialproof"
-echo -e "  ${YELLOW}Usuário:${NC}      $APP_USER (sistema) e $DB_USER (MySQL)"
-echo -e "  ${YELLOW}Systemd:${NC}      Unit do PM2 startup"
-echo -e "  ${YELLOW}Logs:${NC}         Todos os logs da aplicação e do instalador/desinstalador."
-echo -e "  ${YELLOW}Resquícios:${NC}   Caches, arquivos temporários, repositórios de pacotes."
-echo -e "\n  ${RED}${BOLD}ESTE SCRIPT TENTARÁ CORRIGIR AUTOMATICAMENTE PROBLEMAS NO GERENCIADOR DE PACOTES (APT).${NC}"
-echo -e "  ${RED}${BOLD}NÃO EXECUTE EM SERVIDORES COM OUTRAS APLICAÇÕES!${NC}"
-draw_line "─" "$RED"
-read -r -p "  DIGITE 'SIM' PARA CONFIRMAR A DESINSTALAÇÃO TOTAL: " CONFIRM
-[[ "$CONFIRM" == "SIM" ]] || log_error "Desinstalação cancelada pelo usuário."
-log_info "Confirmação recebida: SIM"
-
-# =============================================================================
-#  ETAPA 0 — PRÉ-LIMPEZA DO GERENCIADOR DE PACOTES
-# =============================================================================
-header "ETAPA 0 — PRÉ-LIMPEZA DO GERENCIADOR DE PACOTES"
-
-log_info "Tentando resolver problemas de bloqueio e estado quebrado do APT."
-
-run_silent "Matando processos APT/DPKG em execução" \
-    bash -c "
-        for p in \$(ps aux | grep -E 'apt|dpkg|unattended-upgrades' | grep -v grep | awk '{print \$2}'); do
-            kill -9 \$p 2>/dev/null || true
-        done
-    "
-
-run_silent "Removendo arquivos de bloqueio do APT/DPKG" \
-    bash -c "
-        rm -f /var/lib/dpkg/lock
-        rm -f /var/lib/dpkg/lock-frontend
-        rm -f /var/lib/apt/lists/lock
-        rm -f /var/cache/apt/archives/lock
-    "
-
-run_silent "Reconfigurando pacotes desembalados (dpkg --configure -a)" \
-    bash -c "dpkg --configure -a 2>/dev/null || true"
-
-run_silent "Tentando corrigir instalações quebradas (apt --fix-broken install)" \
-    bash -c "apt --fix-broken install -y 2>/dev/null || true"
-
-run_silent "Atualizando lista de pacotes (apt update)" \
-    bash -c "apt update -y 2>/dev/null || true"
-
-log_status "Pré-limpeza do gerenciador de pacotes concluída."
-
-# =============================================================================
-#  ETAPA 1 — PM2: PARAR, DELETAR E REMOVER STARTUP
-# =============================================================================
-header "ETAPA 1 — REMOVENDO PM2 E PROCESSOS NODE"
-
-if id -u "$APP_USER" >/dev/null 2>&1; then
-    run_silent "Parando processo dieta-milenar no PM2" \
-        bash -c "sudo -u '$APP_USER' pm2 stop dieta-milenar 2>/dev/null || true"
-
-    run_silent "Deletando processo dieta-milenar no PM2" \
-        bash -c "sudo -u '$APP_USER' pm2 delete dieta-milenar 2>/dev/null || true"
-
-    run_silent "Salvando lista PM2 vazia" \
-        bash -c "sudo -u '$APP_USER' pm2 save --force 2>/dev/null || true"
-
-    # Remove o serviço systemd que o pm2 startup criou
-    run_silent "Removendo PM2 startup systemd" \
-        bash -c "
-            pm2 unstartup systemd -u '$APP_USER' --hp /var/lib/'$APP_USER' \
-                2>/dev/null || true
-            # Remove diretamente o unit file caso o comando acima não resolva
-            systemctl stop pm2-${APP_USER}.service 2>/dev/null || true
-            systemctl disable pm2-${APP_USER}.service 2>/dev/null || true
-            rm -f /etc/systemd/system/pm2-${APP_USER}.service
-            systemctl daemon-reload 2>/dev/null || true
-        "
-else
-    log_warn "Usuário '$APP_USER' não encontrado — pulando PM2."
-fi
-
-run_silent "Matando processos Node.js residuais na porta $APP_PORT" \
-    bash -c "
-        pid=\$(lsof -ti :$APP_PORT 2>/dev/null || true)
-        [[ -n \"\$pid\" ]] && kill -9 \$pid 2>/dev/null || true
-    "
-
-run_silent "Removendo PM2 global (npm)" \
-    bash -c "npm uninstall -g pm2 2>/dev/null || true"
-
-run_silent "Removendo diretório .pm2 do root" \
-    bash -c "rm -rf /root/.pm2"
-
-if id -u "$APP_USER" >/dev/null 2>&1; then
-    run_silent "Removendo diretório .pm2 do usuário $APP_USER" \
-        bash -c "rm -rf /var/lib/'$APP_USER'/.pm2"
-fi
-
-log_status "PM2 e processos Node removidos."
-
-# =============================================================================
-#  ETAPA 2 — NGINX: PARAR E REMOVER CONFIGURAÇÕES
-# =============================================================================
-header "ETAPA 2 — REMOVENDO NGINX"
-
-run_silent "Parando Nginx" \
-    bash -c "systemctl stop nginx 2>/dev/null || true"
-
-run_silent "Desabilitando Nginx no boot" \
-    bash -c "systemctl disable nginx 2>/dev/null || true"
-
-run_silent "Removendo site da Dieta Milenar do Nginx" \
-    bash -c "
-        rm -f /etc/nginx/sites-enabled/dieta-milenar
-        rm -f /etc/nginx/sites-available/dieta-milenar
-        # Se o instalador removeu o default, não vamos recriá-lo.
-        # Se o default ainda existe e não está linkado, é porque não foi tocado.
-    "
-
-run_silent "Removendo logs do Nginx da Dieta Milenar" \
-    bash -c "
-        rm -f /var/log/nginx/dieta-milenar.access.log
-        rm -f /var/log/nginx/dieta-milenar.error.log
-    "
-
-run_silent "Removendo certificados Certbot (se existirem)" \
-    bash -c "
-        if command -v certbot >/dev/null 2>&1; then
-            # Tenta revogar e deletar todos os certificados conhecidos
-            # Isso é agressivo, mas para máquina dedicada é o esperado.
-            certbot delete --non-interactive 2>/dev/null || true
-            rm -rf /etc/letsencrypt/live /etc/letsencrypt/archive \
-                   /etc/letsencrypt/renewal /etc/letsencrypt/csr \
-                   /etc/letsencrypt/keys /etc/letsencrypt/accounts 2>/dev/null || true
-        fi
-    "
-
-# Remove diretórios de configuração e dados do Nginx, pois o instalador o instalou.
-run_silent "Removendo diretórios de configuração e dados do Nginx" \
-    bash -c "
-        rm -rf /etc/nginx
-        rm -rf /var/log/nginx
-        rm -rf /var/lib/nginx
-    "
-
-log_status "Nginx e certificados SSL removidos."
-
-# =============================================================================
-#  ETAPA 3 — MYSQL: REMOVER BANCOS, USUÁRIO E PARAR SERVIÇO
-# =============================================================================
-header "ETAPA 3 — REMOVENDO MYSQL E BANCOS DE DADOS"
-
-# Garante que MySQL está rodando para podermos executar os DROPs
-run_silent "Garantindo que MySQL está ativo para limpeza" \
-    bash -c "systemctl start mysql 2>/dev/null || true; sleep 1"
-
-if mysql --protocol=socket -u root -e "SELECT 1" >/dev/null 2>&1; then
-    run_silent "Removendo bancos '$DB_NAME' e 'socialproof'" \
-        bash -c "mysql --protocol=socket -u root <<'SQL'
-DROP DATABASE IF EXISTS \`${DB_NAME}\`;
-DROP DATABASE IF EXISTS \`socialproof\`;
-SQL"
-
-    run_silent "Removendo usuário MySQL '$DB_USER'" \
-        bash -c "mysql --protocol=socket -u root <<'SQL'
-DROP USER IF EXISTS '${DB_USER}'@'localhost';
-DROP USER IF EXISTS '${DB_USER}'@'127.0.0.1';
-FLUSH PRIVILEGES;
-SQL"
-    log_status "Bancos e usuário MySQL removidos."
-else
-    log_warn "Não foi possível conectar ao MySQL como root via socket. Remova manualmente."
-    log_warn_f "Falha na conexão root MySQL durante desinstalação"
-fi
-
-run_silent "Parando MySQL" \
-    bash -c "systemctl stop mysql 2>/dev/null || true"
-
-run_silent "Desabilitando MySQL no boot" \
-    bash -c "systemctl disable mysql 2>/dev/null || true"
-
-# Remove diretórios de dados e configuração do MySQL, pois o instalador o instalou.
-run_silent "Removendo diretórios de configuração e dados do MySQL" \
-    bash -c "
-        rm -rf /var/lib/mysql
-        rm -rf /var/lib/mysql-files
-        rm -rf /var/lib/mysql-keyring
-        rm -rf /etc/mysql
-        rm -rf /var/log/mysql
-    "
-
-log_status "MySQL parado e desabilitado."
-
-# =============================================================================
-#  ETAPA 4 — PHP-FPM: PARAR E DESABILITAR
-# =============================================================================
-header "ETAPA 4 — PARANDO PHP-FPM"
-
-if [[ -n "$PHP_VER" ]]; then
-    run_silent "Parando php${PHP_VER}-fpm" \
-        bash -c "systemctl stop php${PHP_VER}-fpm 2>/dev/null || true"
-
-    run_silent "Desabilitando php${PHP_VER}-fpm no boot" \
-        bash -c "systemctl disable php${PHP_VER}-fpm 2>/dev/null || true"
-
-    log_status "PHP-FPM ${PHP_VER} parado e desabilitado."
-else
-    # Tenta parar todas as versões possíveis de PHP-FPM que possam existir
-    for v in 7.4 8.0 8.1 8.2 8.3; do
-        run_silent "Tentando parar php${v}-fpm (se existir)" \
-            bash -c "systemctl stop php${v}-fpm 2>/dev/null || true
-                     systemctl disable php${v}-fpm 2>/dev/null || true"
-    done
-    log_warn "PHP_VER não detectado — tentou parar todas as versões conhecidas."
-fi
-
-# Remove diretórios de configuração e dados do PHP, pois o instalador o instalou.
-run_silent "Removendo diretórios de configuração e dados do PHP" \
-    bash -c "
-        rm -rf /etc/php
-        rm -rf /var/lib/php
-        rm -rf /var/log/php*
-    "
-
-# Desabilita e para Apache2 se o instalador o desabilitou
-if systemctl is-active --quiet apache2 2>/dev/null; then
-    log_warn "Apache2 ativo — parando e desabilitando (sem purge)..."
-    run_silent "Parando Apache2" systemctl stop apache2
-    run_silent "Desabilitando Apache2" systemctl disable apache2
-fi
-
-log_status "Serviços PHP e Apache2 (se aplicável) parados e desabilitados."
-
-# =============================================================================
-#  ETAPA 5 — DIRETÓRIOS DA APLICAÇÃO
-# =============================================================================
-header "ETAPA 5 — REMOVENDO DIRETÓRIOS DA APLICAÇÃO"
-
-run_silent "Removendo $INSTALL_DIR" \
-    bash -c "rm -rf '$INSTALL_DIR'"
-
-run_silent "Removendo $SOCIALPROOF_DIR" \
-    bash -c "rm -rf '$SOCIALPROOF_DIR'"
-
-run_silent "Removendo $PMA_DIR" \
-    bash -c "rm -rf '$PMA_DIR'"
-
-run_silent "Removendo logs da aplicação (/var/log/dieta-milenar)" \
-    bash -c "rm -rf /var/log/dieta-milenar"
-
-run_silent "Removendo lock files" \
-    bash -c "
-        rm -f /run/lock/dieta-milenar-install.lock
-        rm -f /run/lock/dieta-milenar-uninstall.lock
-    "
-
-log_status "Diretórios da aplicação removidos."
-
-# =============================================================================
-#  ETAPA 6 — USUÁRIO DE SISTEMA
-# =============================================================================
-header "ETAPA 6 — REMOVENDO USUÁRIO DE SISTEMA '$APP_USER'"
-
-if id -u "$APP_USER" >/dev/null 2>&1; then
-    # Mata todos os processos do usuário antes de removê-lo
-    run_silent "Matando processos do usuário $APP_USER" \
-        bash -c "pkill -u '$APP_USER' 2>/dev/null || true; sleep 1"
-
-    run_silent "Removendo usuário $APP_USER e home /var/lib/$APP_USER" \
-        bash -c "userdel -r '$APP_USER' 2>/dev/null || true"
-
-    # Remove o grupo separadamente caso userdel não o faça
-    run_silent "Removendo grupo $APP_GROUP" \
-        bash -c "groupdel '$APP_GROUP' 2>/dev/null || true"
-
-    log_status "Usuário e grupo '$APP_USER' removidos."
-else
-    log_warn "Usuário '$APP_USER' não encontrado — nada a remover."
-fi
-
-# =============================================================================
-#  ETAPA 7 — REMOVER PACOTES (VERSÃO CORRIGIDA)
-# =============================================================================
-header "ETAPA 7 — REMOVENDO PACOTES INSTALADOS"
-
-# Remove locks do APT antes de começar (prevenção extra)
-run_silent "Removendo locks residuais do APT" \
-    bash -c "
-        rm -f /var/lib/dpkg/lock-frontend 2>/dev/null || true
-        rm -f /var/lib/dpkg/lock 2>/dev/null || true
-        dpkg --configure -a 2>/dev/null || true
-    "
-
-# REMOÇÃO POR CATEGORIA (com timeouts) - MUITO MAIS RÁPIDO E SEGURO
-
-# 1. Node.js e repositório NodeSource
-run_silent "Removendo Node.js e repositório NodeSource (timeout 30s)" \
-    bash -c "
-        timeout 30 apt-get remove -y --purge nodejs npm 2>/dev/null || true
-        rm -f /etc/apt/sources.list.d/nodesource.list* 2>/dev/null || true
-        rm -f /etc/apt/keyrings/nodesource.gpg 2>/dev/null || true
-    "
-
-# 2. Nginx (todas as variantes)
-run_silent "Removendo Nginx (timeout 30s)" \
-    bash -c "timeout 30 apt-get remove -y --purge 'nginx*' 2>/dev/null || true"
-
-# 3. MySQL (todas as variantes)
-run_silent "Removendo MySQL (timeout 30s)" \
-    bash -c "timeout 30 apt-get remove -y --purge 'mysql*' 'mariadb*' 2>/dev/null || true"
-
-# 4. PHP (versão específica ou todas)
-run_silent "Removendo PHP e extensões (timeout 30s)" \
-    bash -c "
-        if [[ -n \"$PHP_VER\" ]]; then
-            timeout 30 apt-get remove -y --purge \"php${PHP_VER}*\" 2>/dev/null || true
-        else
-            timeout 30 apt-get remove -y --purge 'php*' 2>/dev/null || true
-        fi
-    "
-
-# 5. Outros pacotes específicos
-run_silent "Removendo outros pacotes (timeout 30s)" \
-    bash -c "
-        timeout 30 apt-get remove -y --purge \
-            certbot python3-certbot-nginx \
-            build-essential gcc make \
-            curl git unzip rsync \
-            openssl 2>/dev/null || true
-    "
-
-# 6. Limpeza final do APT
-run_silent "Limpando dependências não utilizadas (timeout 30s)" \
-    bash -c "
-        timeout 30 apt-get autoremove -y --purge 2>/dev/null || true
-        timeout 30 apt-get autoclean 2>/dev/null || true
-        timeout 30 apt-get clean 2>/dev/null || true
-    "
-
-log_status "Pacotes removidos com sucesso."
-
-# =============================================================================
-#  ETAPA 8 — LIMPEZA DE ARQUIVOS TEMPORÁRIOS E DE ORIGEM
-# =============================================================================
-header "ETAPA 8 — LIMPEZA FINAL DE ARQUIVOS RESIDUAIS"
-
-run_silent "Removendo npm cache do root" \
-    bash -c "rm -rf /root/.npm 2>/dev/null || true"
-
-run_silent "Removendo arquivos temporários da instalação" \
-    bash -c "
-        rm -rf /tmp/pma.zip /tmp/pma_ext
-        rm -rf /tmp/dieta-*
-    "
-
-run_silent "Removendo arquivo install.sh (se em /home/ubuntu)" \
-    bash -c "rm -f /home/ubuntu/install.sh 2>/dev/null || true"
-
-run_silent "Removendo diretório do projeto (se em /home/ubuntu)" \
-    bash -c "
-        for d in /home/ubuntu/Dieta-Milenar /home/ubuntu/dieta-milenar \
-                 /home/ubuntu/DietaMilelar; do
-            [[ -d \"\$d\" ]] && rm -rf \"\$d\" && echo \"Removido: \$d\" || true
-        done
-    "
-
-run_silent "Recarregando systemd após remoções" \
-    bash -c "systemctl daemon-reload 2>/dev/null || true"
-
-log_status "Limpeza final concluída."
-
-# =============================================================================
-#  AUTO-REMOÇÃO DO SCRIPT RR
-# =============================================================================
-SELF_PATH="$(readlink -f "$0" 2>/dev/null || echo "$0")"
-if [[ "$SELF_PATH" == "/usr/local/bin/RR" ]] || [[ "$SELF_PATH" == */RR ]]; then
-    log_info "Auto-removendo script RR: $SELF_PATH"
-    # Usa subshell com sleep para se auto-deletar após sair
-    (sleep 1 && rm -f "$SELF_PATH") &
-    log_status "Script RR agendado para auto-remoção."
-fi
-
-# =============================================================================
-#  RESUMO FINAL
-# =============================================================================
-clear
-echo -e "${GREEN}${BOLD}"
-draw_line "═" "$GREEN"
-center_print "✅  DESINSTALAÇÃO CONCLUÍDA  ✅" "$GREEN"
-draw_line "═" "$GREEN"
-echo -e "${NC}"
-
-elapsed=$(( $(date +%s) - _UNINSTALL_EPOCH ))
-
-echo -e "  ${GREEN}[✔]${NC} PM2 e processos Node.js:       removidos"
-echo -e "  ${GREEN}[✔]${NC} Nginx + configurações + SSL:    removidos"
-echo -e "  ${GREEN}[✔]${NC} MySQL + bancos + usuário:       removidos"
-echo -e "  ${GREEN}[✔]${NC} PHP-FPM ${PHP_VER:-(*)}:                 removido"
-echo -e "  ${GREEN}[✔]${NC} Node.js + NodeSource repo:      removidos"
-echo -e "  ${GREEN}[✔]${NC} build-essential, git, unzip:    removidos"
-echo -e "  ${GREEN}[✔]${NC} Certbot:                        removido"
-echo -e "  ${GREEN}[✔]${NC} Diretórios da aplicação:        removidos"
-echo -e "  ${GREEN}[✔]${NC} Usuário '$APP_USER':             removido"
-echo -e "  ${GREEN}[✔]${NC} Duração:                        ${elapsed}s"
-echo -e "  ${DIM}Log salvo em: $LOG_FILE${NC}\n"
-
-draw_line "─" "$YELLOW"
-echo -e "  ${YELLOW}Para remover o histórico deste comando:${NC}"
-echo -e "  ${CYAN}history -c && history -w${NC}"
-draw_line "─" "$YELLOW"
-
-{ echo "STATUS: OK | Duração: ${elapsed}s"; } >> "$LOG_FILE"
-log_info "Desinstalador finalizado com sucesso."
+PHP_VER=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
+PMA_DIR="/var/www/phpmyadmin"
+
+# --- Verificações Iniciais ---
+[[ ${EUID:-999} -eq 0 ]] || { echo -e "${RED}Execute como root: sudo ./nome_do_script.sh${NC}"; exit 1; }
+
+# --- Funções de Desinstalação ---
+
+parar_servicos() {
+    echo -e "\n${CYAN}--- PARANDO SERVIÇOS ---${NC}"
+    
+    if id -u "$APP_USER" >/dev/null 2>&1; then
+        log_status "Parando PM2..."
+        sudo -u "$APP_USER" -g "$APP_GROUP" pm2 stop dieta-milenar >/dev/null 2>&1 || true
+        sudo -u "$APP_USER" -g "$APP_GROUP" pm2 delete dieta-milenar >/dev/null 2>&1 || true
+        sudo -u "$APP_USER" -g "$APP_GROUP" pm2 save --force >/dev/null 2>&1 || true
+    fi
+
+    log_status "Limpando Nginx..."
+    rm -f /etc/nginx/sites-enabled/dieta-milenar /etc/nginx/sites-available/dieta-milenar >/dev/null 2>&1 || true
+    systemctl reload nginx >/dev/null 2>&1 || true
+    
+    log_status "Parando MySQL e PHP..."
+    systemctl stop mysql >/dev/null 2>&1 || true
+    [[ -n "$PHP_VER" ]] && systemctl stop "php${PHP_VER}-fpm" >/dev/null 2>&1 || true
+}
+
+remover_arquivos_e_dbs() {
+    echo -e "\n${CYAN}--- REMOVENDO ARQUIVOS E BANCOS ---${NC}"
+    
+    # Bancos de Dados
+    if command -v mysql >/dev/null 2>&1; then
+        mysql -u root -e "DROP DATABASE IF EXISTS \`${DB_NAME}\`; DROP DATABASE IF EXISTS \`socialproof\`; DROP USER IF EXISTS '${DB_USER}'@'localhost';" >/dev/null 2>&1 || log_warn "Falha ao remover DBs via MySQL."
+    fi
+
+    # Pastas
+    log_status "Removendo $INSTALL_DIR e $SOCIALPROOF_DIR"
+    rm -rf "$INSTALL_DIR" "$SOCIALPROOF_DIR" "$PMA_DIR" /var/log/dieta-milenar >/dev/null 2>&1 || true
+
+    # Usuário de Sistema
+    if id -u "$APP_USER" >/dev/null 2>&1; then
+        log_status "Removendo usuário $APP_USER"
+        userdel -r "$APP_USER" >/dev/null 2>&1 || true
+    fi
+}
+
+purge_mysql_total() {
+    echo -e "\n${RED}${BOLD}--- PURGE TOTAL DO MYSQL (DESTRUTIVO) ---${NC}"
+    systemctl stop mysql >/dev/null 2>&1 || true
+    MYSQL_PKGS=$(dpkg -l 'mysql-*' 2>/dev/null | awk '/^ii/{print $2}' | grep -v '^libmysqlclient' || true)
+    if [[ -n "$MYSQL_PKGS" ]]; then
+        apt-get remove --purge -y $MYSQL_PKGS >/dev/null 2>&1 || true
+    fi
+    rm -rf /etc/mysql /var/lib/mysql /var/log/mysql >/dev/null 2>&1 || true
+    apt-get autoremove -y >/dev/null 2>&1 || true
+    log_status "MySQL removido do sistema."
+}
+
+remover_pacotes() {
+    echo -e "\n${CYAN}--- REMOVENDO PACOTES (PHP, NODE, CERTBOT) ---${NC}"
+    apt-get remove -y --purge nodejs php-mysql php-mbstring php-zip php-gd php-curl python3-certbot-nginx certbot >/dev/null 2>&1 || true
+    apt-get autoremove -y >/dev/null 2>&1 || true
+    log_status "Pacotes removidos."
+}
+
+limpeza_final() {
+    echo -e "\n${CYAN}--- LIMPANDO LOGS E INSTALADORES ---${NC}"
+    rm -rf /root/.pm2 /home/ubuntu/install.sh /home/ubuntu/Dieta-Milenar >/dev/null 2>&1 || true
+    log_status "Limpeza de arquivos residuais concluída."
+}
+
+# --- Menu Principal ---
+exibir_menu() {
+    clear
+    echo -e "${RED}${BOLD}====================================================="
+    echo -e "      DESINSTALADOR DIETA MILENAR - MENU RR"
+    echo -e "=====================================================${NC}"
+    echo -e "1) ${YELLOW}Parar Serviços${NC} (PM2, Nginx, MySQL, PHP)"
+    echo -e "2) ${YELLOW}Remover Arquivos e Bancos${NC} (App, DBs, Usuários)"
+    echo -e "3) ${YELLOW}Remover Pacotes${NC} (NodeJS, PHP, Certbot)"
+    echo -e "4) ${RED}Purge TOTAL MySQL${NC} (Remove o motor MySQL e todos os dados)"
+    echo -e "5) ${RED}${BOLD}DESINSTALAÇÃO COMPLETA (TUDO)${NC}"
+    echo -e "0) Sair"
+    echo -e "====================================================="
+    echo -n "Escolha uma opção: "
+}
+
+while true; do
+    exibir_menu
+    read -r OPCAO
+    case $OPCAO in
+        1)
+            parar_servicos
+            echo -e "\n${GREEN}Serviços interrompidos.${NC}"
+            read -p "Pressione Enter para voltar..."
+            ;;
+        2)
+            echo -e "${RED}Isso apagará todos os dados da aplicação.${NC}"
+            read -p "Tem certeza? (s/n): " CONF
+            if [[ $CONF == "s" ]]; then
+                remover_arquivos_e_dbs
+                log_status "Dados removidos."
+            fi
+            read -p "Pressione Enter para voltar..."
+            ;;
+        3)
+            remover_pacotes
+            read -p "Pressione Enter para voltar..."
+            ;;
+        4)
+            echo -e "${RED}${BOLD}ALERTA: Isso desinstala o MySQL do servidor!${NC}"
+            read -p "Confirmar Purge Total? (DIGITE 'SIM'): " CONF
+            if [[ $CONF == "SIM" ]]; then
+                purge_mysql_total
+            fi
+            read -p "Pressione Enter para voltar..."
+            ;;
+        5)
+            echo -e "${RED}${BOLD}PERIGO: Esta opção reverte tudo e limpa a máquina!${NC}"
+            read -p "Confirmar Desinstalação TOTAL? (DIGITE 'LIMPEZA-TOTAL'): " CONF
+            if [[ $CONF == "LIMPEZA-TOTAL" ]]; then
+                parar_servicos
+                remover_arquivos_e_dbs
+                purge_mysql_total
+                remover_pacotes
+                limpeza_final
+                echo -e "\n${GREEN}${BOLD}SISTEMA LIMPO COM SUCESSO!${NC}"
+                exit 0
+            fi
+            ;;
+        0)
+            echo "Saindo..."
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Opção inválida!${NC}"
+            sleep 1
+            ;;
+    esac
+done
