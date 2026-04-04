@@ -121,8 +121,108 @@ else
   log_warn "Usuário '$APP_USER' não encontrado."
 fi
 
-# --- ETAPA 3: Remover pacotes ---
-echo -e "\n${CYAN}${BOLD}--- ETAPA 3: REMOVENDO PACOTES (COM CAUTELA) ---${NC}"
+# --- ETAPA 3: Remoção completa do MySQL (sem resíduos) ---
+echo -e "\n${CYAN}${BOLD}--- ETAPA 3: REMOÇÃO COMPLETA DO MYSQL (PURGE TOTAL) ---${NC}"
+
+_purge_mysql() {
+  # ── 3.1 Garante que o serviço esteja rodando para dropar os DBs ──────────
+  log_status "Iniciando MySQL temporariamente para limpeza de bancos..."
+  systemctl start mysql >/dev/null 2>&1 || true
+  sleep 2
+
+  # ── 3.2 Dropa TODOS os bancos não-sistema ────────────────────────────────
+  if command -v mysql >/dev/null 2>&1 && mysql -u root -e "SELECT 1" >/dev/null 2>&1; then
+    log_status "Dropando todos os bancos de dados de usuário..."
+    # Lista bancos excluindo os do sistema e executa DROP para cada um
+    mysql -u root -Bse "
+      SELECT schema_name FROM information_schema.schemata
+      WHERE schema_name NOT IN
+        ('information_schema','performance_schema','mysql','sys');
+    " 2>/dev/null | while IFS= read -r db; do
+      [[ -z "$db" ]] && continue
+      mysql -u root -e "DROP DATABASE IF EXISTS \`${db}\`;" >/dev/null 2>&1 && \
+        log_status "  Banco '${db}' removido." || \
+        log_warn  "  Falha ao dropar '${db}' (ignorado)."
+    done
+    # Remove todos os usuários não-root / não-sistema
+    mysql -u root -Bse "
+      SELECT CONCAT(\"'\",user,\"'@'\",host,\"'\")
+      FROM mysql.user
+      WHERE user NOT IN ('root','mysql.sys','mysql.infoschema','mysql.session','debian-sys-maint');
+    " 2>/dev/null | while IFS= read -r usr; do
+      [[ -z "$usr" ]] && continue
+      mysql -u root -e "DROP USER IF EXISTS ${usr};" >/dev/null 2>&1 || true
+    done
+    mysql -u root -e "FLUSH PRIVILEGES;" >/dev/null 2>&1 || true
+    log_status "Todos os bancos de usuário e contas MySQL removidos."
+  else
+    log_warn "Não foi possível conectar ao MySQL como root. Prosseguindo com purge de arquivos."
+  fi
+
+  # ── 3.3 Para o serviço antes de purgar ───────────────────────────────────
+  log_status "Parando MySQL antes do purge..."
+  systemctl stop mysql  >/dev/null 2>&1 || true
+  systemctl disable mysql >/dev/null 2>&1 || true
+  killall -9 mysqld mysqld_safe >/dev/null 2>&1 || true
+
+  # ── 3.4 Purga pacotes MySQL (apenas mysql-*, não libmysqlclient) ─────────
+  log_status "Purgando pacotes mysql-*..."
+  # Coleta pacotes instalados cujo nome começa com mysql-
+  MYSQL_PKGS=$(dpkg -l 'mysql-*' 2>/dev/null \
+    | awk '/^ii/{print $2}' \
+    | grep -v '^libmysqlclient' || true)
+  if [[ -n "$MYSQL_PKGS" ]]; then
+    # shellcheck disable=SC2086
+    apt-get remove --purge -y $MYSQL_PKGS >/dev/null 2>&1 || true
+    log_status "Pacotes removidos: $MYSQL_PKGS"
+  else
+    log_warn "Nenhum pacote mysql-* encontrado para remover."
+  fi
+  # Remove também o meta-pacote mysql-server caso exista com outro nome
+  apt-get remove --purge -y \
+    mysql-server mysql-client mysql-common \
+    mysql-server-core-* mysql-client-core-* \
+    >/dev/null 2>&1 || true
+
+  # ── 3.5 Remove resíduos de arquivos (dados, configs, logs, sockets) ──────
+  log_status "Removendo resíduos de arquivos do MySQL..."
+  rm -rf /etc/mysql                       # configs
+  rm -rf /var/lib/mysql                   # datadir (todos os bancos em disco)
+  rm -rf /var/lib/mysql-files             # secure-file-priv
+  rm -rf /var/log/mysql                   # logs
+  rm -f  /var/run/mysqld/mysqld.sock      # socket
+  rm -f  /tmp/mysql.sock                  # socket alternativo
+  rm -f  /etc/apparmor.d/usr.sbin.mysqld  # perfil apparmor (se existir)
+  apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld >/dev/null 2>&1 || true
+  rm -f  /etc/logrotate.d/mysql-server    # logrotate
+  rm -f  /etc/init.d/mysql               # init script legado
+  update-rc.d mysql remove >/dev/null 2>&1 || true
+
+  # ── 3.6 Remove usuário de sistema 'mysql' apenas se não houver outros ────
+  #        serviços dependendo dele (checagem conservadora)
+  if id -u mysql >/dev/null 2>&1; then
+    # Só remove se não houver processo rodando como mysql
+    if ! pgrep -u mysql >/dev/null 2>&1; then
+      userdel mysql >/dev/null 2>&1 || true
+      groupdel mysql >/dev/null 2>&1 || true
+      log_status "Usuário de sistema 'mysql' removido."
+    else
+      log_warn "Processo rodando como 'mysql' detectado — usuário de sistema preservado."
+    fi
+  fi
+
+  apt-get autoremove --purge -y >/dev/null 2>&1 || true
+  log_status "MySQL completamente removido e sem resíduos."
+}
+
+if dpkg -l 'mysql-*' 2>/dev/null | grep -q '^ii' || command -v mysqld >/dev/null 2>&1; then
+  _purge_mysql
+else
+  log_warn "MySQL não detectado no sistema. Etapa de purge ignorada."
+fi
+
+# --- ETAPA 4: Remover pacotes ---
+echo -e "\n${CYAN}${BOLD}--- ETAPA 4: REMOVENDO PACOTES (COM CAUTELA) ---${NC}"
 
 log_status "Removendo pacotes específicos da aplicação (sem purgar essenciais)..."
 # Remove pacotes que o instalador adicionou e que não são dependências críticas do SO
@@ -145,8 +245,8 @@ apt-get autoremove -y --purge >/dev/null 2>&1 || true
 apt-get clean >/dev/null 2>&1 || true
 log_status "Pacotes específicos e cache removidos."
 
-# --- ETAPA 4: Limpeza de arquivos de origem e temporários ---
-echo -e "\n${CYAN}${BOLD}--- ETAPA 4: LIMPEZA DE ARQUIVOS DE ORIGEM E TEMPORÁRIOS ---${NC}"
+# --- ETAPA 5: Limpeza de arquivos de origem e temporários ---
+echo -e "\n${CYAN}${BOLD}--- ETAPA 5: LIMPEZA DE ARQUIVOS DE ORIGEM E TEMPORÁRIOS ---${NC}"
 
 log_status "Removendo arquivos temporários do PM2..."
 rm -rf /root/.pm2 >/dev/null 2>&1 || true
