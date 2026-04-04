@@ -135,8 +135,8 @@ while true; do
         5) etapa_5; read -p "Enter..." ;;
         6)
             echo -e "${RED}${BOLD}ALERTA NUCLEAR: O SERVIDOR SERÁ COMPLETAMENTE LIMPO!${NC}"
-            read -p "Digite 'Y' para confirmar: " c
-            if [[ $c == "Y" ]]; then
+            read -p "Digite 'LIMPEZA-TOTAL' para confirmar: " c
+            if [[ $c == "LIMPEZA-TOTAL" ]]; then
                 etapa_1 && etapa_2 && etapa_3 && etapa_4 && etapa_5
                 echo -e "\n${GREEN}${BOLD}✅ TUDO FOI REMOVIDO COM SUCESSO!${NC}"
                 exit 0
