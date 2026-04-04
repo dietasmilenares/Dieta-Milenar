@@ -175,7 +175,7 @@ header "ETAPA 0 — CONFIGURAÇÃO DO SISTEMA"
 
 echo -e "\n  ${BOLD}🌐 CONEXÃO${NC}"
 read -rp "  Deseja usar um domínio? [s/N]: " USE_DOMAIN
-USE_DOMAIN=${USE_DOMAIN:-n} # ALTERAÇÃO: PADRÃO NÃO
+USE_DOMAIN=${USE_DOMAIN:-n} # Padrão: Não
 DOMAIN="$PUBLIC_IP"
 USE_SSL=false
 
@@ -199,7 +199,7 @@ DB_USER=${DB_USER:-dieta_user}
 is_valid_db_ident "$DB_USER" || log_error "DB_USER inválido (use [A-Za-z0-9_], máx 32)."
 
 read -rsp "  Senha MySQL (oculta) [root]: " DB_PASS; echo
-DB_PASS=${DB_PASS:-root} # ALTERAÇÃO: PADRÃO ROOT
+DB_PASS=${DB_PASS:-root} # Padrão: root
 
 echo -e "\n  ${BOLD}💳 PAGAMENTOS${NC}"
 read -rp "  Stripe Secret Key [Enter = pular]: " STRIPE_KEY
@@ -211,7 +211,7 @@ JWT_SECRET=${JWT_SECRET:-$(openssl rand -hex 32)}
 
 echo -e "\n  ${BOLD}🧰 PHPMYADMIN${NC}"
 read -rp "  Instalar phpMyAdmin? [S/n]: " INSTALL_PMA
-INSTALL_PMA=${INSTALL_PMA:-s} # ALTERAÇÃO: PADRÃO SIM
+INSTALL_PMA=${INSTALL_PMA:-s} # Padrão: Sim
 
 # =============================================================================
 #  TELA 3: RESUMO DA CONFIGURAÇÃO
@@ -283,6 +283,9 @@ if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
 fi
 
+# CAPTURA O CAMINHO REAL DO PM2
+PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
+
 log_status "Sistema base pronto (Nginx + PHP-FPM + Node.js + rsync)."
 
 # --- ETAPA 2 ---
@@ -311,7 +314,7 @@ GRANT ALL PRIVILEGES ON \`socialproof\`.* TO '${DB_USER}'@'127.0.0.1';
 
 FLUSH PRIVILEGES;
 SQL
-log_status "Bancos e permissões criados."
+log_status "Bancos e permissões criados (idempotente, senha atualiza)."
 
 # --- ETAPA 3 ---
 header "ETAPA 3 — PHPMYADMIN (OPCIONAL, RESTRITO)"
@@ -352,7 +355,7 @@ EOF
   chmod -R o-rwx "$PMA_DIR"
   chmod 0750 "$PMA_DIR/tmp"
 
-  log_status "phpMyAdmin instalado."
+  log_status "phpMyAdmin instalado (será restrito por IP no Nginx)."
 else
   log_status "phpMyAdmin ignorado."
 fi
@@ -391,7 +394,7 @@ install -d -m 0770 -o www-data -g "$APP_GROUP" \
 
 install -d -m 0750 -o "$APP_USER" -g "$APP_GROUP" /var/log/dieta-milenar
 
-log_status "Arquivos movidos."
+log_status "Arquivos e Social Proof movidos."
 
 # --- ETAPA 5 ---
 header "ETAPA 5 — GERANDO .ENV"
@@ -411,7 +414,7 @@ ENV
 
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/.env"
 chmod 0640 "$INSTALL_DIR/.env"
-log_status "Arquivo .env configurado."
+log_status "Arquivo .env configurado (0640, dono ${APP_USER})."
 
 # --- ETAPA 6 ---
 header "ETAPA 6 — BUILD FRONTEND"
@@ -425,7 +428,7 @@ if [[ -f "$CHATW" ]]; then
   sed -i -E "s#${esc_from}#${esc_to}#g" "$CHATW"
 fi
 
-# CORREÇÃO DE PERMISSÃO: Usando runuser em vez de sudo
+# CORREÇÃO: Usando runuser para fixar permissão do root
 if [[ -f package-lock.json ]]; then
   runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm ci --silent --cache /var/lib/$APP_USER/.npm"
 else
@@ -445,7 +448,7 @@ mysql_app=( mysql --protocol=tcp -h 127.0.0.1 -u "$DB_USER" --password="$DB_PASS
 SQL_FILE="$(find "$INSTALL_DIR" -maxdepth 3 -type f -name "*.sql" -print -quit 2>/dev/null || true)"
 if [[ -n "${SQL_FILE:-}" ]]; then
   "${mysql_app[@]}" "$DB_NAME" < "$SQL_FILE"
-  log_status "Banco importado."
+  log_status "Banco importado: $SQL_FILE"
 else
   log_warn "Nenhum .sql encontrado para importar."
 fi
@@ -488,15 +491,15 @@ module.exports = {
 EOF
 chown "$APP_USER":"$APP_GROUP" "$INSTALL_DIR/ecosystem.config.cjs"
 
-# CORREÇÃO DE PERMISSÃO: Usando runuser para evitar o erro de bloqueio do root
-runuser -l "$APP_USER" -c "pm2 stop dieta-milenar >/dev/null 2>&1 || true"
-runuser -l "$APP_USER" -c "pm2 delete dieta-milenar >/dev/null 2>&1 || true"
-runuser -l "$APP_USER" -c "pm2 start $INSTALL_DIR/ecosystem.config.cjs --env production"
-runuser -l "$APP_USER" -c "pm2 save --silent"
+# CORREÇÃO: Usando runuser e caminho absoluto para PM2
+runuser -l "$APP_USER" -c "$PM2_BIN stop dieta-milenar >/dev/null 2>&1 || true"
+runuser -l "$APP_USER" -c "$PM2_BIN delete dieta-milenar >/dev/null 2>&1 || true"
+runuser -l "$APP_USER" -c "$PM2_BIN start $INSTALL_DIR/ecosystem.config.cjs --env production"
+runuser -l "$APP_USER" -c "$PM2_BIN save --silent"
 
 pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
 
-log_status "Aplicação iniciada via PM2."
+log_status "Aplicação iniciada via PM2 (sem root)."
 
 # --- ETAPA 10 ---
 header "ETAPA 10 — CONFIGURANDO NGINX"
@@ -597,6 +600,7 @@ draw_line "━" "$GREEN"
 center_print "INSTALAÇÃO CONCLUÍDA COM SUCESSO" "$GREEN"
 draw_line "━" "$GREEN"
 echo -e "\n  URL: ${CYAN}${BOLD}http://$DOMAIN${NC}"
+echo -e "  Usuário App: ${YELLOW}$APP_USER${NC}"
 echo -e "  Senha MySQL: ${YELLOW}$DB_PASS${NC}"
-echo -e "\n  Para monitorar: ${BOLD}runuser -l $APP_USER -c 'pm2 monit'${NC}\n"
+echo -e "\n  Para monitorar: ${BOLD}runuser -l $APP_USER -c '$PM2_BIN monit'${NC}\n"
 draw_line "━" "$GREEN"
