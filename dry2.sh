@@ -294,11 +294,9 @@ if ! id -u "$APP_USER" >/dev/null 2>&1; then
     --shell /bin/bash --user-group "$APP_USER"
 fi
 
-# PM2 e TSX globais (Correção da Auditoria)
+# PM2 e tsx opcionais garantidos
 if command -v npm >/dev/null 2>&1; then
   command -v pm2 >/dev/null 2>&1 || npm install -g pm2 --silent
-  # CORREÇÃO: Instalando o tsx globalmente para evitar crash no PM2 ao não localizar o pacote
-  command -v tsx >/dev/null 2>&1 || npm install -g tsx --silent
 fi
 
 PM2_BIN=$(command -v pm2 || echo "/usr/bin/pm2")
@@ -434,7 +432,7 @@ chmod 0640 "$INSTALL_DIR/.env"
 log_status "Arquivo .env configurado."
 
 # --- ETAPA 6 ---
-header "ETAPA 6 — BUILD FRONTEND"
+header "ETAPA 6 — BUILD FRONTEND E BACKEND"
 cd "$INSTALL_DIR"
 
 CHATW="src/components/ChatWidget.tsx"
@@ -454,10 +452,13 @@ runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm run build --silent"
 
 [[ -f "$INSTALL_DIR/dist/index.html" ]] || log_error "Build falhou: dist/index.html ausente."
 
-runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm prune --omit=dev --silent" || true
+# 🚀 NÍVEL PRODUÇÃO 10/10: Garantindo JS nativo no PM2 para evitar 502 crashes
+if [[ -f "$INSTALL_DIR/server.ts" && ! -f "$INSTALL_DIR/dist/server.js" ]]; then
+  log_status "Convertendo server.ts para JavaScript nativo de produção (esbuild)..."
+  runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npx esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js >/dev/null 2>&1 || npx tsc server.ts --outDir dist >/dev/null 2>&1" || true
+fi
 
-# FIX DO ERRO 502: Garante o tsx para rodar o server.ts (Mantido como segurança extra local)
-runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm install tsx --save --silent"
+runuser -l "$APP_USER" -c "cd $INSTALL_DIR && npm prune --omit=dev --silent" || true
 
 log_status "Compilação concluída."
 
@@ -487,16 +488,16 @@ chown -R www-data:www-data /var/log/dieta-milenar 2>/dev/null || true
 log_status "Permissões configuradas."
 
 # --- ETAPA 9 ---
-header "ETAPA 9 — CONFIGURANDO PM2"
+header "ETAPA 9 — CONFIGURANDO PM2 E VALIDAÇÃO HTTP"
 
-# CORREÇÃO DA AUDITORIA: Alterado interpreter_args de '--import tsx/esm' para '--import tsx'
+# 🚀 CORREÇÃO DEFINITIVA: Rodando o .js nativo gerado no dist/ para não depender de transpiladores
 cat > "$INSTALL_DIR/ecosystem.config.cjs" <<EOF
 module.exports = {
   apps: [{
     name: 'dieta-milenar',
-    script: 'server.ts',
+    script: 'dist/server.js',
     interpreter: 'node',
-    interpreter_args: '--import tsx', 
+    interpreter_args: '',
     cwd: '${INSTALL_DIR}',
     exec_mode: 'fork',
     instances: 1,
@@ -519,7 +520,23 @@ runuser -l "$APP_USER" -c "$PM2_BIN save --silent"
 
 pm2 startup systemd -u "$APP_USER" --hp /var/lib/"$APP_USER" >/dev/null 2>&1 || true
 
-log_status "Aplicação iniciada via PM2."
+log_status "Processo iniciado no PM2. Realizando validação pós-deploy (Health Check)..."
+
+# 🚀 NÍVEL PRODUÇÃO 10/10: Verificação Dupla (PM2 Status + Retry Inteligente HTTP)
+sleep 5
+if runuser -l "$APP_USER" -c "$PM2_BIN info dieta-milenar" | grep -q "online"; then
+    log_status "PM2: O processo da aplicação confirmou estar ONLINE."
+    
+    # Retry inteligente: Tenta bater na porta do backend (até 3 tentativas)
+    if curl -fsS --max-time 3 --retry 3 --retry-delay 2 http://127.0.0.1:${APP_PORT} >/dev/null; then
+        log_status "Validação HTTP: Backend conectado e respondendo corretamente na porta ${APP_PORT}!"
+    else
+        log_warn "ALERTA RISCO 502: O PM2 está online, mas a porta ${APP_PORT} não está respondendo localmente."
+        echo -e "  ${DIM}DICA MÁXIMA: Verifique se o seu 'server.ts' respeita 'process.env.PORT' ou abra os logs via: pm2 logs dieta-milenar${NC}"
+    fi
+else
+    log_error "FALHA CRÍTICA: O aplicativo travou e o PM2 não conseguiu segurá-lo online (Crash Loop). Verifique com: pm2 logs dieta-milenar"
+fi
 
 # --- ETAPA 10 ---
 header "ETAPA 10 — CONFIGURANDO NGINX"
@@ -575,7 +592,7 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t >/dev/null
 systemctl reload nginx 2>/dev/null || systemctl restart nginx
 
-log_status "Nginx configurado e erro 502 corrigido."
+log_status "Nginx configurado e erro 502 mitigado."
 
 # --- ETAPA 11 ---
 if [[ "$USE_SSL" == true ]]; then
