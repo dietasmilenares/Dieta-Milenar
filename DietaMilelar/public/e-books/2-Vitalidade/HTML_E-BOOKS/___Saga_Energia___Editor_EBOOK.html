@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta charset="UTF-8">
+
+<title>🏺 Saga Energia — Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+/* ══════════════════════════════════════════════
+   VARIÁVEIS DE MARCA — DIETA MILENAR
+══════════════════════════════════════════════ */
+:root {
+  --dm-gold:       #B8861A;
+  --dm-gold-light: #D4A82A;
+  --dm-navy:       #0D2B5E;
+  --dm-charcoal:   #2A2A2A;
+  --dm-gray:       #4A4A4A;
+  --dm-sep:        #8B6914;
+  --f-display:     'Rajdhani', sans-serif;
+  --f-body:        'Lora', Georgia, serif;
+}
+
+/* ══ CAPA ══════════════════════════════════════ */
+.cover-saga {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.0;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.cover-fase {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.cover-fase-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.cover-tagline {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.65;
+}
+
+/* ══ ÍNDICE ═════════════════════════════════════ */
+.index-header {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.index-item {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+/* ══ SEPARADOR ══════════════════════════════════ */
+.separator {
+  font-family: var(--f-display);
+  color: var(--dm-sep);
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+/* ══ TÍTULOS DE PÁGINA ══════════════════════════ */
+.page-title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid var(--dm-gold);
+}
+.page-subtitle {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-gold);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.page-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ══ SEÇÕES / SUBSEÇÕES ═════════════════════════ */
+.section-label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: left;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  border-left: 3px solid var(--dm-gold-light, #D4A82A);
+  padding-left: 9px;
+}
+
+/* ══ CORPO DO TEXTO ══════════════════════════════ */
+.body-text {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: justify;
+  line-height: 1.68;
+  margin-bottom: 8px;
+  letter-spacing: 0.15px;
+}
+.body-text strong {
+  font-family: var(--f-body);
+  font-weight: 700;
+  color: var(--dm-navy);
+}
+
+/* ══ ASSINATURA ═════════════════════════════════ */
+.closing-name {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.closing-role {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+/* ══════════════════════════════════════════════ */
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;overflow-x:hidden;background:#111;font-family:Georgia,serif;touch-action:pan-x pan-y}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  background:linear-gradient(135deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:6px 8px;
+  display:flex;align-items:center;gap:5px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#topbar::-webkit-scrollbar{display:none}
+.logo{
+  color:#f0c040;font-weight:bold;font-size:12px;
+  white-space:nowrap;margin-right:4px;flex-shrink:0;
+}
+.tbtn{
+  background:#8B6914;color:#fff;border:none;
+  padding:6px 9px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:background .15s;
+  min-height:32px;
+}
+.tbtn:active{background:#a07820}
+
+/* zoom controls */
+.zoom-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+#zoom-val{color:#f0c040;font-size:11px;font-weight:bold;min-width:36px;text-align:center}
+
+/* ══ FMTBAR ══ */
+#fmt-bar{
+  position:fixed;top:46px;left:0;right:0;z-index:899;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+  border-bottom:1px solid #ccc;box-shadow:0 2px 8px rgba(0,0,0,.18);
+  padding:4px 6px;
+  display:flex;align-items:center;gap:3px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#fmt-bar::-webkit-scrollbar{display:none}
+.fb{
+  background:transparent;border:1px solid transparent;
+  min-width:30px;height:30px;padding:0 5px;border-radius:4px;cursor:pointer;
+  font-size:13px;font-weight:bold;color:#222;
+  display:flex;align-items:center;justify-content:center;
+  white-space:nowrap;flex-shrink:0;transition:background .1s;
+  touch-action:manipulation;
+}
+.fb:hover{background:#e0e0e0;border-color:#ccc}
+.fb:active,.fb.on{background:#0D2B5E;color:#fff;border-color:#0D2B5E}
+.fb-sep{width:1px;height:22px;background:#ddd;margin:0 2px;flex-shrink:0}
+#sel-font{
+  height:28px;border:1px solid #ccc;border-radius:4px;
+  font-size:11px;padding:0 4px;cursor:pointer;
+  background:#fff;color:#222;flex-shrink:0;max-width:100px;
+}
+#fs-wrap{display:flex;align-items:center;gap:1px;flex-shrink:0}
+#fs-wrap button{
+  background:#f0f0f0;border:1px solid #ccc;color:#333;
+  width:22px;height:28px;cursor:pointer;font-size:14px;font-weight:bold;
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+#fs-wrap button:active{background:#ddd}
+#fs-val{
+  width:38px;height:28px;border:1px solid #ccc;border-radius:3px;
+  font-size:12px;text-align:center;background:#fff;color:#222;
+}
+#fc-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.fc-dot{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+}
+.fc-dot:hover,.fc-dot:active{border-color:#333;transform:scale(1.15)}
+#if-color{
+  width:22px;height:22px;border:1px solid #ccc;border-radius:3px;
+  cursor:pointer;padding:1px;background:#fff;flex-shrink:0;
+}
+
+
+/* ══ BARRA DE CORES ══ */
+#color-bar{
+  position:fixed;top:88px;left:0;right:0;z-index:898;
+  background:linear-gradient(180deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:5px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#color-bar::-webkit-scrollbar{display:none}
+#color-bar label{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#color-bar .fc-dot{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+}
+#color-bar .fc-dot:hover,
+#color-bar .fc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+
+
+
+/* ══ BARRA DE SOMBRA ══ */
+#shadow-bar{
+  position:fixed;top:124px;left:0;right:0;z-index:897;
+  background:linear-gradient(180deg,#111,#1a1a1a);
+  border-bottom:2px solid #555;
+  padding:4px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#shadow-bar::-webkit-scrollbar{display:none}
+#shadow-bar label{
+  color:#aaa;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-shadow-toggle{
+  background:#333;color:#fff;border:2px solid #555;
+  padding:3px 8px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:all .15s;min-height:26px;
+  text-shadow:1px 1px 3px rgba(0,0,0,.8);
+}
+#btn-shadow-toggle.active{
+  background:#8B6914;border-color:#f0c040;color:#fff;
+}
+#shadow-bar .sc-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+  opacity:.5;
+}
+#shadow-bar .sc-dot.enabled{opacity:1}
+#shadow-bar .sc-dot:hover,
+#shadow-bar .sc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+.sc-sep{width:1px;height:18px;background:#444;flex-shrink:0}
+/* sliders de sombra */
+.sh-slider-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;opacity:.5}
+.sh-slider-wrap.enabled{opacity:1}
+.sh-slider-wrap label{color:#aaa;font-size:9px;white-space:nowrap}
+.sh-slider{
+  width:52px;height:4px;cursor:pointer;flex-shrink:0;
+  accent-color:#8B6914;
+}
+
+/* ══ SCROLL AREA ══ */
+#scroll-area{
+  margin-top:162px;
+  padding:16px 0 80px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.pw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.plbl{color:#8B6914;font-size:10px;font-weight:bold;letter-spacing:2px;text-transform:uppercase}
+
+/* ══ PAGE-SIZER — container que cresce com o zoom, centraliza a página ══ */
+.page-sizer{
+  position:relative;
+  flex-shrink:0;
+  overflow:visible;
+  /* width e height definidos via JS em applyZoom() */
+}
+
+/* ══ PAGE — tamanho fixo A4-like, zoom via transform ══ */
+.page{
+  position:relative;
+  width:896px;height:1344px;
+  background-size:100% 100%;background-repeat:no-repeat;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);
+  flex-shrink:0;
+}
+
+/* ══ TEXT BLOCKS ══ */
+.tb{
+  position:absolute;border:1.5px dashed transparent;
+  border-radius:2px;transition:border-color .1s;
+}
+.tb:hover{border-color:rgba(139,105,20,.3)}
+
+/* selecionado — borda pontilhada dourada */
+.tb.sel{
+  border:2px dashed #f0c040 !important;
+  box-shadow:0 0 0 1px rgba(240,192,64,.15);
+}
+
+/* conteúdo — NÃO editável por padrão */
+.bc{
+  width:100%;min-height:10px;
+  outline:none;
+  cursor:default;        /* cursor normal enquanto não editando */
+  user-select:none;      /* impede seleção acidental ao clicar */
+  pointer-events:none;   /* clique atravessa para o .tb */
+}
+
+/* quando em modo edição */
+.tb.editing .bc{
+  cursor:text;
+  user-select:text;
+  pointer-events:auto;
+}
+
+/* ── botão ARRASTAR — centro inferior da borda ── */
+.drag-handle{
+  position:absolute;
+  bottom:-18px;          /* fica colado abaixo da borda inferior */
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;height:22px;
+  display:none;
+  align-items:center;justify-content:center;gap:3px;
+  background:#8B6914;
+  border-radius:11px;
+  color:#fff;font-size:11px;
+  cursor:move;z-index:10;
+  touch-action:none;user-select:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  white-space:nowrap;
+}
+.drag-handle::before{content:'⠿'; font-size:13px; letter-spacing:0}
+.tb.sel .drag-handle{display:flex}
+
+/* ── botão LÁPIS — canto superior direito ── */
+.edit-btn{
+  position:absolute;
+  top:-14px;right:-14px;
+  width:28px;height:28px;
+  display:none;
+  align-items:center;justify-content:center;
+  background:#0D2B5E;
+  border-radius:50%;
+  color:#fff;font-size:13px;
+  cursor:pointer;z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  touch-action:manipulation;
+  border:2px solid #fff;
+  transition:background .15s, transform .1s;
+}
+.edit-btn:active{background:#1a4a9e;transform:scale(.92)}
+.tb.sel .edit-btn{display:flex}
+
+/* lápis ativo = modo edição */
+.tb.editing .edit-btn{background:#c0392b;}
+
+/* ── resize handle — canto inferior direito ── */
+.rh{
+  position:absolute;bottom:-3px;right:-3px;
+  width:20px;height:20px;
+  cursor:se-resize;touch-action:none;display:none;
+  z-index:10;
+}
+.rh::after{
+  content:'';position:absolute;bottom:3px;right:3px;
+  width:10px;height:10px;
+  border-right:2.5px solid #f0c040;border-bottom:2.5px solid #f0c040;
+}
+.tb.sel .rh{display:block}
+
+/* ══ COORDS BAR ══ */
+#coords{
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:rgba(20,14,0,.92);color:#f0c040;
+  font-family:monospace;font-size:11px;padding:4px 12px;
+  border-top:1px solid #8B6914;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  pointer-events:none;
+}
+
+/* ══ TEXT CLASSES ══ */
+.cover-saga{font-size:28px;font-weight:bold;color:#1A1A1A;text-align:center;line-height:1.2}
+.cover-fase{font-size:18px;font-weight:bold;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-fase-italic{font-size:14px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-tagline{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.5}
+.separator{color:#8B6914;font-size:8px;text-align:center;letter-spacing:1px;margin:4px 0;line-height:1}
+.index-header{font-size:13px;font-weight:bold;color:#1A1A1A;text-align:center;margin-bottom:8px}
+.index-item{font-size:12px;color:#3D3D3D;text-align:center;line-height:1.8}
+.page-title{font-size:18px;font-weight:bold;color:#1A1A1A;text-align:center;letter-spacing:.5px}
+.page-subtitle{font-size:14px;font-weight:bold;color:#0D2B5E;text-align:center}
+.page-italic{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center}
+.section-label{font-size:12px;font-weight:bold;color:#7A5C10;text-align:left;margin-top:10px;margin-bottom:3px;line-height:1.4}
+.body-text{font-size:11.5px;color:#3D3D3D;text-align:justify;line-height:1.55;margin-bottom:7px}
+.closing-name{font-size:13px;font-weight:bold;font-style:italic;color:#1A1A1A;text-align:center;margin-top:8px;margin-bottom:3px}
+.closing-role{font-size:11px;font-style:italic;color:#7A5C10;text-align:center}
+
+/* ══ PDF OVERLAY ══ */
+#pdf-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#pdf-overlay.show{display:flex}
+#pdf-overlay .msg{color:#f0c040;font-size:16px;font-weight:bold;font-family:Georgia,serif}
+#pdf-overlay .sub{color:#aaa;font-size:12px;font-family:monospace}
+#pdf-progress-bar{width:280px;height:8px;background:#333;border-radius:4px;overflow:hidden}
+#pdf-progress-fill{height:100%;width:0%;background:#8B6914;border-radius:4px;transition:width .3s}
+
+
+/* ══ RÉGUA ══ */
+.ruler-h{
+  position:absolute;top:0;left:0;height:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+.ruler-v{
+  position:absolute;top:0;left:0;width:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+canvas.ruler-canvas{display:block}
+
+/* ══ GUIAS MAGNÉTICAS ══ */
+.guide-line{
+  position:absolute;pointer-events:none;z-index:60;
+  background:rgba(0,180,255,.7);
+}
+.guide-line.h{left:0;right:0;height:1px}
+.guide-line.v{top:0;bottom:0;width:1px}
+
+/* ══ SELEÇÃO MÚLTIPLA ══ */
+.tb.sel-multi{
+  border:2px dashed #00cfff !important;
+  box-shadow:0 0 0 1px rgba(0,207,255,.2);
+}
+
+
+/* ══ GRUPO ══ */
+.tb.grouped{
+  outline:2px solid rgba(240,192,64,.25);
+  outline-offset:2px;
+}
+/* Indicador de grupo no canto superior esquerdo */
+.tb.grouped::before{
+  content:'⛓';
+  position:absolute;top:-16px;left:2px;
+  font-size:11px;opacity:.5;pointer-events:none;
+  z-index:5;
+}
+/* Botões agrupar/desagrupar na topbar — contextuais */
+#btn-group,#btn-ungroup,#btn-cut-ungroup,#btn-cut{display:none}
+#btn-group.visible,#btn-ungroup.visible,#btn-cut-ungroup.visible,#btn-cut.visible{display:inline-flex}
+#btn-cut-ungroup,#btn-cut{background:#c0392b}
+
+.tb.sel .ungroup-btn{display:flex}
+
+
+/* ══ PAINEL DE SETAS (posicionamento fino) ══ */
+#arrow-pad{
+  position:fixed;
+  bottom:36px;          /* acima da coords bar */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:850;
+  display:none;         /* só aparece com bloco selecionado */
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  pointer-events:auto;
+}
+#arrow-pad.show{display:flex}
+.arrow-row{display:flex;gap:2px}
+.arrow-btn{
+  width:44px;height:44px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:10px;
+  color:#f0c040;
+  font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  touch-action:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.6);
+  transition:background .1s, transform .08s;
+  -webkit-tap-highlight-color:transparent;
+}
+.arrow-btn:active{background:rgba(139,105,20,.9);transform:scale(.92)}
+.arrow-center{
+  width:44px;height:44px;
+  background:#000;
+  border:1px solid #8B6914;
+  border-radius:10px;
+  color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;letter-spacing:.5px;
+}
+/* step display */
+#arrow-step{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  text-align:center;
+  background:rgba(26,18,0,.7);
+  padding:2px 8px;border-radius:8px;
+  border:1px solid #8B6914;
+  margin-top:2px;
+  white-space:nowrap;
+}
+
+/* ══ LOCK ZOOM BUTTON ══ */
+#btn-lock-zoom{
+  position:fixed;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:960;
+  width:36px;height:36px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:50%;
+  color:#f0c040;
+  font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  transition:background .15s, border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+#btn-lock-zoom.locked{
+  background:#8B6914;
+  border-color:#f0c040;
+}
+
+/* ══ PRINT ══ */
+@media print{
+  #topbar,#fmt-bar,#coords,.ruler-h,.ruler-v,.guide-line,.edit-btn,.ungroup-btn,.drag-handle,.rh{display:none!important}
+  #scroll-area{margin-top:0;padding:0;gap:0;display:block}
+  body{background:#fff}
+  .pw{page-break-after:always;margin:0;padding:0}
+  .plbl{display:none}
+  .page{transform:none!important;box-shadow:none;margin:0!important}
+  .tb{border:none!important;box-shadow:none!important}
+  .drag-handle,.rh{display:none!important}
+}
+
+/* ══ TABLET responsive ══ */
+@media (max-width:960px){
+  .logo{font-size:11px}
+  .tbtn{font-size:10px;padding:5px 7px}
+}
+</style>
+
+<!-- SCRIPTS — carregados uma única vez -->
+
+
+<style id="ebook-clean-style">
+    #topbar,#fmt-bar,#coords,#pdf-overlay,
+    #color-bar,#shadow-bar,#arrow-pad,#btn-lock-zoom,
+    .ruler-h,.ruler-v,.guide-line,.plbl,
+    .drag-handle,.edit-btn,.rh,.ungroup-btn,.arrow-btn,
+    #btn-shadow-toggle { display:none !important; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #111;
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+    #scroll-area {
+      margin-top: 0 !important;
+      padding: 20px 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      overflow-x: auto;
+    }
+    .pw {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-sizer {
+      display: block;
+      overflow: visible;
+    }
+    .page {
+      position: relative;
+      width: 896px;
+      height: 1344px;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      box-shadow: 0 8px 40px rgba(0,0,0,.8);
+    }
+    .tb {
+      position: absolute;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .bc {
+      width: 100%;
+      min-height: 10px;
+      outline: none;
+      cursor: default;
+    }
+  </style></head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     FORMAT BAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE CORES
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE SOMBRA
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     PÁGINAS
+══════════════════════════════════════════════ -->
+<div id="scroll-area" style="margin-top: 0px;">
+
+<!-- P1 CAPA -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page1" style="background-image: url(&quot;https://i.ibb.co/JRDWLVqK/file-00000000ff7471f5ba693312bf1124ad.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="capa_saga" style="left: 112px; top: 385.317px; width: 672px; min-height: 36px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 2px 8px rgba(0,0,0,0.45);"><div class="cover-saga"><span style="font-size: 65px;">SAGA ENERGIA</span></div></div></div>
+  <div class="tb in-pg" id="capa_fase" style="left: 112px; top: 477.659px; width: 672px; min-height: 30px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-fase"><span style="font-size: 35px;">FASE 1</span></div></div></div>
+  <div class="tb in-pg" id="capa_subtitulo" style="left: 122px; top: 526.878px; width: 672px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 0px 1px 6px rgba(255,255,255,0.6);"><div class="cover-fase-italic"><span style="font-size: 28px;">Despertar Força Interior</span></div></div></div>
+  <div class="tb in-pg" id="capa_tagline" style="left: 160px; top: 592.363px; width: 576px; min-height: 40px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-tagline"><span style="font-size: 15px;">Dias 1 a 7: Reavive o Fogo Sagrado que Dorme em Você</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_header" style="left: 160px; top: 633.878px; width: 576px; min-height: 46px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="separator"><span style="font-size: 40px; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 8px; color: #B8861A;">— ÍNDICE —</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_itens" style="left: 160px; top: 705.604px; width: 576px; min-height: 220px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.75);"><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Introdução — O Despertar do Ka</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Que É a Força Interior Ancestral</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Os 3 Pilares da Energia Vital</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Plano Alimentar Completo — 7 Dias</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Receitas Energéticas Sagradas</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Poder dos Ingredientes Naturais</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Onde Encontrar os Ingredientes</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Dicas Extras de Vitalidade Natural</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Você Completou a Fase 1 — Celebração</span></div></div></div>
+</div></div></div>
+
+<!-- P2 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page2" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p2_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-title"><span style="font-size: 28px;">INTRODUÇÃO</span></div></div></div>
+  <div class="tb in-pg" id="p2_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 24px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-subtitle">O Despertar do Ka — A Força que os Faraós Nunca Perderam</div></div></div>
+  <div class="tb in-pg" id="p2_sep" style="left: 88px; top: 157px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p2_corpo" style="left: 88px; top: 160px; width: 720px; min-height: 500px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="body-text">Nos corredores de pedra dos grandes templos de Karnak, onde o silêncio era mais pesado que o granito e o ar carregava o perfume sagrado do kyphi, os sacerdotes egípcios realizavam um ritual diário antes do amanhecer: a <strong>Cerimônia do Despertar do Ka</strong>. Ka, na cosmologia do Antigo Egito, era a força vital que habita cada ser — a energia invisível que anima o corpo, aguça a mente e sustenta a vontade mesmo nas mais longas jornadas pelo deserto.</div><div class="body-text">Esses sacerdotes não conheciam o cansaço que hoje nos paralisa. Não havia queda de energia após o almoço, não havia exaustão às três da tarde, não havia necessidade de estimulantes artificiais. A razão era simples: eles alimentavam o Ka com precisão cirúrgica, escolhendo raízes, sementes e folhas que a natureza do Vale do Nilo oferecia com generosidade.</div><div class="body-text">Esta é a <strong>Saga Energia — Fase 1</strong>. Durante os próximos 7 dias, você vai redescobrir o caminho que esses sacerdotes trilhavam. Vai eliminar os bloqueios que suprimem sua vitalidade natural, vai nutrir seu organismo com alimentos que as civilizações mais resistentes da história usavam, e vai acordar cada manhã sentindo o Ka pulsar novamente — forte, claro e inabalável.</div><div class="body-text">Não existe magia aqui. Existe ciência milenar comprovada pelo tempo e agora confirmada pela nutrição funcional moderna. O fogo que se apagou dentro de você não morreu — apenas aguarda ser reacendido. Prepare-se: o despertar começa agora.</div></div></div>
+</div></div></div>
+
+<!-- P3 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page3" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p3_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O QUE É A FORÇA INTERIOR ANCESTRAL</span></div></div></div>
+  <div class="tb in-pg" id="p3_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p3_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="body-text">Os faraós governavam impérios que exigiam energia mental e física extraordinária. Eles supervisionavam a construção das maiores estruturas já erguidas pela humanidade, conduziam exércitos por desertos escaldantes e ainda presidiam rituais que duravam horas. A pergunta que a nutrição funcional moderna finalmente respondeu é: <strong>como eles faziam isso?</strong></div><div class="section-label">• O Combustível Mitocondrial</div><div class="body-text">A resposta está nas mitocôndrias — as pequenas usinas de energia dentro de cada célula. Os alimentos que os egípcios consumiam eram naturalmente ricos em coenzimas, minerais e fitoquímicos que otimizam a função mitocondrial. Quando as mitocôndrias funcionam bem, o corpo produz ATP — a moeda de energia celular — em quantidade suficiente para sustentar um dia inteiro de atividade sem colapso.</div><div class="section-label">• O Papel dos Adaptógenos Naturais</div><div class="body-text">Os sacerdotes egípcios conheciam, mesmo sem o nome científico, o conceito de planta adaptógena: aquela que ajuda o organismo a responder ao estresse sem se desgastar. Plantas como a ashwagandha, o alcaçuz e o gengibre — todas disponíveis em feiras populares brasileiras — regulam o cortisol, o hormônio do estresse que, quando em excesso, é o maior ladrão de energia que existe.</div><div class="section-label">• O Eixo Intestino-Energia</div><div class="body-text">Noventa por cento da serotonina — o neurotransmissor do bem-estar e do ânimo — é produzido no intestino. Os faraós tinham um intestino saudável porque comiam fibras reais, raízes e ervas digestivas. Um intestino comprometido drena a energia antes mesmo de ela chegar ao cérebro. Esta fase começa exatamente por esse eixo sagrado.</div><div class="section-label">• O Que Esperar dos 7 Dias da Fase 1?</div><div class="body-text">Ao final dos 7 dias você vai perceber: energia crescente e sustentada ao longo do dia, fim da sonolência pós-refeição, sono mais profundo e reparador, disposição mental mais clara — e o início de uma vitalidade que não depende de cafeína ou estimulantes artificiais para existir.</div></div></div>
+</div></div></div>
+
+<!-- P4 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page4" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p4_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="page-title"><span style="font-size: 28px;">OS 3 PILARES DA ENERGIA VITAL</span></div></div></div>
+  <div class="tb in-pg" id="p4_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p4_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="body-text">A Fase 1 da Saga Energia é construída sobre três pilares ancestrais que, juntos, formam a fundação da vitalidade duradoura. Cada pilar corresponde a um princípio que os sacerdotes de Luxor observavam com rigor absoluto em sua dieta diária — e que a ciência moderna valida com precisão.</div><div class="section-label">PILAR 1 — Acender o Fogo Digestivo</div><div class="body-text">Nenhuma energia pode ser extraída de alimentos que não são bem digeridos. O primeiro pilar é ativar o fogo digestivo — o <em>Agni</em> da medicina ayurvédica, equivalente ao que os egípcios chamavam de "o forno do templo interior". Isso se faz com gengibre fresco, pimenta-do-reino, cúrcuma e limão consumidos estrategicamente ao longo do dia. Quando o fogo digestivo está aceso, cada grama de alimento é convertido em energia, não em toxina acumulada.</div><div class="section-label">PILAR 2 — Nutrir as Reservas Profundas</div><div class="body-text">Os construtores das pirâmides carregavam toneladas de pedra porque suas reservas de glicogênio, ferro e magnésio estavam constantemente reabastecidas. O segundo pilar foca em alimentos ricos em minerais biodisponíveis: sementes de abóbora (magnésio), folhas escuras (ferro + vitamina C), banana (potássio e vitamina B6) e mel puro (energia de liberação inteligente + enzimas). Essas reservas profundas são o que separa a energia que some às 10h da manhã daquela que sustenta o dia inteiro.</div><div class="section-label">PILAR 3 — Equilibrar o Cortisol com Ervas Sagradas</div><div class="body-text">O maior inimigo da energia não é a falta de calorias — é o excesso de cortisol. Quando o estresse é crônico, o cortisol elevado destrói músculo, acumula gordura abdominal e apaga o fogo vital. O terceiro pilar usa ervas adaptógenas acessíveis — ashwagandha, alcaçuz e camomila — em chás noturnos que recalibram o sistema nervoso durante o sono, garantindo que o Ka acorde plenamente restaurado.</div></div></div>
+</div></div></div>
+
+<!-- P5 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page5" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p5_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PLANO ALIMENTAR — 7 DIAS</span></div></div></div>
+  <div class="tb in-pg" id="p5_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 22px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-italic">Estrutura Diária — Repita por 7 dias consecutivos (Dias 1 a 7)</div></div></div>
+  <div class="tb in-pg" id="p5_sep" style="left: 88px; top: 155px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p5_corpo" style="left: 88px; top: 159px; width: 720px; min-height: 580px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="section-label">■ AO ACORDAR — O Ritual do Fogo</div><div class="body-text">Antes de qualquer alimento sólido: 1 copo de água morna com suco de meio limão, 1 col. chá de gengibre fresco ralado e uma pitada de cúrcuma. Aguarde 20 minutos antes do café da manhã.</div><div class="section-label">■ CAFÉ DA MANHÃ — O Prato da Vitalidade</div><div class="body-text">Mingau de aveia com banana amassada, 1 col. sopa de mel puro, 1 col. chá de sementes de chia e canela. Acompanhe com 1 ovo mexido ou cozido. Opção rápida: vitamina de banana com leite de coco, aveia e mel.</div><div class="section-label">■ MEIO DA MANHÃ — A Semente Sagrada</div><div class="body-text">1 punhado de sementes de abóbora cruas ou tostadas + 1 fruta da estação. Hidrate com água de coco natural ou chá verde com limão.</div><div class="section-label">■ ALMOÇO — O Banquete dos Guerreiros</div><div class="body-text">Arroz integral ou batata-doce + feijão ou lentilha + legumes refogados com alho e azeite + folhas verdes escuras cruas. Proteína: frango grelhado, ovo ou peixe. Tempere com cúrcuma, cominho e pimenta-do-reino.</div><div class="section-label">■ LANCHE DA TARDE — O Combustível do Entardecer</div><div class="body-text">1 banana com pasta de amendoim natural (sem açúcar) + chá de hibisco gelado. Alternativa: tapioca com queijo cottage e mel. Este lanche impede a queda de energia das 15h.</div><div class="section-label">■ JANTAR — A Refeição do Templo</div><div class="body-text">Sopa de legumes com gengibre e cúrcuma + proteína leve (ovo, atum ou tofu) + folhas verdes com azeite e limão. Evite carboidratos refinados à noite para que o sono seja máximo em regeneração.</div><div class="section-label">■ ANTES DE DORMIR — O Chá do Sacerdote</div><div class="body-text">Chá de ashwagandha ou alcaçuz com camomila, adoçado com mel. Reduz o cortisol, induz o sono reparador e garante que o Ka acorde plenamente restaurado na manhã seguinte.</div></div></div>
+</div></div></div>
+
+<!-- P6 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page6" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p6_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="page-title"><span style="font-size: 28px;">RECEITAS ENERGÉTICAS SAGRADAS</span></div></div></div>
+  <div class="tb in-pg" id="p6_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p6_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="section-label">✦ ELIXIR DO DESPERTAR DO KA</div><div class="body-text"><strong>Ingredientes:</strong> 200ml de água morna, suco de 1 limão, 1 col. chá de gengibre ralado, 1 pitada de cúrcuma, 1 col. chá de mel puro.</div><div class="body-text"><strong>Preparo:</strong> Misture todos os ingredientes na água morna (não fervente). Beba em jejum, lentamente, como um ritual de abertura do dia.</div><div class="body-text"><strong>Benefício:</strong> Ativa o metabolismo, alcaliniza o sangue e acende o fogo digestivo em menos de 20 minutos.</div><div class="section-label">✦ VITAMINA DA VITALIDADE FARAÔNICA</div><div class="body-text"><strong>Ingredientes:</strong> 1 banana madura, 200ml de leite de coco, 2 col. sopa de aveia, 1 col. chá de mel, 1 pitada de canela, 5 sementes de abóbora.</div><div class="body-text"><strong>Preparo:</strong> Bata tudo no liquidificador. Consuma no café da manhã ou no lanche da tarde.</div><div class="body-text"><strong>Benefício:</strong> Energia sustentada por até 4 horas sem pico de glicose. Rico em magnésio, triptofano e ácidos graxos de cadeia média.</div><div class="section-label">✦ CHÁ DO CORTISOL APAZIGUADO</div><div class="body-text"><strong>Ingredientes:</strong> 1 col. chá de raiz de alcaçuz seca, 1 col. chá de camomila, 1 col. chá de ashwagandha em pó, 300ml de água quente, mel a gosto.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água, adicione as ervas, tampe e deixe em infusão por 10 minutos. Coe e adoce com mel. Beba 30 minutos antes de dormir.</div><div class="body-text"><strong>Benefício:</strong> Reduz o cortisol noturno, melhora a qualidade do sono e prepara o organismo para produção máxima de energia no dia seguinte.</div><div class="section-label">✦ SOPA ENERGÉTICA DO NILO</div><div class="body-text"><strong>Ingredientes:</strong> 1 cenoura, 1 batata-doce, 1 cebola, 2 dentes de alho, 1 col. chá de gengibre, 1 col. chá de cúrcuma, sal, pimenta-do-reino e azeite.</div><div class="body-text"><strong>Preparo:</strong> Refogue o alho e a cebola no azeite. Adicione os legumes picados, cubra com água e cozinhe por 20 minutos. Tempere e sirva.</div><div class="body-text"><strong>Benefício:</strong> Anti-inflamatória, digestiva e nutritiva. Ideal para o jantar leve que regenera sem sobrecarregar o templo interior.</div></div></div>
+</div></div></div>
+
+<!-- P7 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page7" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p7_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O PODER DOS INGREDIENTES NATURAIS</span></div></div></div>
+  <div class="tb in-pg" id="p7_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p7_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="section-label">■ Gengibre — A Raiz que Desperta o Fogo</div><div class="body-text">Nos templos de Luxor, escribas registravam em papiros o uso do gengibre como "estimulante do fogo interno" antes das grandes cerimônias. Há mais de 5.000 anos presente na medicina ayurvédica e chinesa, o gengibre é termogênico, anti-inflamatório e digestivo. Seus compostos ativos — gingeróis e shogaóis — estimulam a circulação, aceleram o metabolismo e combatem a fadiga crônica com eficácia comprovada pela ciência moderna.</div><div class="section-label">■ Cúrcuma — O Ouro dos Sacerdotes</div><div class="body-text">Os sacerdotes egípcios chamavam a cúrcuma de "ouro do templo" e a usavam em rituais de purificação e cura. A curcumina, seu princípio ativo, é um dos anti-inflamatórios naturais mais poderosos conhecidos. Inflamação silenciosa é uma das principais causas de fadiga crônica — e a cúrcuma apaga esse fogo destruidor, restaurando a energia que ele consumia.</div><div class="section-label">■ Sementes de Abóbora — O Tesouro do Nilo</div><div class="body-text">Encontradas em sítios arqueológicos às margens do Nilo com mais de 3.000 anos de antiguidade, as sementes de abóbora eram alimento sagrado dos trabalhadores das pirâmides. Riquíssimas em magnésio — mineral essencial para a produção de ATP — e em zinco e triptofano, são o suplemento natural mais completo para quem busca energia duradoura e sono reparador.</div><div class="section-label">■ Mel Puro — A Dádiva da Deusa Nut</div><div class="body-text">Na mitologia egípcia, o mel era descrito como precioso, curativo e eterno. Potes de mel foram encontrados intactos nas tumbas dos faraós, comestíveis após milênios. Rico em frutose de absorção gradual, enzimas digestivas e compostos antimicrobianos, o mel puro fornece energia de liberação inteligente — rápida para o início, sustentada para o longo prazo.</div><div class="section-label">■ Alcaçuz — O Harmonizador do Ka</div><div class="body-text">Raízes de alcaçuz foram encontradas na tumba do faraó Tutancâmon, evidenciando sua importância na medicina egípcia. Adaptógeno natural, o alcaçuz regula os níveis de cortisol e protege as glândulas suprarrenais — responsáveis pela produção de energia de emergência — restaurando a vitalidade que o estresse crônico havia esgotado.</div><div class="section-label">■ Banana — O Fruto dos Trabalhadores Sagrados</div><div class="body-text">O equivalente popular do tâmara egípcio — fruto energético por excelência. Rica em potássio, vitamina B6 e carboidratos de médio índice glicêmico, a banana previne câimbras, estabiliza o humor e sustenta a energia muscular por horas, sendo indispensável no protocolo desta fase.</div></div></div>
+</div></div></div>
+
+<!-- P8 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page8" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p8_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="page-title"><span style="font-size: 28px;">ONDE ENCONTRAR OS INGREDIENTES</span></div></div></div>
+  <div class="tb in-pg" id="p8_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p8_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="body-text">Um dos princípios fundamentais da Dieta Milenar é a acessibilidade. Os sacerdotes egípcios usavam o que o Vale do Nilo oferecia. Você usará o que o Brasil oferece — e o Brasil é generoso. Todos os ingredientes desta fase custam pouco e são encontrados facilmente em quatro tipos de estabelecimentos.</div><div class="section-label">✦ Feiras Livres e Mercados Populares</div><div class="body-text">Gengibre fresco, cúrcuma fresca (açafrão-da-terra), limão, banana, batata-doce, cenoura, cebola, alho, folhas verdes (couve, espinafre, rúcula) e frutas da estação. Compre sempre que possível direto do produtor — quanto mais fresco, maior o teor de fitoquímicos ativos e o poder energizante.</div><div class="section-label">✦ Supermercados</div><div class="body-text">Aveia em flocos, sementes de chia, canela em pó, pimenta-do-reino, mel puro (verifique o rótulo: deve ser apenas mel, sem xaropes adicionados), leite de coco, azeite de oliva extravirgem, pasta de amendoim natural, atum em lata e ovos.</div><div class="section-label">✦ Lojas de Produtos Naturais</div><div class="body-text">Sementes de abóbora cruas, ashwagandha em pó, alcaçuz seco (raiz ou chá pronto), camomila a granel, cúrcuma em pó orgânica, chá verde e hibisco seco. Esses itens duram meses bem armazenados — compre em quantidade para economizar e ter sempre à mão.</div><div class="section-label">✦ Horta Caseira ou Quintal</div><div class="body-text">Gengibre (plante um pedaço de raiz em vaso com terra úmida), camomila, hortelã e erva-cidreira crescem facilmente em qualquer clima brasileiro. Ter uma pequena horta de ervas medicinais é o equivalente moderno do jardim sagrado dos templos egípcios — sempre disponível, sempre fresco, sem custo adicional.</div></div></div>
+</div></div></div>
+
+<!-- P9 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page9" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p9_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="page-title"><span style="font-size: 28px;">DICAS EXTRAS DE VITALIDADE NATURAL</span></div></div></div>
+  <div class="tb in-pg" id="p9_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p9_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="section-label">◆ A Regra das Cores no Prato</div><div class="body-text">Os sacerdotes de Karnak selecionavam alimentos por cor — cada cor vegetal representa um grupo diferente de fitoquímicos energéticos. Monte seu prato com pelo menos 4 cores distintas a cada refeição: verde (clorofila e magnésio), laranja/amarelo (betacaroteno), vermelho (licopeno e ferro), branco/bege (compostos sulfurados e zinco). Um prato colorido é um prato energizante.</div><div class="section-label">◆ Hidratação como Ritual Sagrado</div><div class="body-text">A desidratação de apenas 2% já reduz a capacidade cognitiva e física em até 20%. Os faraós tinham servos que ofereciam água fresca ao longo do dia. Você precisa de uma garrafa de 1,5L sempre à mão. Adicione rodelas de limão e folhas de hortelã para tornar a hidratação um prazer — não uma obrigação.</div><div class="section-label">◆ O Poder dos 10 Minutos ao Sol</div><div class="body-text">Os egípcios eram um povo do sol — e não por acaso. A exposição solar de 10 a 15 minutos pela manhã sincroniza o ritmo circadiano, estimula a produção de vitamina D (essencial para a síntese de energia celular) e regula a melatonina para um sono mais profundo. Faça disso um ritual: 10 minutos ao sol da manhã, antes de qualquer tela.</div><div class="section-label">◆ Mastigação Consciente — O Segredo Esquecido</div><div class="body-text">A digestão começa na boca. Mastigar cada garfada pelo menos 20 vezes — como os sacerdotes que comiam em silêncio ritual — aumenta a absorção de nutrientes em até 30% e reduz o consumo total de alimentos. Mais nutrição, menos volume: mais energia, menos sonolência após as refeições.</div><div class="section-label">◆ O Jejum Noturno de 12 Horas</div><div class="body-text">Se o jantar for às 20h, o café da manhã deve ser às 8h. Esse intervalo ativa a autofagia — o processo de limpeza celular que os egípcios intuíam nos períodos de jejum ritual. O organismo recicla células danificadas, estabiliza a insulina e prepara as mitocôndrias para produção máxima de energia no dia seguinte.</div><div class="section-label">◆ Sono como Alimento do Ka</div><div class="body-text">Nenhum protocolo supera o poder regenerador do sono de qualidade. Durante o sono profundo, o hormônio do crescimento é liberado e o fígado realiza sua maior limpeza. O chá noturno desta fase foi formulado para potencializar exatamente essa janela de regeneração. Priorize 7 a 9 horas: o Ka precisa do silêncio da noite para se renovar.</div></div></div>
+</div></div></div>
+
+<!-- P10 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page10" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p10_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PARABÉNS — VOCÊ COMPLETOU A FASE 1!</span></div></div></div>
+  <div class="tb in-pg" id="p10_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p10_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 520px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="body-text">Sete dias atrás, você era uma chama quase apagada. Hoje, ao final desta primeira fase, o fogo sagrado foi reacendido. Seu organismo aprendeu novamente a linguagem que falava antes de ser silenciado pelo estresse, pelo açúcar e pelos alimentos industrializados. Você provou que a vitalidade não é um privilégio dos jovens ou dos atletas — é um direito de quem respeita o templo que habita.</div><div class="body-text">Os sacerdotes de Karnak sabiam que o despertar era apenas o começo. A chama acesa na Fase 1 precisa ser alimentada, crescer e se tornar um fogo que não se apaga. É exatamente isso que a <strong>Fase 2 — Energia Inabalável</strong> vai fazer: pegar a vitalidade que você acabou de recuperar e transformá-la em algo que o estresse, a correria e os desafios do dia a dia não conseguem mais roubar.</div><div class="body-text">Na Fase 2, você vai descobrir os tônicos dos guerreiros núbios, os alimentos que sustentavam os corredores de mensagens do faraó por centenas de quilômetros e os segredos das plantas que os escribas chamavam de "combustível do pensamento eterno". A energia que você sentiu esta semana é apenas uma amostra do que está por vir.</div><div class="body-text"><strong>A Fase 2 — Energia Inabalável — está esperando por você.</strong> O Ka foi despertado. Agora é hora de fortalecê-lo.</div></div></div>
+  <div class="tb in-pg" id="p10_assina" style="left: 200px; top: 705px; width: 496px; min-height: 80px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div><div class="closing-name">Marcelo R. Souza</div><div class="closing-role">Nutricionista Fitoterápico — Dieta Milenar</div></div></div>
+</div></div></div>
+
+</div><!-- /scroll-area -->
+
+
+<!-- ══ PAINEL DE SETAS ══ -->
+
+
+
+
+<!-- LOCK ZOOM -->
+
+
+<!-- PDF OVERLAY -->
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+
+
+
+
+</body></html>

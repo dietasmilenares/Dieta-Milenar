@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Página com iFrame</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5; /* Um fundo suave para destacar o iframe */
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ Conteúdo Incorporado! ✨</h1>
+        <p>Aqui está o seu iFrame, exibindo o conteúdo da URL que você especificou:</p>
+        <iframe src="http://localhost:8000/widget/index.php?room=dieta-faraonica" width="400" height="600" frameborder="0" style="border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.3)"></iframe>
+        <p>Lembre-se que, para este iFrame funcionar corretamente, o servidor `localhost:8000` precisa estar ativo e acessível no seu ambiente local. 😉</p>
+    </div>
+</body>
+</html>

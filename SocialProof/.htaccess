@@ -1,0 +1,11 @@
+Options -Indexes
+RewriteEngine On
+RewriteBase /
+
+# Arquivos e pastas existentes servem direto
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Tudo vai para index.php
+RewriteRule ^(.*)$ index.php [QSA,L]

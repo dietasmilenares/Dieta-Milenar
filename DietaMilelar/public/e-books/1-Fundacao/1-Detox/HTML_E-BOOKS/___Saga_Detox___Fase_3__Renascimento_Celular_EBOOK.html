@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta charset="UTF-8">
+
+<title>🏺 Saga Detox — Fase 3: Renascimento Celular</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+/* ══════════════════════════════════════════════
+   VARIÁVEIS DE MARCA — DIETA MILENAR
+══════════════════════════════════════════════ */
+:root {
+  --dm-gold:       #B8861A;
+  --dm-gold-light: #D4A82A;
+  --dm-navy:       #0D2B5E;
+  --dm-charcoal:   #2A2A2A;
+  --dm-gray:       #4A4A4A;
+  --dm-sep:        #8B6914;
+  --f-display:     'Rajdhani', sans-serif;
+  --f-body:        'Lora', Georgia, serif;
+}
+
+/* ══ CAPA ══════════════════════════════════════ */
+.cover-saga {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.0;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+.cover-fase {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.cover-fase-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.cover-tagline {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.65;
+}
+
+/* ══ ÍNDICE ═════════════════════════════════════ */
+.index-header {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+.index-item {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: center;
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+/* ══ SEPARADOR ══════════════════════════════════ */
+.separator {
+  font-family: var(--f-display);
+  color: var(--dm-sep);
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+/* ══ TÍTULOS DE PÁGINA ══════════════════════════ */
+.page-title {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  line-height: 1.2;
+  padding-bottom: 5px;
+  border-bottom: 1.5px solid var(--dm-gold);
+}
+.page-subtitle {
+  font-family: var(--f-display);
+  font-weight: 600;
+  color: var(--dm-gold);
+  text-align: center;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.page-italic {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-navy);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ══ SEÇÕES / SUBSEÇÕES ═════════════════════════ */
+.section-label {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-gold);
+  text-align: left;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  border-left: 3px solid var(--dm-gold-light, #D4A82A);
+  padding-left: 9px;
+}
+
+/* ══ CORPO DO TEXTO ══════════════════════════════ */
+.body-text {
+  font-family: var(--f-body);
+  font-weight: 400;
+  color: var(--dm-charcoal);
+  text-align: justify;
+  line-height: 1.68;
+  margin-bottom: 8px;
+  letter-spacing: 0.15px;
+}
+.body-text strong {
+  font-family: var(--f-body);
+  font-weight: 700;
+  color: var(--dm-navy);
+}
+
+/* ══ ASSINATURA ═════════════════════════════════ */
+.closing-name {
+  font-family: var(--f-display);
+  font-weight: 700;
+  color: var(--dm-navy);
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.closing-role {
+  font-family: var(--f-body);
+  font-style: italic;
+  color: var(--dm-gold);
+  text-align: center;
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+/* ══════════════════════════════════════════════ */
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;overflow-x:hidden;background:#111;font-family:Georgia,serif;touch-action:pan-x pan-y}
+
+/* ══ TOPBAR ══ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  background:linear-gradient(135deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:6px 8px;
+  display:flex;align-items:center;gap:5px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#topbar::-webkit-scrollbar{display:none}
+.logo{
+  color:#f0c040;font-weight:bold;font-size:12px;
+  white-space:nowrap;margin-right:4px;flex-shrink:0;
+}
+.tbtn{
+  background:#8B6914;color:#fff;border:none;
+  padding:6px 9px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:background .15s;
+  min-height:32px;
+}
+.tbtn:active{background:#a07820}
+
+/* zoom controls */
+.zoom-wrap{display:flex;align-items:center;gap:3px;margin-left:auto;flex-shrink:0}
+#zoom-val{color:#f0c040;font-size:11px;font-weight:bold;min-width:36px;text-align:center}
+
+/* ══ FMTBAR ══ */
+#fmt-bar{
+  position:fixed;top:46px;left:0;right:0;z-index:899;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+  border-bottom:1px solid #ccc;box-shadow:0 2px 8px rgba(0,0,0,.18);
+  padding:4px 6px;
+  display:flex;align-items:center;gap:3px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#fmt-bar::-webkit-scrollbar{display:none}
+.fb{
+  background:transparent;border:1px solid transparent;
+  min-width:30px;height:30px;padding:0 5px;border-radius:4px;cursor:pointer;
+  font-size:13px;font-weight:bold;color:#222;
+  display:flex;align-items:center;justify-content:center;
+  white-space:nowrap;flex-shrink:0;transition:background .1s;
+  touch-action:manipulation;
+}
+.fb:hover{background:#e0e0e0;border-color:#ccc}
+.fb:active,.fb.on{background:#0D2B5E;color:#fff;border-color:#0D2B5E}
+.fb-sep{width:1px;height:22px;background:#ddd;margin:0 2px;flex-shrink:0}
+#sel-font{
+  height:28px;border:1px solid #ccc;border-radius:4px;
+  font-size:11px;padding:0 4px;cursor:pointer;
+  background:#fff;color:#222;flex-shrink:0;max-width:100px;
+}
+#fs-wrap{display:flex;align-items:center;gap:1px;flex-shrink:0}
+#fs-wrap button{
+  background:#f0f0f0;border:1px solid #ccc;color:#333;
+  width:22px;height:28px;cursor:pointer;font-size:14px;font-weight:bold;
+  border-radius:3px;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+#fs-wrap button:active{background:#ddd}
+#fs-val{
+  width:38px;height:28px;border:1px solid #ccc;border-radius:3px;
+  font-size:12px;text-align:center;background:#fff;color:#222;
+}
+#fc-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.fc-dot{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+}
+.fc-dot:hover,.fc-dot:active{border-color:#333;transform:scale(1.15)}
+#if-color{
+  width:22px;height:22px;border:1px solid #ccc;border-radius:3px;
+  cursor:pointer;padding:1px;background:#fff;flex-shrink:0;
+}
+
+
+/* ══ BARRA DE CORES ══ */
+#color-bar{
+  position:fixed;top:88px;left:0;right:0;z-index:898;
+  background:linear-gradient(180deg,#1a1200,#2d2000);
+  border-bottom:2px solid #8B6914;
+  padding:5px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#color-bar::-webkit-scrollbar{display:none}
+#color-bar label{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#color-bar .fc-dot{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+}
+#color-bar .fc-dot:hover,
+#color-bar .fc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+
+
+
+/* ══ BARRA DE SOMBRA ══ */
+#shadow-bar{
+  position:fixed;top:124px;left:0;right:0;z-index:897;
+  background:linear-gradient(180deg,#111,#1a1a1a);
+  border-bottom:2px solid #555;
+  padding:4px 8px;
+  display:flex;align-items:center;gap:6px;
+  flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#shadow-bar::-webkit-scrollbar{display:none}
+#shadow-bar label{
+  color:#aaa;font-size:10px;font-weight:bold;
+  white-space:nowrap;flex-shrink:0;letter-spacing:.5px;
+}
+#btn-shadow-toggle{
+  background:#333;color:#fff;border:2px solid #555;
+  padding:3px 8px;border-radius:5px;cursor:pointer;
+  font-size:11px;font-weight:bold;white-space:nowrap;flex-shrink:0;
+  touch-action:manipulation;transition:all .15s;min-height:26px;
+  text-shadow:1px 1px 3px rgba(0,0,0,.8);
+}
+#btn-shadow-toggle.active{
+  background:#8B6914;border-color:#f0c040;color:#fff;
+}
+#shadow-bar .sc-dot{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;flex-shrink:0;touch-action:manipulation;
+  transition:transform .1s, border-color .1s;
+  opacity:.5;
+}
+#shadow-bar .sc-dot.enabled{opacity:1}
+#shadow-bar .sc-dot:hover,
+#shadow-bar .sc-dot:active{border-color:#f0c040;transform:scale(1.2)}
+.sc-sep{width:1px;height:18px;background:#444;flex-shrink:0}
+/* sliders de sombra */
+.sh-slider-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;opacity:.5}
+.sh-slider-wrap.enabled{opacity:1}
+.sh-slider-wrap label{color:#aaa;font-size:9px;white-space:nowrap}
+.sh-slider{
+  width:52px;height:4px;cursor:pointer;flex-shrink:0;
+  accent-color:#8B6914;
+}
+
+/* ══ SCROLL AREA ══ */
+#scroll-area{
+  margin-top:162px;
+  padding:16px 0 80px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.pw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.plbl{color:#8B6914;font-size:10px;font-weight:bold;letter-spacing:2px;text-transform:uppercase}
+
+/* ══ PAGE-SIZER — container que cresce com o zoom, centraliza a página ══ */
+.page-sizer{
+  position:relative;
+  flex-shrink:0;
+  overflow:visible;
+  /* width e height definidos via JS em applyZoom() */
+}
+
+/* ══ PAGE — tamanho fixo A4-like, zoom via transform ══ */
+.page{
+  position:relative;
+  width:896px;height:1344px;
+  background-size:100% 100%;background-repeat:no-repeat;
+  box-shadow:0 8px 40px rgba(0,0,0,.8);
+  flex-shrink:0;
+}
+
+/* ══ TEXT BLOCKS ══ */
+.tb{
+  position:absolute;border:1.5px dashed transparent;
+  border-radius:2px;transition:border-color .1s;
+}
+.tb:hover{border-color:rgba(139,105,20,.3)}
+
+/* selecionado — borda pontilhada dourada */
+.tb.sel{
+  border:2px dashed #f0c040 !important;
+  box-shadow:0 0 0 1px rgba(240,192,64,.15);
+}
+
+/* conteúdo — NÃO editável por padrão */
+.bc{
+  width:100%;min-height:10px;
+  outline:none;
+  cursor:default;        /* cursor normal enquanto não editando */
+  user-select:none;      /* impede seleção acidental ao clicar */
+  pointer-events:none;   /* clique atravessa para o .tb */
+}
+
+/* quando em modo edição */
+.tb.editing .bc{
+  cursor:text;
+  user-select:text;
+  pointer-events:auto;
+}
+
+/* ── botão ARRASTAR — centro inferior da borda ── */
+.drag-handle{
+  position:absolute;
+  bottom:-18px;          /* fica colado abaixo da borda inferior */
+  left:50%;
+  transform:translateX(-50%);
+  width:44px;height:22px;
+  display:none;
+  align-items:center;justify-content:center;gap:3px;
+  background:#8B6914;
+  border-radius:11px;
+  color:#fff;font-size:11px;
+  cursor:move;z-index:10;
+  touch-action:none;user-select:none;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  white-space:nowrap;
+}
+.drag-handle::before{content:'⠿'; font-size:13px; letter-spacing:0}
+.tb.sel .drag-handle{display:flex}
+
+/* ── botão LÁPIS — canto superior direito ── */
+.edit-btn{
+  position:absolute;
+  top:-14px;right:-14px;
+  width:28px;height:28px;
+  display:none;
+  align-items:center;justify-content:center;
+  background:#0D2B5E;
+  border-radius:50%;
+  color:#fff;font-size:13px;
+  cursor:pointer;z-index:10;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);
+  touch-action:manipulation;
+  border:2px solid #fff;
+  transition:background .15s, transform .1s;
+}
+.edit-btn:active{background:#1a4a9e;transform:scale(.92)}
+.tb.sel .edit-btn{display:flex}
+
+/* lápis ativo = modo edição */
+.tb.editing .edit-btn{background:#c0392b;}
+
+/* ── resize handle — canto inferior direito ── */
+.rh{
+  position:absolute;bottom:-3px;right:-3px;
+  width:20px;height:20px;
+  cursor:se-resize;touch-action:none;display:none;
+  z-index:10;
+}
+.rh::after{
+  content:'';position:absolute;bottom:3px;right:3px;
+  width:10px;height:10px;
+  border-right:2.5px solid #f0c040;border-bottom:2.5px solid #f0c040;
+}
+.tb.sel .rh{display:block}
+
+/* ══ COORDS BAR ══ */
+#coords{
+  position:fixed;bottom:0;left:0;right:0;z-index:800;
+  background:rgba(20,14,0,.92);color:#f0c040;
+  font-family:monospace;font-size:11px;padding:4px 12px;
+  border-top:1px solid #8B6914;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  pointer-events:none;
+}
+
+/* ══ TEXT CLASSES ══ */
+.cover-saga{font-size:28px;font-weight:bold;color:#1A1A1A;text-align:center;line-height:1.2}
+.cover-fase{font-size:18px;font-weight:bold;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-fase-italic{font-size:14px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.3}
+.cover-tagline{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center;line-height:1.5}
+.separator{color:#8B6914;font-size:8px;text-align:center;letter-spacing:1px;margin:4px 0;line-height:1}
+.index-header{font-size:13px;font-weight:bold;color:#1A1A1A;text-align:center;margin-bottom:8px}
+.index-item{font-size:12px;color:#3D3D3D;text-align:center;line-height:1.8}
+.page-title{font-size:18px;font-weight:bold;color:#1A1A1A;text-align:center;letter-spacing:.5px}
+.page-subtitle{font-size:14px;font-weight:bold;color:#0D2B5E;text-align:center}
+.page-italic{font-size:12px;font-style:italic;color:#0D2B5E;text-align:center}
+.section-label{font-size:12px;font-weight:bold;color:#7A5C10;text-align:left;margin-top:10px;margin-bottom:3px;line-height:1.4}
+.body-text{font-size:11.5px;color:#3D3D3D;text-align:justify;line-height:1.55;margin-bottom:7px}
+.closing-name{font-size:13px;font-weight:bold;font-style:italic;color:#1A1A1A;text-align:center;margin-top:8px;margin-bottom:3px}
+.closing-role{font-size:11px;font-style:italic;color:#7A5C10;text-align:center}
+
+/* ══ PDF OVERLAY ══ */
+#pdf-overlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.85);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+#pdf-overlay.show{display:flex}
+#pdf-overlay .msg{color:#f0c040;font-size:16px;font-weight:bold;font-family:Georgia,serif}
+#pdf-overlay .sub{color:#aaa;font-size:12px;font-family:monospace}
+#pdf-progress-bar{width:280px;height:8px;background:#333;border-radius:4px;overflow:hidden}
+#pdf-progress-fill{height:100%;width:0%;background:#8B6914;border-radius:4px;transition:width .3s}
+
+
+/* ══ RÉGUA ══ */
+.ruler-h{
+  position:absolute;top:0;left:0;height:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+.ruler-v{
+  position:absolute;top:0;left:0;width:20px;
+  background:rgba(30,20,0,.82);z-index:50;pointer-events:none;
+  overflow:hidden;
+}
+canvas.ruler-canvas{display:block}
+
+/* ══ GUIAS MAGNÉTICAS ══ */
+.guide-line{
+  position:absolute;pointer-events:none;z-index:60;
+  background:rgba(0,180,255,.7);
+}
+.guide-line.h{left:0;right:0;height:1px}
+.guide-line.v{top:0;bottom:0;width:1px}
+
+/* ══ SELEÇÃO MÚLTIPLA ══ */
+.tb.sel-multi{
+  border:2px dashed #00cfff !important;
+  box-shadow:0 0 0 1px rgba(0,207,255,.2);
+}
+
+
+/* ══ GRUPO ══ */
+.tb.grouped{
+  outline:2px solid rgba(240,192,64,.25);
+  outline-offset:2px;
+}
+/* Indicador de grupo no canto superior esquerdo */
+.tb.grouped::before{
+  content:'⛓';
+  position:absolute;top:-16px;left:2px;
+  font-size:11px;opacity:.5;pointer-events:none;
+  z-index:5;
+}
+/* Botões agrupar/desagrupar na topbar — contextuais */
+#btn-group,#btn-ungroup,#btn-cut-ungroup,#btn-cut{display:none}
+#btn-group.visible,#btn-ungroup.visible,#btn-cut-ungroup.visible,#btn-cut.visible{display:inline-flex}
+#btn-cut-ungroup,#btn-cut{background:#c0392b}
+
+.tb.sel .ungroup-btn{display:flex}
+
+
+/* ══ PAINEL DE SETAS (posicionamento fino) ══ */
+#arrow-pad{
+  position:fixed;
+  bottom:36px;          /* acima da coords bar */
+  left:50%;
+  transform:translateX(-50%);
+  z-index:850;
+  display:none;         /* só aparece com bloco selecionado */
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  pointer-events:auto;
+}
+#arrow-pad.show{display:flex}
+.arrow-row{display:flex;gap:2px}
+.arrow-btn{
+  width:44px;height:44px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:10px;
+  color:#f0c040;
+  font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  user-select:none;
+  touch-action:none;
+  box-shadow:0 3px 10px rgba(0,0,0,.6);
+  transition:background .1s, transform .08s;
+  -webkit-tap-highlight-color:transparent;
+}
+.arrow-btn:active{background:rgba(139,105,20,.9);transform:scale(.92)}
+.arrow-center{
+  width:44px;height:44px;
+  background:#000;
+  border:1px solid #8B6914;
+  border-radius:10px;
+  color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:bold;letter-spacing:.5px;
+}
+/* step display */
+#arrow-step{
+  color:#f0c040;font-size:10px;font-weight:bold;
+  text-align:center;
+  background:rgba(26,18,0,.7);
+  padding:2px 8px;border-radius:8px;
+  border:1px solid #8B6914;
+  margin-top:2px;
+  white-space:nowrap;
+}
+
+/* ══ LOCK ZOOM BUTTON ══ */
+#btn-lock-zoom{
+  position:fixed;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:960;
+  width:36px;height:36px;
+  background:rgba(26,18,0,.88);
+  border:2px solid #8B6914;
+  border-radius:50%;
+  color:#f0c040;
+  font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  transition:background .15s, border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+#btn-lock-zoom.locked{
+  background:#8B6914;
+  border-color:#f0c040;
+}
+
+/* ══ PRINT ══ */
+@media print{
+  #topbar,#fmt-bar,#coords,.ruler-h,.ruler-v,.guide-line,.edit-btn,.ungroup-btn,.drag-handle,.rh{display:none!important}
+  #scroll-area{margin-top:0;padding:0;gap:0;display:block}
+  body{background:#fff}
+  .pw{page-break-after:always;margin:0;padding:0}
+  .plbl{display:none}
+  .page{transform:none!important;box-shadow:none;margin:0!important}
+  .tb{border:none!important;box-shadow:none!important}
+  .drag-handle,.rh{display:none!important}
+}
+
+/* ══ TABLET responsive ══ */
+@media (max-width:960px){
+  .logo{font-size:11px}
+  .tbtn{font-size:10px;padding:5px 7px}
+}
+</style>
+
+<!-- SCRIPTS — carregados uma única vez -->
+
+
+<style id="ebook-clean-style">
+    #topbar,#fmt-bar,#coords,#pdf-overlay,
+    #color-bar,#shadow-bar,#arrow-pad,#btn-lock-zoom,
+    .ruler-h,.ruler-v,.guide-line,.plbl,
+    .drag-handle,.edit-btn,.rh,.ungroup-btn,.arrow-btn,
+    #btn-shadow-toggle { display:none !important; }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #111;
+      font-family: Georgia, serif;
+      overflow-x: hidden;
+    }
+    #scroll-area {
+      margin-top: 0 !important;
+      padding: 20px 0 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      overflow-x: auto;
+    }
+    .pw {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .page-sizer {
+      display: block;
+      overflow: visible;
+    }
+    .page {
+      position: relative;
+      width: 896px;
+      height: 1344px;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      box-shadow: 0 8px 40px rgba(0,0,0,.8);
+    }
+    .tb {
+      position: absolute;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .bc {
+      width: 100%;
+      min-height: 10px;
+      outline: none;
+      cursor: default;
+    }
+  </style></head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     FORMAT BAR
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE CORES
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     BARRA DE SOMBRA
+══════════════════════════════════════════════ -->
+
+
+<!-- ══════════════════════════════════════════════
+     PÁGINAS
+══════════════════════════════════════════════ -->
+<div id="scroll-area" style="margin-top: 0px;">
+
+<!-- P1 CAPA -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page1" style="background-image: url(&quot;https://i.ibb.co/JRDWLVqK/file-00000000ff7471f5ba693312bf1124ad.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="capa_saga" style="left: 112px; top: 385.317px; width: 672px; min-height: 36px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 2px 8px rgba(0,0,0,0.45);"><div class="cover-saga"><span style="font-size: 65px;">SAGA DETOX</span></div></div></div>
+  <div class="tb in-pg" id="capa_fase" style="left: 112px; top: 477.659px; width: 672px; min-height: 30px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-fase"><span style="font-size: 35px;">FASE 3</span></div></div></div>
+  <div class="tb in-pg" id="capa_subtitulo" style="left: 122px; top: 526.878px; width: 672px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 0px 1px 6px rgba(255,255,255,0.6);"><div class="cover-fase-italic"><span style="font-size: 28px;">Renascimento Celular</span></div></div></div>
+  <div class="tb in-pg" id="capa_tagline" style="left: 160px; top: 592.363px; width: 576px; min-height: 40px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="cover-tagline"><span style="font-size: 15px;">Dias 15 a 21 — Consolide, Regenere e Sele a Transformação do seu Organismo para Sempre</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_header" style="left: 160px; top: 633.878px; width: 576px; min-height: 46px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc"><div class="separator"><span style="font-size: 40px; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 8px; color: #B8861A;">— ÍNDICE —</span></div></div></div>
+  <div class="tb in-pg" id="capa_idx_itens" style="left: 160px; top: 705.604px; width: 576px; min-height: 220px; border: none; box-shadow: none;" data-pg="pg_1"><div class="bc" style="text-shadow: 1px 1px 5px rgba(0,0,0,0.75);"><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Introdução — O Terceiro e Último Nível</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Que é o Renascimento Celular</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Os Três Pilares da Fase 3</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Plano Alimentar Completo — 7 Dias</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Receitas Fitoterápicas Sagradas</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">O Poder dos Ingredientes Naturais</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Lista de Substituições Estratégicas</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Protocolo de Aceleração</span></div><div class="index-item"><span style="font-size: 22px; color: #ffffff;">Você Completou a Saga Detox!</span></div></div></div>
+</div></div></div>
+
+<!-- P2 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page2" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p2_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-title"><span style="font-size: 28px;">INTRODUÇÃO</span></div></div></div>
+  <div class="tb in-pg" id="p2_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 24px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="page-subtitle">O Terceiro e Último Nível</div></div></div>
+  <div class="tb in-pg" id="p2_sep" style="left: 88px; top: 157px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p2_corpo" style="left: 88px; top: 160px; width: 720px; min-height: 500px; border: none; box-shadow: none;" data-pg="pg_2"><div class="bc"><div class="body-text">No calendário sagrado egípcio, o número 21 era símbolo de completude. Os rituais de iniciação nos templos de Amon duravam exatamente 21 dias — porque os sacerdotes sabiam que era esse o tempo necessário para que uma transformação profunda se tornasse permanente nas células do corpo.</div><div class="body-text">Você chegou ao último nível. A Fase 1 despertou o organismo. A Fase 2 purificou as raízes. Agora a Fase 3 tem uma missão diferente das duas anteriores — e por isso é a mais poderosa de todas: <strong>consolidar, regenerar e selar.</strong></div><div class="body-text">Nos dias 15 a 21, o foco não é mais remover toxinas. É reconstruir. Regenerar as células que foram expostas por anos de inflamação. Fortalecer o fígado renovado. Estabilizar a nova flora intestinal. E programar o metabolismo para manter o novo equilíbrio de forma autônoma — sem depender de dietas eternas ou restrições extremas.</div><div class="body-text">Os sacerdotes chamavam essa fase de <em>"a construção do novo templo"</em>. Depois de demolir o que estava deteriorado e limpar os alicerces, chegava o momento de erguer algo novo e duradouro. <strong>É exatamente o que o seu organismo vai fazer nos próximos 7 dias.</strong></div><div class="body-text">Complete esta fase com a mesma disciplina que trouxe você até aqui. O que você constrói agora, você leva para o resto da vida.</div></div></div>
+</div></div></div>
+
+<!-- P3 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page3" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p3_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O QUE É O RENASCIMENTO CELULAR</span></div></div></div>
+  <div class="tb in-pg" id="p3_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p3_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_3"><div class="bc"><div class="section-label">• O Que Acontece nas Células Durante o Detox?</div><div class="body-text">Durante as Fases 1 e 2, o organismo mobilizou e eliminou toxinas armazenadas há anos nos tecidos. Esse processo libera espaço celular — mas também deixa as células em estado de renovação ativa. A Fase 3 aproveita exatamente esse momento: fornece os nutrientes e compostos bioativos que as células precisam para se reconstruir de forma otimizada.</div><div class="section-label">• O Que é a Autofagia e Por Que Ela Importa?</div><div class="body-text">A autofagia é o processo pelo qual as células devoram e reciclam seus próprios componentes danificados — uma espécie de faxina intracelular profunda. Ativada naturalmente pelo jejum estratégico e por compostos presentes em certos alimentos, a autofagia regenera mitocôndrias, elimina proteínas defeituosas e rejuvenesce os tecidos. É o mecanismo central desta fase.</div><div class="section-label">• Consolidação: Por Que 21 Dias é o Número Certo?</div><div class="body-text">A ciência confirma o que os sacerdotes egípcios já sabiam: 21 dias é o tempo mínimo para que novos padrões metabólicos se estabeleçam em nível celular. Abaixo desse período, as mudanças são superficiais e reversíveis. Ao completar a Fase 3, você não apenas transformou o organismo — você reprogramou a forma como ele funciona.</div><div class="section-label">• O Que Esperar dos 7 Dias da Fase 3?</div><div class="body-text">Estabilização definitiva do peso, redução da inflamação sistêmica, pele visivelmente mais jovem e luminosa, energia constante ao longo do dia, sono profundo e reparador — e a certeza de que o novo metabolismo está selado e funcionará de forma autônoma.</div></div></div>
+</div></div></div>
+
+<!-- P4 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page4" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p4_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="page-title"><span style="font-size: 28px;">OS TRÊS PILARES DA FASE 3</span></div></div></div>
+  <div class="tb in-pg" id="p4_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p4_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_4"><div class="bc"><div class="body-text">No último ciclo dos rituais de iniciação dos sacerdotes de Amon, os aprendizes passavam por três práticas finais: receber os alimentos sagrados de reconstrução, meditar sobre a permanência da transformação e fazer o voto de manutenção. A Fase 3 segue essa mesma lógica de encerramento poderoso.</div><div class="section-label">PILAR 1 — Nutrir para Reconstruir</div><div class="body-text">Com o organismo limpo e os filtros regenerados, a absorção de nutrientes está no pico máximo de eficiência. Este é o momento de introduzir os alimentos mais densos em antioxidantes, polifenóis e compostos regenerativos: frutas silvestres, sementes ativadas, vegetais coloridos de alto poder anti-inflamatório e proteínas de alta biodisponibilidade que reconstroem tecidos em nível celular.</div><div class="section-label">PILAR 2 — Ativar a Autofagia Natural</div><div class="body-text">O jejum estratégico desta fase é mais profundo que nas anteriores: uma janela de 12 a 14 horas entre o jantar e o café da manhã ativa o processo de autofagia — a faxina celular interna que elimina proteínas danificadas, regenera mitocôndrias e rejuvenesce os tecidos. Combinado com os compostos bioativos do protocolo, o resultado é um organismo literalmente mais jovem ao final dos 21 dias.</div><div class="section-label">PILAR 3 — Selar o Novo Equilíbrio</div><div class="body-text">A consolidação é o pilar mais negligenciado em qualquer processo de transformação — e o mais importante. Nesta fase, hábitos alimentares e ritmos circadianos são estabilizados de forma que o organismo os mantenha de forma autônoma. O novo metabolismo não precisa de força de vontade contínua: ele simplesmente funciona — porque foi selado corretamente.</div></div></div>
+</div></div></div>
+
+<!-- P5 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page5" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p5_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PLANO ALIMENTAR — 7 DIAS</span></div></div></div>
+  <div class="tb in-pg" id="p5_subtitulo" style="left: 88px; top: 127px; width: 720px; min-height: 22px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="page-italic">Dias 15 a 21 — Repita esta estrutura por 7 dias consecutivos</div></div></div>
+  <div class="tb in-pg" id="p5_sep" style="left: 88px; top: 155px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p5_corpo" style="left: 88px; top: 159px; width: 720px; min-height: 580px; border: none; box-shadow: none;" data-pg="pg_5"><div class="bc"><div class="section-label">■ AO ACORDAR</div><div class="body-text">1 copo de água morna com suco de limão + 1 colher de chá de mel puro + 1 pitada de cúrcuma. Aguarde 20 minutos. Este elixir matinal ativa o metabolismo hepático e inicia o processo de autofagia celular com suavidade.</div><div class="section-label">■ CAFÉ DA MANHÃ</div><div class="body-text">Smoothie de regeneração: 1 banana congelada + 1 colher de sopa de sementes de chia ativadas (deixar de molho 8h) + 1 colher de cacau puro em pó + leite de aveia + mel. Rico em antioxidantes, magnésio e fibras prebióticas.</div><div class="section-label">■ MEIO DA MANHÃ</div><div class="body-text">1 punhado de frutas vermelhas frescas ou congeladas (morango, mirtilo, framboesa) + 1 xícara de chá verde com hortelã. As frutas vermelhas são as mais ricas em resveratrol e antocianinas — compostos que ativam genes de longevidade celular.</div><div class="section-label">■ ALMOÇO</div><div class="body-text">Quinoa ou arroz negro + leguminosa (feijão azuki, lentilha vermelha ou grão-de-bico) + salada colorida com beterraba crua ralada, cenoura, folhas verdes e sementes de abóbora + azeite extravirgem com alho cru. Proteína: peixe assado com ervas ou ovo pochê.</div><div class="section-label">■ LANCHE DA TARDE</div><div class="body-text">1 xícara de chá de hibisco com gengibre (frio ou quente) + 2 tâmaras com nozes. O hibisco é rico em antocianinas e tem comprovada ação antioxidante sistêmica — ideal para a fase de consolidação celular.</div><div class="section-label">■ JANTAR</div><div class="body-text">Caldo de ossos ou caldo de legumes com cúrcuma e pimenta-do-reino + legumes assados no azeite com alecrim (batata-doce, abobrinha, pimentão) + salada de folhas com sementes de linhaça. Leve e altamente regenerativo.</div><div class="section-label">■ ANTES DE DORMIR</div><div class="body-text">1 xícara de leite de aveia morno com canela, noz-moscada e mel. Estimula a produção de melatonina natural, aprofunda o sono reparador e potencializa a liberação do hormônio do crescimento — o maior aliado da regeneração celular noturna.</div></div></div>
+</div></div></div>
+
+<!-- P6 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page6" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p6_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="page-title"><span style="font-size: 28px;">RECEITAS FITOTERÁPICAS SAGRADAS</span></div></div></div>
+  <div class="tb in-pg" id="p6_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p6_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_6"><div class="bc"><div class="section-label">✦ ELIXIR DO RENASCIMENTO</div><div class="body-text"><strong>Ingredientes:</strong> 1 colher de chá de mel puro, suco de 1 limão, 1 pitada de cúrcuma, 1 pitada de pimenta-do-reino, 1 pitada de canela, 200ml de água morna.</div><div class="body-text"><strong>Preparo:</strong> Misture tudo no copo e beba imediatamente em jejum. A pimenta-do-reino potencializa a absorção da curcumina em até 2.000%. Não aqueça o mel — adicione apenas à água morna.</div><div class="body-text"><strong>Benefício:</strong> Ativa o metabolismo, protege as células recém-regeneradas e inicia o processo de autofagia com suavidade.</div><div class="section-label">✦ CHÁ ANTIOXIDANTE DOS FARAÓS</div><div class="body-text"><strong>Ingredientes:</strong> 1 colher de chá de hibisco desidratado, 1 colher de chá de rosa mosqueta, 3 rodelas de gengibre fresco, 1 colher de chá de mel puro, 300ml de água quente.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água, adicione o hibisco, rosa mosqueta e gengibre. Tampe por 8 minutos. Coe, adicione mel e beba quente ou gelado ao longo do dia.</div><div class="body-text"><strong>Benefício:</strong> Altíssima concentração de antocianinas e vitamina C. Combate o estresse oxidativo celular e consolida o processo de regeneração da Fase 3.</div><div class="section-label">✦ SMOOTHIE DE LONGEVIDADE CELULAR</div><div class="body-text"><strong>Ingredientes:</strong> 1 xícara de mirtilos (frescos ou congelados), 1 colher de sopa de cacau puro, 1 colher de sopa de chia ativada, 1 banana, 200ml de leite de aveia, 1 tâmara sem caroço.</div><div class="body-text"><strong>Preparo:</strong> Bata tudo no liquidificador até homogêneo. Beba no café da manhã ou como lanche. Não adicione açúcar — a tâmara já adoça naturalmente.</div><div class="body-text"><strong>Benefício:</strong> Combinação máxima de antioxidantes, fibras prebióticas e compostos ativadores dos genes de longevidade SIRT1 — o mesmo mecanismo estudado pela ciência do envelhecimento celular.</div><div class="section-label">✦ INFUSÃO FINAL DO TEMPLO</div><div class="body-text"><strong>Ingredientes:</strong> 1 colher de chá de camomila, 1 colher de chá de lavanda seca (ou erva-cidreira), 1 colher de chá de mel, 1 pitada de noz-moscada, 250ml de água quente.</div><div class="body-text"><strong>Preparo:</strong> Ferva a água e faça a infusão por 10 minutos tampado. Coe, adicione mel e noz-moscada. Beba 40 minutos antes de dormir.</div><div class="body-text"><strong>Benefício:</strong> Induz sono profundo de fase 3 e 4 — as fases de maior regeneração celular e liberação do hormônio do crescimento. O último ritual de cada dia desta fase de consolidação.</div></div></div>
+</div></div></div>
+
+<!-- P7 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page7" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p7_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="page-title"><span style="font-size: 28px;">O PODER DOS INGREDIENTES NATURAIS</span></div></div></div>
+  <div class="tb in-pg" id="p7_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p7_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_7"><div class="bc"><div class="section-label">■ Mirtilo</div><div class="body-text">Nos jardins do palácio de Ramsés II, frutas escuras de pequeno porte eram reservadas exclusivamente à mesa real. Os escribas médicos as chamavam de "jóias da renovação". A ciência moderna confirmou: os mirtilos contêm a maior concentração de antocianinas do reino vegetal — compostos que ativam o gene SIRT1, associado à longevidade celular e à proteção do DNA contra danos oxidativos.</div><div class="section-label">■ Cacau Puro</div><div class="body-text">Civilizações mediterrâneas antigas utilizavam sementes amargas em rituais de vitalidade. O cacau puro — sem açúcar ou leite — contém flavonoides que aumentam o fluxo sanguíneo, reduzem a pressão arterial e ativam genes antienvelhecimento. É um dos alimentos com maior capacidade antioxidante medida na escala ORAC — o termômetro científico do poder regenerativo de um alimento.</div><div class="section-label">■ Chia Ativada</div><div class="body-text">As sementes pequenas e escuras eram cultivadas por civilizações pré-colombianas como "alimento da resistência". Ativada por imersão em água por 8 horas, a chia forma um gel mucilaginoso que limpa a mucosa intestinal, alimenta a microbiota benéfica e fornece ômega-3 vegetal com ação anti-inflamatória sistêmica — fundamental para a consolidação celular da Fase 3.</div><div class="section-label">■ Hibisco</div><div class="body-text">As flores vermelhas do hibisco eram usadas nos rituais de beleza e saúde das rainhas egípcias. Ricas em ácido hibístico e antocianinas, têm ação diurética natural, reduzem a pressão arterial e combatem o estresse oxidativo celular. Na Fase 3, o hibisco age como um "polidor celular" — limpando os últimos resíduos metabólicos e tonificando os tecidos renovados.</div><div class="section-label">■ Batata-Doce Roxa ou Laranja</div><div class="body-text">Representada nos afrescos agrícolas dos templos do Alto Egito, a batata-doce era o carboidrato nobre das plantações do Nilo. Rica em betacaroteno, antocianinas e fibras de baixo índice glicêmico, ela fornece energia estável sem picos de insulina, nutre a microbiota intestinal consolidada na Fase 2 e fornece vitamina A — essencial para a regeneração das mucosas e da pele.</div></div></div>
+</div></div></div>
+
+<!-- P8 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page8" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p8_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="page-title"><span style="font-size: 28px;">LISTA DE SUBSTITUIÇÕES ESTRATÉGICAS</span></div></div></div>
+  <div class="tb in-pg" id="p8_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p8_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 600px; border: none; box-shadow: none;" data-pg="pg_8"><div class="bc"><div class="body-text">Na Fase 3, o rigor das substituições se mantém — mas o foco muda para <strong>maximizar a densidade nutricional</strong> de cada refeição. Cada troca foi escolhida para fornecer os compostos que mais aceleram a regeneração e consolidação celular.</div><div class="section-label">✦ Arroz Branco → Arroz Negro ou Quinoa</div><div class="body-text">O arroz negro é rico em antocianinas — os mesmos pigmentos regenerativos dos mirtilos. A quinoa é o único cereal com perfil completo de aminoácidos essenciais, idêntico ao da proteína animal. Ambos têm índice glicêmico baixo e fornecem energia estável por horas sem pico de insulina.</div><div class="section-label">✦ Margarina ou Manteiga → Pasta de Abacate ou Azeite</div><div class="body-text">A margarina contém gorduras trans que inflamam as membranas celulares recém-regeneradas. O abacate fornece ácido oleico — o mesmo composto do azeite que protege as células do estresse oxidativo e mantém a fluidez das membranas celulares em nível ideal.</div><div class="section-label">✦ Suco de Caixinha → Água de Coco Natural ou Chá Frio de Hibisco</div><div class="body-text">Sucos industrializados contêm frutose concentrada que sobrecarrega o fígado recém-regenerado. A água de coco repõe eletrólitos naturais com baixo teor de açúcar. O chá frio de hibisco fornece antocianinas e vitamina C em forma líquida e saborosa.</div><div class="section-label">✦ Chocolate ao Leite → Chocolate 70%+ ou Cacau Puro</div><div class="body-text">O chocolate ao leite tem até 50% de açúcar e gorduras que anulam os benefícios dos flavonoides. O chocolate com 70% ou mais de cacau mantém os compostos regenerativos intactos. Use 2 a 3 quadrados por dia — suficientes para o efeito antioxidante sem comprometer a consolidação.</div><div class="section-label">✦ Farinha de Trigo → Farinha de Amêndoas ou Farinha de Coco</div><div class="body-text">A farinha de amêndoas é rica em vitamina E, magnésio e gorduras monoinsaturadas que nutrem diretamente as células em regeneração. A farinha de coco contém fibras que alimentam a microbiota benéfica consolidada na Fase 2 — mantendo o equilíbrio intestinal selado.</div></div></div>
+</div></div></div>
+
+<!-- P9 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page9" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p9_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PROTOCOLO DE ACELERAÇÃO</span></div></div></div>
+  <div class="tb in-pg" id="p9_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p9_corpo" style="left: 88px; top: 131px; width: 720px; min-height: 620px; border: none; box-shadow: none;" data-pg="pg_9"><div class="bc"><div class="section-label">◆ Jejum de 14 Horas</div><div class="body-text">Amplie o jejum noturno para 14 horas nesta fase final. Se o jantar termina às 19h, a primeira refeição do dia seguinte é às 9h. Esse intervalo ativa a autofagia em nível máximo — o processo de reciclagem celular que os sacerdotes egípcios induziam através do jejum ritual antes das cerimônias de renovação do templo.</div><div class="section-label">◆ Banho de Contraste</div><div class="body-text">Finalize cada banho com 30 segundos de água fria. O choque térmico ativa a termogênese marrom — o tipo de gordura que gera calor e queima energia sem movimento muscular. Também estimula a produção de norepinefrina, que mobiliza gordura visceral de forma direta. Uma prática milenar de vitalidade que a medicina moderna redescobriu.</div><div class="section-label">◆ Gratidão e Mentalidade de Consolidação</div><div class="body-text">O cortisol — hormônio do estresse — é o maior inimigo da consolidação metabólica. Ele ativa genes de acúmulo de gordura abdominal e reverte os ganhos do detox quando mantido cronicamente elevado. Dedique 5 minutos pela manhã, em silêncio, para reconhecer a transformação que aconteceu. Os sacerdotes chamavam isso de "oferenda ao Ka" — e a neurociência chama de regulação do eixo HPA.</div><div class="section-label">◆ Caminhada ao Pôr do Sol</div><div class="body-text">Uma caminhada de 20 a 30 minutos ao final do dia regula o ritmo circadiano, reduz o cortisol vespertino e prepara o organismo para o sono profundo. A luz do pôr do sol tem comprimento de onda que sinaliza ao cérebro a transição para o modo de recuperação — potencializando a regeneração celular que ocorre durante a noite.</div><div class="section-label">◆ Suplementação Zero</div><div class="body-text">Na Fase 3, o organismo absorve e utiliza nutrientes com eficiência máxima. Vitaminas, minerais e compostos bioativos dos alimentos do protocolo são suficientes — e mais biodisponíveis do que qualquer cápsula industrializada. Suplementos artificiais nesta fase podem sobrecarregar o fígado recém-regenerado. A natureza fornece tudo o que o organismo precisa.</div><div class="section-label">◆ Proibidos que Continuam Proibidos</div><div class="body-text">Açúcar refinado, álcool, frituras, embutidos e ultraprocessados. Esses itens continuam proibidos não apenas nesta fase — mas permanentemente. A Fase 3 sela o novo equilíbrio metabólico, e esses alimentos são os únicos capazes de desfazê-lo. O que foi construído em 21 dias pode ser destruído em 7 dias de descuido.</div></div></div>
+</div></div></div>
+
+<!-- P10 -->
+<div class="pw"><div class="page-sizer" style="width: 328px; height: 492px;"><div class="page" id="page10" style="background-image: url(&quot;https://i.ibb.co/DqpZPg9/file-00000000514471f594f50a122c7c6ed9.png&quot;); transform-origin: 0px 0px; transform: translateX(0px) scale(0.366071);">
+  
+  
+  <div class="tb in-pg" id="p10_titulo" style="left: 88px; top: 93px; width: 720px; min-height: 28px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="page-title"><span style="font-size: 28px;">PARABÉNS — VOCÊ COMPLETOU A SAGA DETOX!</span></div></div></div>
+  <div class="tb in-pg" id="p10_sep" style="left: 88px; top: 127px; width: 720px; min-height: 14px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div></div></div>
+  <div class="tb in-pg" id="p10_corpo" style="left: 88px; top: 141px; width: 720px; min-height: 520px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="body-text">Vinte e um dias. Três fases. Uma transformação que vai muito além do que qualquer espelho pode mostrar. Você não apenas completou a <strong>Saga Detox — A Purificação dos Templos Sagrados.</strong> Você reconstruiu, do zero, a forma como o seu organismo funciona.</div><div class="body-text">O fígado foi despertado, purificado em profundidade e regenerado. A flora intestinal foi reequilibrada e consolidada. As células foram renovadas pela autofagia e nutridas pelos compostos mais poderosos da natureza. O metabolismo foi reprogramado para funcionar de forma autônoma — queimando gordura, regulando hormônios e mantendo o equilíbrio sem esforço constante.</div><div class="body-text">Isso é o que os sacerdotes do templo de Amon chamavam de <em>"o novo Ka"</em> — a força vital renovada, mais limpa e mais poderosa do que antes. Não é uma metáfora: é uma mudança bioquímica real e mensurável no funcionamento do seu corpo.</div><div class="body-text"><strong>Mas a jornada da Dieta Milenar está apenas começando.</strong></div><div class="body-text">A Saga Detox preparou o terreno. Agora o organismo está pronto para os próximos protocolos: Energia, Metabolismo, Definição, Força. Cada saga vai levar você a um nível mais alto de transformação — construindo sobre a base sólida que você estabeleceu aqui.</div><div class="body-text">Você provou que é capaz. Continue. A natureza tem muito mais a oferecer.</div></div></div>
+  <div class="tb in-pg" id="p10_assina" style="left: 200px; top: 705px; width: 496px; min-height: 80px; border: none; box-shadow: none;" data-pg="pg_10"><div class="bc"><div class="separator">──────────────────────────────────────────────</div><div class="closing-name">Marcelo R. Souza</div><div class="closing-role">Nutricionista Fitoterápico — Dieta Milenar</div></div></div>
+</div></div></div>
+
+</div><!-- /scroll-area -->
+
+
+<!-- ══ PAINEL DE SETAS ══ -->
+
+
+
+
+<!-- LOCK ZOOM -->
+
+
+<!-- PDF OVERLAY -->
+
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+
+
+
+
+</body></html>
